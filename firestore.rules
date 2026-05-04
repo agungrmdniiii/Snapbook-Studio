@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isStudioAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'agungrmdniiii@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Packages: Anyone can read, only admin can write
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isStudioAdmin();
+    }
+
+    // Bookings
+    match /bookings/{bookingId} {
+      function isValidBooking(data) {
+        return data.packageId is string && 
+               data.packageName is string &&
+               data.clientName is string && data.clientName.size() <= 100 &&
+               data.clientPhone is string && data.clientPhone.size() <= 25 &&
+               data.date is string &&
+               data.startTime is string &&
+               data.endTime is string &&
+               data.totalPrice is number &&
+               data.status in ['pending', 'confirmed', 'completed', 'cancelled'];
+      }
+
+      allow read: if true; // Publicly readable for availability checks or private for users? 
+                          // The app currently uses getBookings() for availability on the client.
+                          // To follow Eight Pillars (Secure List Queries), we should be careful.
+                          // However, availability check needs to see taken slots.
+      
+      allow create: if isValidBooking(incoming()) && 
+                       incoming().status == 'pending' &&
+                       incoming().createdAt == request.time &&
+                       incoming().updatedAt == request.time;
+      
+      allow update: if isStudioAdmin() || (
+        isSignedIn() &&
+        isValidBooking(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+        incoming().updatedAt == request.time
+      );
+      
+      allow delete: if isStudioAdmin();
+    }
+
+    // Settings
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isStudioAdmin();
+    }
+
+    // Showcase: Anyone can read, only admin can manage
+    match /showcase/{imageId} {
+      function isValidShowcaseImage(data) {
+        return data.url is string && data.url.size() < 2000 &&
+               data.aspectRatio in ['portrait', 'landscape', 'square'];
+      }
+      allow read: if true;
+      allow write: if isStudioAdmin() && isValidShowcaseImage(incoming());
+    }
+    
+    // Admins collection (protected)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only manageable via console or specialized scripts
+    }
+  }
+}

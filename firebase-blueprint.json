@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "Package": {
+      "title": "Photo Studio Package",
+      "description": "Details of a photo studio package that clients can book.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "number", "description": "Duration in minutes" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "category": { "type": "string", "enum": ["Self-Photo", "Professional", "Event", "Special"] },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["name", "price", "duration", "category"]
+    },
+    "Booking": {
+      "title": "Client Booking",
+      "description": "Information about a client's photo studio session booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "packageId": { "type": "string" },
+        "packageName": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientEmail": { "type": "string", "format": "email" },
+        "clientPhone": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
+        "totalPrice": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["packageId", "clientName", "clientPhone", "date", "startTime"]
+    },
+    "StudioConfig": {
+      "title": "Studio Settings",
+      "description": "Global settings for the studio, stored in a single document.",
+      "type": "object",
+      "properties": {
+        "studioName": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "instagramHandle": { "type": "string" },
+        "openingTime": { "type": "string", "description": "e.g., 09:00" },
+        "closingTime": { "type": "string", "description": "e.g., 20:00" },
+        "aboutText": { "type": "string" }
+      }
+    },
+    "ShowcaseImage": {
+      "title": "Showcase Photo",
+      "description": "An image displayed in the studio showcase gallery.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "aspectRatio": { "type": "string", "enum": ["portrait", "landscape", "square"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["url", "aspectRatio"]
+    }
+  },
+  "firestore": {
+    "/packages/{packageId}": {
+      "schema": "Package",
+      "description": "Available studio packages."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Recorded customer bookings."
+    },
+    "/settings/config": {
+      "schema": "StudioConfig",
+      "description": "Global studio configuration."
+    },
+    "/showcase/{imageId}": {
+      "schema": "ShowcaseImage",
+      "description": "Images for the studio gallery."
+    }
+  }
+}
