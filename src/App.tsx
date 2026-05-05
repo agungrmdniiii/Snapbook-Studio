@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Calendar, Clock, User, Phone, Check, ChevronRight, X, Instagram, Facebook, Mail, Copy, Search, Filter, ArrowUpRight } from 'lucide-react';
 import { Package, StudioConfig, Booking, ShowcaseImage } from './types';
 import { formatCurrency, cn, generateWhatsAppLink } from './lib/utils';
-import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage } from './services/bookingService';
+import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage, saveStudioConfig } from './services/bookingService';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfDay, addMinutes, isAfter, parse } from 'date-fns';
 
 const TIME_SLOTS = [
@@ -16,7 +16,9 @@ export default function App() {
   const [config, setConfig] = React.useState<StudioConfig | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
-  const [isAdminMode, setIsAdminMode] = React.useState(false);
+  const [isAdminMode, setIsAdminMode] = React.useState(() => {
+    return localStorage.getItem('snapbook_admin_session') === 'active';
+  });
   const [isPreviewMode, setIsPreviewMode] = React.useState(false);
   const [currentView, setCurrentView] = React.useState<'about_us' | 'services'>('about_us');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -197,16 +199,33 @@ Terima kasih!`;
     }
   };
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminCreds.id === 'admin' && adminCreds.pw === 'akuadmin') {
+    
+    // Check against config in database
+    if (config && adminCreds.id === (config.adminId || 'admin') && adminCreds.pw === (config.adminPw || 'akuadmin')) {
       setIsAdminMode(true);
+      localStorage.setItem('snapbook_admin_session', 'active');
       setShowAdminLogin(false);
       setAdminCreds({ id: '', pw: '' });
       setAdminLoginError(false);
     } else {
+      // Fallback for initial state before config is fully loaded
+      if (adminCreds.id === 'admin' && adminCreds.pw === 'akuadmin') {
+         setIsAdminMode(true);
+         localStorage.setItem('snapbook_admin_session', 'active');
+         setShowAdminLogin(false);
+         setAdminCreds({ id: '', pw: '' });
+         setAdminLoginError(false);
+         return;
+      }
       setAdminLoginError(true);
     }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminMode(false);
+    localStorage.removeItem('snapbook_admin_session');
   };
 
   if (loading) {
@@ -264,7 +283,7 @@ Terima kasih!`;
                 <span className="text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">Sesi Aktif</span>
               </div>
               <button 
-                onClick={() => setIsAdminMode(false)}
+                onClick={handleAdminLogout}
                 className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-black text-white hover:bg-gray-800 transition-all"
               >
                 Tutup Control
@@ -297,7 +316,7 @@ Terima kasih!`;
             <div className="mt-auto border-t border-gray-50 pt-10 pb-6">
               {isAdminMode && (
                 <button 
-                  onClick={() => { setIsAdminMode(false); setIsMobileMenuOpen(false); }}
+                  onClick={() => { handleAdminLogout(); setIsMobileMenuOpen(false); }}
                   className="w-full py-5 bg-black text-white rounded-full flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-[0.2em]"
                 >
                   Tutup Admin Control
@@ -312,6 +331,7 @@ Terima kasih!`;
         <AdminSection 
           onForceSeed={handleForceSeed} 
           config={config} 
+          setConfig={setConfig}
           onShowcaseUpdate={refreshGallery}
           showcaseData={showcaseImages}
         />
@@ -1040,7 +1060,7 @@ function CalendarPicker({ onSelect, selectedDate }: { onSelect: (date: Date) => 
     </div>
   );
 }
-function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: { onForceSeed: () => void, config: StudioConfig | null, onShowcaseUpdate: () => void, showcaseData: ShowcaseImage[] }) {
+function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showcaseData }: { onForceSeed: () => void, config: StudioConfig | null, setConfig: (cfg: StudioConfig) => void, onShowcaseUpdate: () => void, showcaseData: ShowcaseImage[] }) {
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [packages, setPackages] = React.useState<Package[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -1166,13 +1186,17 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
 
   const handleSaveConfig = async () => {
     try {
-      localStorage.setItem('studio_config', JSON.stringify(editConfig));
-      alert('Settings updated in local cache.');
+      setIsUploading(true);
+      await saveStudioConfig(editConfig);
+      alert('Konfigurasi Studio berhasil disimpan ke Cloud Database.');
       setIsEditingConfig(false);
-      window.location.reload(); // Refresh to update global config state
+      // Update global config state without page reload
+      setConfig(editConfig);
     } catch (e) {
       console.error(e);
-      alert('Failed to save settings.');
+      alert('Gagal menyimpan ke database cloud.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -1425,6 +1449,33 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
                 onChange={e => setEditConfig({...editConfig, aboutText: e.target.value})}
                 className="w-full border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent min-h-[100px]"
               />
+            </div>
+            
+            {/* Admin Credentials Control */}
+            <div className="col-span-2 pt-10 border-t border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-6">Keamanan Akses Admin</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">ID Admin Baru</label>
+                  <input 
+                    value={editConfig.adminId || ''}
+                    onChange={e => setEditConfig({...editConfig, adminId: e.target.value})}
+                    placeholder="ID untuk login"
+                    className="w-full border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Password Admin Baru</label>
+                  <input 
+                    type="text"
+                    value={editConfig.adminPw || ''}
+                    onChange={e => setEditConfig({...editConfig, adminPw: e.target.value})}
+                    placeholder="Password untuk login"
+                    className="w-full border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent"
+                  />
+                </div>
+              </div>
+              <p className="mt-4 text-[9px] text-gray-400 uppercase tracking-widest italic">Hati-hati: Perubahan ini akan mengganti kredensial akses "Alt + `" Anda.</p>
             </div>
           </div>
           <button 

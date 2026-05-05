@@ -32,6 +32,8 @@ export interface StudioConfig {
   openingTime: string;
   closingTime: string;
   aboutText: string;
+  adminId?: string;
+  adminPw?: string;
 }
 
 export interface ShowcaseImage {

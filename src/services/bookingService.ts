@@ -1,158 +1,193 @@
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy, 
+  serverTimestamp,
+  addDoc
+} from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { Booking, Package, StudioConfig, ShowcaseImage } from '../types';
-import { getDB, migrateFromLocalStorage } from './db';
 
-// Initiate migration in the background
-migrateFromLocalStorage();
-
-// Mock Data Awal jika localStorage kosong
-const DEFAULT_PACKAGES: Package[] = [
-  {
-    id: 'basic-self-photo',
-    name: 'Basic Session',
-    description: '15 minutes photo session, unlimited shots, 2 printed photos.',
-    price: 150000,
-    duration: 15,
-    features: ['15 Mins Session', 'Unlimited Shots', '2 Physical Prints', 'All Soft Files'],
-    category: 'Self-Photo'
-  },
-  {
-    id: 'pro-self-photo',
-    name: 'Pro Session',
-    description: '30 minutes photo session, unlimited shots, 4 printed photos + frame.',
-    price: 250000,
-    duration: 30,
-    features: ['30 Mins Session', 'Unlimited Shots', '4 Physical Prints', '1 Wooden Frame', 'All Soft Files'],
-    category: 'Self-Photo'
-  }
-];
+const CONFIG_DOC_ID = 'main_config';
+const COLLECTIONS = {
+  PACKAGES: 'packages',
+  CONFIG: 'studioConfig',
+  BOOKINGS: 'bookings',
+  SHOWCASE: 'showcase'
+};
 
 const DEFAULT_CONFIG: StudioConfig = {
   studioName: 'LUMINA STUDIO',
   whatsappNumber: '628123456789',
   openingTime: '09:00',
   closingTime: '21:00',
-  aboutText: 'Lumina Studio is a premium photography destination.'
+  aboutText: 'Lumina Studio is a premium photography destination.',
+  adminId: 'admin',
+  adminPw: 'akuadmin'
 };
 
-// Helper untuk localStorage
-const getLocalStorage = <T>(key: string, defaultValue: T): T => {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : defaultValue;
-};
-
-const setLocalStorage = <T>(key: string, data: T): void => {
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
-export async function loginWithGoogle() {
-  // Mock login - kita anggap user selalu admin jika mengklik login di versi lokal ini
-  const mockUser = {
-    uid: 'local-admin',
-    email: 'agungrmdniiii@gmail.com',
-    displayName: 'Local Admin',
-    photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'
-  };
-  localStorage.setItem('auth_user', JSON.stringify(mockUser));
-  return mockUser;
-}
-
-export async function logout() {
-  localStorage.removeItem('auth_user');
-}
-
-export async function getPackages(): Promise<Package[]> {
-  const db = await getDB();
-  const packages = await db.getAll('packages');
-  if (packages.length === 0) {
-    // Seed with defaults if empty
-    const tx = db.transaction('packages', 'readwrite');
-    for (const pkg of DEFAULT_PACKAGES) {
-      await tx.store.put(pkg);
-    }
-    await tx.done;
-    return DEFAULT_PACKAGES;
-  }
-  return packages;
-}
-
-export async function savePackage(pkg: Package): Promise<void> {
-  const db = await getDB();
-  await db.put('packages', pkg);
-}
-
-export async function deletePackage(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('packages', id);
+// Error Handler helper for Firebase
+function handleFirestoreError(error: any, operation: string, path: string) {
+  console.error(`Firestore Error [${operation}] on ${path}:`, error);
+  throw error;
 }
 
 export async function getStudioConfig(): Promise<StudioConfig> {
-  return getLocalStorage<StudioConfig>('studio_config', DEFAULT_CONFIG);
+  try {
+    const docRef = doc(db, COLLECTIONS.CONFIG, CONFIG_DOC_ID);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data() as StudioConfig;
+    }
+    // Auto-seed if missing
+    await setDoc(docRef, DEFAULT_CONFIG);
+    return DEFAULT_CONFIG;
+  } catch (e) {
+    handleFirestoreError(e, 'GET', COLLECTIONS.CONFIG);
+    return DEFAULT_CONFIG;
+  }
 }
 
-export async function createBooking(bookingData: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<string> {
-  const bookings = getLocalStorage<Booking[]>('bookings', []);
-  const id = 'BK-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-  const newBooking: Booking = {
-    ...bookingData,
-    id,
-    status: 'pending',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-  
-  bookings.push(newBooking);
-  setLocalStorage('bookings', bookings);
-  return id;
+export async function saveStudioConfig(config: StudioConfig): Promise<void> {
+  try {
+    const docRef = doc(db, COLLECTIONS.CONFIG, CONFIG_DOC_ID);
+    await setDoc(docRef, config, { merge: true });
+  } catch (e) {
+    handleFirestoreError(e, 'SET', COLLECTIONS.CONFIG);
+  }
+}
+
+export async function getPackages(): Promise<Package[]> {
+  try {
+    const colRef = collection(db, COLLECTIONS.PACKAGES);
+    const snap = await getDocs(colRef);
+    return snap.docs.map(d => ({ ...d.data(), id: d.id } as Package));
+  } catch (e) {
+    handleFirestoreError(e, 'LIST', COLLECTIONS.PACKAGES);
+    return [];
+  }
+}
+
+export async function savePackage(pkg: Package): Promise<void> {
+  try {
+    const docRef = doc(db, COLLECTIONS.PACKAGES, pkg.id);
+    await setDoc(docRef, pkg);
+  } catch (e) {
+    handleFirestoreError(e, 'SET', COLLECTIONS.PACKAGES);
+  }
+}
+
+export async function deletePackage(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.PACKAGES, id));
+  } catch (e) {
+    handleFirestoreError(e, 'DELETE', COLLECTIONS.PACKAGES);
+  }
 }
 
 export async function getBookings(): Promise<Booking[]> {
-  const bookings = getLocalStorage<any[]>('bookings', []);
-  // Convert date strings back to Date objects
-  return bookings.map(b => ({
-    ...b,
-    createdAt: new Date(b.createdAt),
-    updatedAt: new Date(b.updatedAt)
-  })).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  try {
+    const colRef = collection(db, COLLECTIONS.BOOKINGS);
+    const q = query(colRef, orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => {
+      const data = d.data();
+      return {
+        ...data,
+        id: d.id,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      } as Booking;
+    });
+  } catch (e) {
+    handleFirestoreError(e, 'LIST', COLLECTIONS.BOOKINGS);
+    return [];
+  }
+}
+
+export async function createBooking(bookingData: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<string> {
+  try {
+    const colRef = collection(db, COLLECTIONS.BOOKINGS);
+    const docRef = await addDoc(colRef, {
+      ...bookingData,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (e) {
+    handleFirestoreError(e, 'CREATE', COLLECTIONS.BOOKINGS);
+    return '';
+  }
 }
 
 export async function checkAvailability(date: string, time: string): Promise<boolean> {
-  const bookings = await getBookings();
-  return !bookings.some(b => b.date === date && b.startTime === time && b.status !== 'cancelled');
+  try {
+    const bookings = await getBookings();
+    return !bookings.some(b => b.id && b.date === date && b.startTime === time && b.status !== 'cancelled');
+  } catch (e) {
+    return true;
+  }
 }
 
 export async function updateBookingStatus(bookingId: string, status: Booking['status']): Promise<void> {
-  const bookings = await getBookings();
-  const index = bookings.findIndex(b => b.id === bookingId);
-  if (index !== -1) {
-    bookings[index].status = status;
-    bookings[index].updatedAt = new Date();
-    setLocalStorage('bookings', bookings);
+  try {
+    const docRef = doc(db, COLLECTIONS.BOOKINGS, bookingId);
+    await updateDoc(docRef, {
+      status,
+      updatedAt: serverTimestamp()
+    });
+  } catch (e) {
+    handleFirestoreError(e, 'UPDATE', COLLECTIONS.BOOKINGS);
   }
 }
 
 export async function getShowcaseImages(): Promise<ShowcaseImage[]> {
-  const db = await getDB();
-  const images = await db.getAll('showcase');
-  return images.map(img => ({
-    ...img,
-    createdAt: new Date(img.createdAt)
-  })).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  try {
+    const colRef = collection(db, COLLECTIONS.SHOWCASE);
+    const q = query(colRef, orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => {
+      const data = d.data();
+      return {
+        ...data,
+        id: d.id,
+        createdAt: data.createdAt?.toDate() || new Date()
+      } as ShowcaseImage;
+    });
+  } catch (e) {
+    handleFirestoreError(e, 'LIST', COLLECTIONS.SHOWCASE);
+    return [];
+  }
 }
 
 export async function addShowcaseImage(image: Omit<ShowcaseImage, 'id' | 'createdAt'>): Promise<string> {
-  const db = await getDB();
-  const id = 'SH-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-  const newImage: ShowcaseImage = {
-    ...image,
-    id,
-    createdAt: new Date()
-  };
-  await db.put('showcase', newImage);
-  return id;
+  try {
+    const colRef = collection(db, COLLECTIONS.SHOWCASE);
+    const docRef = await addDoc(colRef, {
+      ...image,
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (e) {
+    handleFirestoreError(e, 'CREATE', COLLECTIONS.SHOWCASE);
+    return '';
+  }
 }
 
 export async function deleteShowcaseImage(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('showcase', id);
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.SHOWCASE, id));
+  } catch (e) {
+    handleFirestoreError(e, 'DELETE', COLLECTIONS.SHOWCASE);
+  }
 }
 
+export async function loginWithGoogle() { return null; }
+export async function logout() { }
