@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Calendar, Clock, User, Phone, Check, ChevronRight, X, Instagram, Facebook, Mail, LogIn, LogOut, Copy } from 'lucide-react';
+import { Camera, Calendar, Clock, User, Phone, Check, ChevronRight, X, Instagram, Facebook, Mail, Copy, Search, Filter, ArrowUpRight } from 'lucide-react';
 import { Package, StudioConfig, Booking, ShowcaseImage } from './types';
 import { formatCurrency, cn, generateWhatsAppLink } from './lib/utils';
-import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, loginWithGoogle, logout, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage } from './services/bookingService';
+import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage } from './services/bookingService';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfDay, addMinutes, isAfter, parse } from 'date-fns';
 
 const TIME_SLOTS = [
@@ -11,7 +11,6 @@ const TIME_SLOTS = [
 ];
 
 export default function App() {
-  const [user, setUser] = React.useState<any>(null);
   const [packages, setPackages] = React.useState<Package[]>([]);
   const [showcaseImages, setShowcaseImages] = React.useState<ShowcaseImage[]>([]);
   const [config, setConfig] = React.useState<StudioConfig | null>(null);
@@ -20,6 +19,22 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = React.useState(false);
   const [isPreviewMode, setIsPreviewMode] = React.useState(false);
   const [currentView, setCurrentView] = React.useState<'about_us' | 'services'>('about_us');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const [adminCreds, setAdminCreds] = React.useState({ id: '', pw: '' });
+  const [adminLoginError, setAdminLoginError] = React.useState(false);
+
+  // Hidden Shortcut for Admin
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt + ` (Backtick)
+      if (e.altKey && e.key === '`') {
+        setShowAdminLogin(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const refreshGallery = React.useCallback(async () => {
     const gallery = await getShowcaseImages();
@@ -36,18 +51,6 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [bookingSuccess, setBookingSuccess] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
-  const [authError, setAuthError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem('auth_user');
-    if (savedUser) {
-      const u = JSON.parse(savedUser);
-      setUser(u);
-      if (u.email === 'agungrmdniiii@gmail.com') {
-        setIsAdminMode(true);
-      }
-    }
-  }, []);
 
   React.useEffect(() => {
     async function init() {
@@ -68,31 +71,6 @@ export default function App() {
     init();
   }, []);
 
-  const handleLogin = async () => {
-    setAuthError(null);
-    try {
-      const u = await loginWithGoogle();
-      if (u) {
-        setUser(u);
-        if (u.email === 'agungrmdniiii@gmail.com') {
-          setIsAdminMode(true);
-        }
-      }
-    } catch (e: any) {
-      if (e.code === 'auth/popup-closed-by-user') {
-        setAuthError("Sign-in window was closed. Please try again.");
-      } else {
-        setAuthError("An unexpected error occurred during sign-in.");
-      }
-    }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    setUser(null);
-    setIsAdminMode(false);
-  };
-
   const handleForceSeed = async () => {
     try {
       const { forceSeed } = await import('./services/seedService');
@@ -103,7 +81,7 @@ export default function App() {
       alert("Studio initialized successfully! Refreshing data...");
     } catch (e) {
       console.error(e);
-      alert("Failed to initialize. Are you signed in as the correct admin?");
+      alert("Failed to initialize. Master control required.");
     }
   };
 
@@ -211,6 +189,26 @@ Terima kasih!`;
     setIsBookingModalOpen(false);
   };
 
+  const handleAdminToggle = () => {
+    if (isAdminMode) {
+      setIsAdminMode(false);
+    } else {
+      setShowAdminLogin(true);
+    }
+  };
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminCreds.id === 'admin' && adminCreds.pw === 'akuadmin') {
+      setIsAdminMode(true);
+      setShowAdminLogin(false);
+      setAdminCreds({ id: '', pw: '' });
+      setAdminLoginError(false);
+    } else {
+      setAdminLoginError(true);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]">
@@ -226,62 +224,89 @@ Terima kasih!`;
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] text-[#1A1A1A] font-sans selection:bg-black selection:text-white">
       {/* Header Navigation */}
-      <header className="border-b border-gray-100 px-10 py-6 flex justify-between items-center sticky top-0 bg-[#FDFDFD]/80 backdrop-blur-md z-40">
+      <header className="border-b border-gray-100 px-6 md:px-10 py-6 flex justify-between items-center sticky top-0 bg-[#FDFDFD]/80 backdrop-blur-md z-40">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
             <div className="w-3 h-3 bg-white"></div>
           </div>
-          <h1 className="text-xl font-bold tracking-tight uppercase">{config?.studioName}</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight uppercase">{config?.studioName}</h1>
         </div>
+        
+        {/* Mobile Menu Toggle */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden w-10 h-10 flex items-center justify-center border border-gray-100 rounded-full"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <div className="w-5 h-4 flex flex-col justify-between"><span className="w-full h-0.5 bg-black"></span><span className="w-full h-0.5 bg-black"></span><span className="w-full h-0.5 bg-black"></span></div>}
+        </button>
+
         <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-500 uppercase tracking-widest items-center">
-          <button onClick={() => { setIsBookingModalOpen(true); setStep(1); }} className="text-black border-b border-black">Reservasi</button>
-          <button 
-            onClick={() => setCurrentView('about_us')} 
-            className={cn("hover:text-black transition-colors", currentView === 'about_us' && "text-black")}
-          > Tentang Kami
-          </button>
-          <button 
-            onClick={() => setCurrentView('services')} 
-            className={cn("hover:text-black transition-colors", currentView === 'services' && "text-black")}
-          > Layanan
-          </button>
+          {!isAdminMode && (
+            <>
+              <button onClick={() => { setIsBookingModalOpen(true); setStep(1); }} className="text-black border-b border-black">Reservasi</button>
+              <button 
+                onClick={() => setCurrentView('about_us')} 
+                className={cn("hover:text-black transition-colors", currentView === 'about_us' && "text-black")}
+              > Tentang Kami
+              </button>
+              <button 
+                onClick={() => setCurrentView('services')} 
+                className={cn("hover:text-black transition-colors", currentView === 'services' && "text-black")}
+              > Layanan
+              </button>
+            </>
+          )}
           
-          {user ? (
+          {isAdminMode && (
             <div className="flex items-center gap-4 border-l border-gray-100 pl-8">
               <div className="flex flex-col items-end">
-                <span className="text-xs font-bold uppercase tracking-widest leading-none mb-1">{user.displayName?.split(' ')[0]}</span>
-                <span className="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">{isAdminMode ? 'Admin Resmi' : 'Pelanggan'}</span>
+                <span className="text-xs font-bold uppercase tracking-widest leading-none mb-1">Admin</span>
+                <span className="text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">Sesi Aktif</span>
               </div>
               <button 
-                onClick={() => setIsAdminMode(!isAdminMode)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
-                  isAdminMode ? "bg-black text-white hover:bg-gray-800" : "border border-gray-200 hover:border-black"
-                )}
+                onClick={() => setIsAdminMode(false)}
+                className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-black text-white hover:bg-gray-800 transition-all"
               >
-                {isAdminMode ? 'Lihat Situs' : 'Kontrol'}
-              </button>
-              <button 
-                onClick={handleLogout}
-                className="text-gray-300 hover:text-black transition-colors"
-                title="Keluar"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              {authError && <span className="text-xs text-red-500 uppercase font-bold tracking-widest animate-pulse">{authError}</span>}
-              <button 
-                onClick={handleLogin}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 text-xs hover:border-black transition-colors"
-              >
-                <LogIn className="w-4 h-4" /> Masuk
+                Tutup Control
               </button>
             </div>
           )}
         </nav>
       </header>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            className="fixed inset-0 z-50 bg-white md:hidden flex flex-col p-8 pt-24"
+          >
+            <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-8 right-8 w-12 h-12 border border-gray-100 rounded-full flex items-center justify-center"><X className="w-6 h-6" /></button>
+            <div className="flex flex-col gap-10 text-xl font-bold uppercase tracking-[0.2em]">
+               {!isAdminMode && (
+                 <>
+                   <button onClick={() => { setCurrentView('about_us'); setIsMobileMenuOpen(false); }} className={cn("text-left", currentView === 'about_us' && "text-gray-300")}>Beranda</button>
+                   <button onClick={() => { setCurrentView('services'); setIsMobileMenuOpen(false); }} className={cn("text-left", currentView === 'services' && "text-gray-300")}>Layanan</button>
+                   <button onClick={() => { setIsBookingModalOpen(true); setStep(1); setIsMobileMenuOpen(false); }} className="text-left">Reservasi Sesi</button>
+                 </>
+               )}
+            </div>
+
+            <div className="mt-auto border-t border-gray-50 pt-10 pb-6">
+              {isAdminMode && (
+                <button 
+                  onClick={() => { setIsAdminMode(false); setIsMobileMenuOpen(false); }}
+                  className="w-full py-5 bg-black text-white rounded-full flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-[0.2em]"
+                >
+                  Tutup Admin Control
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isAdminMode ? (
         <AdminSection 
@@ -303,26 +328,26 @@ Terima kasih!`;
                 className="flex-1 flex flex-col"
               >
                 {/* Hero Section */}
-                <section className="relative px-10 pt-40 pb-24 flex flex-col items-center text-center">
+                <section className="relative px-6 md:px-10 pt-32 md:pt-40 pb-24 flex flex-col items-center text-center">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="max-w-4xl"
                   >
-                    <div className="flex items-center justify-center gap-4 mb-10">
-                      <span className="h-[1px] w-12 bg-gray-200"></span>
-                      <span className="text-sm font-bold text-gray-400 uppercase tracking-[0.4em] block">
+                    <div className="flex items-center justify-center gap-4 mb-8 md:mb-10">
+                      <span className="hidden sm:block h-[1px] w-12 bg-gray-200"></span>
+                      <span className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-[0.3em] sm:tracking-[0.4em] block">
                         Studio Professional / Self-Portrait
                       </span>
-                      <span className="h-[1px] w-12 bg-gray-200"></span>
+                      <span className="hidden sm:block h-[1px] w-12 bg-gray-200"></span>
                     </div>
                     
-                    <h1 className="text-7xl md:text-9xl font-serif italic mb-10 leading-[0.9] tracking-tighter">
+                    <h1 className="text-5xl sm:text-7xl md:text-9xl font-serif italic mb-8 md:mb-10 leading-[0.9] tracking-tighter">
                       Seni sebuah <br />
                       <span className="not-italic font-sans font-bold uppercase">Kehadiran</span>
                     </h1>
                     
-                    <p className="text-xl text-gray-400 mb-8 max-w-xl mx-auto leading-relaxed font-light">
+                    <p className="text-base sm:text-xl text-gray-400 mb-8 max-w-xl mx-auto leading-relaxed font-light">
                       {config?.aboutText || "Studio potret diri profesional yang dirancang untuk hasil kelas atas dan privasi mutlak. Pesan momen kreatif Anda hari ini."}
                     </p>
                     
@@ -361,20 +386,20 @@ Terima kasih!`;
                 </section>
 
                 {/* Philosophy Section */}
-                <section className="py-24 px-10 max-w-[1400px] mx-auto text-center">
+                <section className="py-16 md:py-24 px-6 md:px-10 max-w-[1400px] mx-auto text-center">
                   <div className="max-w-2xl mx-auto">
-                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-8">Filosofi Kami</span>
-                    <h3 className="text-4xl md:text-5xl font-serif italic mb-0 leading-tight">Kami percaya setiap orang memiliki sisi yang layak untuk diabadikan secara profesional namun tetap personal.</h3>
+                    <span className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest block mb-6 md:mb-8">Filosofi Kami</span>
+                    <h3 className="text-2xl sm:text-4xl md:text-5xl font-serif italic mb-0 leading-tight">Kami percaya setiap orang memiliki sisi yang layak untuk diabadikan secara profesional namun tetap personal.</h3>
                   </div>
                 </section>
 
                 {/* Showcase Section (Previously About) */}
-                <section className="py-24 px-10 max-w-[1400px] mx-auto border-t border-gray-50">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16">
+                <section className="py-16 md:py-24 px-6 md:px-10 max-w-[1400px] mx-auto border-t border-gray-50">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-16">
                     <div className="max-w-xl">
-                      <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-4">Etalase / Visi Kami</span>
-                      <h2 className="text-5xl md:text-6xl font-serif italic mb-8">Karya Kami</h2>
-                      <p className="text-lg text-gray-500 font-light leading-relaxed">
+                      <span className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest block mb-4">Etalase / Visi Kami</span>
+                      <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif italic mb-6 md:mb-8">Karya Kami</h2>
+                      <p className="text-base sm:text-lg text-gray-500 font-light leading-relaxed">
                         Lihat bagaimana kami menangkap esensi dan kepribadian melalui lensa artistik. Setiap foto adalah cerita yang menceritakan tentang kehadiran dan ekspresi diri.
                       </p>
                     </div>
@@ -466,13 +491,13 @@ Terima kasih!`;
                 className="flex-1 flex flex-col"
               >
                 {/* Packages Section */}
-                <section className="py-32 px-10 max-w-[1400px] mx-auto min-h-[60vh]">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-20">
+                <section className="py-16 md:py-32 px-6 md:px-10 max-w-[1400px] mx-auto min-h-[60vh]">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 md:mb-20">
                     <div className="max-w-md">
-                      <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-4">Layanan / Koleksi</span>
-                      <h2 className="text-5xl font-serif italic">Pilih Pengalaman Anda</h2>
+                      <span className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest block mb-4">Layanan / Koleksi</span>
+                      <h2 className="text-4xl sm:text-5xl font-serif italic">Pilih Pengalaman Anda</h2>
                     </div>
-                    <p className="text-lg text-gray-400 italic max-w-xs md:text-right leading-relaxed font-light">
+                    <p className="text-base sm:text-lg text-gray-400 italic max-w-xs md:text-right leading-relaxed font-light">
                       Pengalaman fotografi terkurasi yang dirancang untuk ekspresi diri dan standar profesional.
                     </p>
                   </div>
@@ -542,15 +567,15 @@ Terima kasih!`;
 
           {/* Footer */}
           <footer className="mt-auto border-t border-gray-100">
-            <div className="max-w-[1400px] mx-auto py-24 px-10 grid grid-cols-1 md:grid-cols-4 gap-20">
+            <div className="max-w-[1400px] mx-auto py-16 md:py-24 px-6 md:px-10 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-20">
               <div className="col-span-1 md:col-span-2">
-                <div className="flex items-center gap-3 mb-10">
+                <div className="flex items-center gap-3 mb-8 md:mb-10">
                   <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
                     <Camera className="w-4 h-4 text-white" />
                   </div>
                   <h1 className="text-lg font-bold tracking-tight uppercase">{config?.studioName}</h1>
                 </div>
-                <h3 className="text-4xl font-serif italic mb-10 leading-tight">Capturing the beauty of <br/> the ephemeral moment.</h3>
+                <h3 className="text-3xl md:text-4xl font-serif italic mb-8 md:mb-10 leading-tight">Capturing the beauty of <br/> the ephemeral moment.</h3>
                 <div className="flex gap-6">
                   <a href={config?.instagramUrl} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-black transition-colors"><Instagram className="w-5 h-5" /></a>
                   <a href={config?.facebookUrl} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-black transition-colors"><Facebook className="w-5 h-5" /></a>
@@ -576,9 +601,9 @@ Terima kasih!`;
               </div>
             </div>
 
-            <div className="px-10 py-10 border-t border-gray-100 bg-gray-50/20">
+            <div className="px-6 md:px-10 py-8 md:py-10 border-t border-gray-100 bg-gray-50/20">
               <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gray-400 italic">
+                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gray-400 italic text-center md:text-left">
                   © 2024 {config?.studioName} — Built for Excellence
                 </span>
                 <div className="flex gap-8">
@@ -589,6 +614,72 @@ Terima kasih!`;
           </footer>
         </main>
       )}
+
+      {/* Admin Login Modal */}
+      <AnimatePresence>
+        {showAdminLogin && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAdminLogin(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="bg-white w-full max-w-sm p-10 rounded-sm relative z-10 shadow-2xl"
+            >
+              <h3 className="text-3xl font-serif italic mb-8">Admin Access</h3>
+              <form onSubmit={handleAdminLogin} className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">ID Admin</label>
+                  <input 
+                    type="text" 
+                    value={adminCreds.id}
+                    onChange={(e) => setAdminCreds({ ...adminCreds, id: e.target.value })}
+                    className="w-full border-b border-gray-200 py-3 focus:border-black outline-none transition-colors text-sm"
+                    placeholder="ID"
+                    autoFocus
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Password</label>
+                  <input 
+                    type="password" 
+                    value={adminCreds.pw}
+                    onChange={(e) => setAdminCreds({ ...adminCreds, pw: e.target.value })}
+                    className="w-full border-b border-gray-200 py-3 focus:border-black outline-none transition-colors text-sm"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                {adminLoginError && (
+                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Kredensial tidak valid</p>
+                )}
+                <div className="pt-4 flex flex-col gap-4">
+                  <button 
+                    type="submit"
+                    className="w-full py-4 bg-black text-white text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors rounded-sm"
+                  >
+                    Masuk Sekarang
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setShowAdminLogin(false)}
+                    className="w-full py-4 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Booking Modal (Clean Minimalism Redesign) */}
       <AnimatePresence>
@@ -606,22 +697,22 @@ Terima kasih!`;
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className="relative w-full h-full md:grid md:grid-cols-[450px_1fr] overflow-hidden"
+              className="relative w-full h-full md:grid md:grid-cols-[400px_1fr] lg:grid-cols-[450px_1fr] overflow-hidden bg-white"
             >
               {/* Left Column: Progress & Package Specs */}
-              <section className="bg-gray-50 border-r border-gray-100 p-12 md:p-20 flex flex-col">
+              <section className="bg-gray-50 border-r border-gray-100 p-8 md:p-12 lg:p-20 flex flex-col overflow-y-auto no-scrollbar">
                 <button 
                   onClick={resetBooking}
-                  className="group flex items-center gap-3 text-xs font-bold uppercase tracking-widest mb-20 hover:text-gray-400 transition-colors"
+                  className="group flex items-center gap-3 text-xs font-bold uppercase tracking-widest mb-12 md:mb-20 hover:text-gray-400 transition-colors"
                 >
                   <X className="w-4 h-4" /> Tutup
                 </button>
 
-                <div className="space-y-20 flex-grow">
+                <div className="space-y-12 md:space-y-20 flex-grow">
                   {/* Step Display */}
                   <div>
-                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-4">Langkah 0{step} / 04</span>
-                    <h2 className="text-4xl font-serif italic">
+                    <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest block mb-4">Langkah 0{step} / 04</span>
+                    <h2 className="text-3xl md:text-4xl font-serif italic">
                       {step === 1 && "Pilih Pengalaman"}
                       {step === 2 && "Pilih Tanggal"}
                       {step === 3 && "Pilih Slot Waktu"}
@@ -670,18 +761,18 @@ Terima kasih!`;
               </section>
 
               {/* Right Column: Interaction Flow */}
-              <section className="bg-white p-12 md:p-24 overflow-y-auto no-scrollbar flex flex-col">
+              <section className="bg-white p-8 md:p-12 lg:p-24 overflow-y-auto no-scrollbar flex flex-col">
                 <div className="max-w-xl self-center w-full my-auto">
                   {bookingSuccess ? (
                     <motion.div 
                       initial={{ scale: 0.95, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="text-center"
+                      className="text-center pt-8 md:pt-0"
                     >
                       <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-10 mx-auto">
                         <Check className="w-6 h-6 text-green-600" />
                       </div>
-                      <h3 className="text-4xl font-serif italic mb-2">Dikonfirmasi.</h3>
+                      <h3 className="text-3xl md:text-4xl font-serif italic mb-2">Dikonfirmasi.</h3>
                       <p className="text-sm font-bold uppercase tracking-[0.2em] mb-10 text-gray-400">Selamat datang, {clientInfo.name}</p>
                       
                       <div className="mb-10 p-8 border border-gray-100 rounded-sm text-left inline-block w-full max-w-md bg-gray-50/50">
@@ -780,17 +871,6 @@ Terima kasih!`;
                               <div className="text-center py-20 border border-dashed border-gray-100 rounded-sm bg-gray-50/50">
                                 <Camera className="w-10 h-10 text-gray-200 mx-auto mb-4" />
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Collections currently offline</p>
-                                {(user?.email === 'agungrmdniiii@gmail.com' || !user) && (
-                                  <div className="mt-8 space-y-4">
-                                    {!user && <p className="text-[9px] text-gray-400 uppercase tracking-widest italic">Sign in as owner to initialize database</p>}
-                                    <button 
-                                      onClick={user ? handleForceSeed : handleLogin}
-                                      className="px-10 py-4 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-black/10"
-                                    >
-                                      {user ? 'Initialize Studio Database' : 'Authorized Sign In'}
-                                    </button>
-                                  </div>
-                                )}
                               </div>
                             )}
                           </div>
@@ -973,6 +1053,11 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
   const [expandedBookingId, setExpandedBookingId] = React.useState<string | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
+  
+  // Filtering states
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState<Booking['status'] | 'all'>('all');
+
   const [editConfig, setEditConfig] = React.useState<StudioConfig>({
     studioName: config?.studioName || '',
     whatsappNumber: config?.whatsappNumber || '',
@@ -1047,8 +1132,37 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
 
   const handleUpdateStatus = async (id: string, status: Booking['status']) => {
     await updateBookingStatus(id, status);
-    setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
+    const updatedBookings = bookings.map(b => b.id === id ? { ...b, status } : b);
+    setBookings(updatedBookings);
+    
+    // WhatsApp notification on confirmation
+    if (status === 'confirmed') {
+      const b = updatedBookings.find(item => item.id === id);
+      if (b) {
+        const message = `Halo ${b.clientName}!\n\nKami menginformasikan bahwa pesanan booking studio Anda telah DIKONFIRMASI ✅\n\nDetail Reservasi:\n🆔 ID: ${b.id}\n📸 Paket: ${b.packageName}\n📅 Tanggal: ${b.date}\n⏰ Jam: ${b.startTime} - ${b.endTime}\n💰 Total: ${formatCurrency(b.totalPrice)}\n\nSampai jumpa di ${config?.studioName || 'Lumina Studio'}!\nHarap datang 10 menit sebelum jadwal. Terima kasih.`;
+        const link = generateWhatsAppLink(b.clientPhone, message);
+        window.open(link, '_blank');
+      }
+    }
   };
+
+  // Stats calculation
+  const stats = {
+    total: bookings.length,
+    pending: bookings.filter(b => b.status === 'pending').length,
+    confirmed: bookings.filter(b => b.status === 'confirmed').length,
+    completed: bookings.filter(b => b.status === 'completed').length,
+    revenue: bookings.filter(b => b.status === 'completed' || b.status === 'confirmed').reduce((sum, b) => sum + b.totalPrice, 0)
+  };
+
+  // Filtered bookings
+  const filteredBookings = bookings.filter(b => {
+    const matchesSearch = b.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          b.clientPhone.includes(searchQuery);
+    const matchesFilter = statusFilter === 'all' || b.status === statusFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   const handleSaveConfig = async () => {
     try {
@@ -1194,27 +1308,27 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
   if (loading) return <div className="p-40 text-center text-[10px] uppercase font-bold tracking-[0.3em] opacity-30">Decrypting Entries...</div>;
 
   return (
-    <div className="p-10 md:p-20 max-w-[1400px] mx-auto min-h-screen">
+    <div className="p-6 md:p-20 max-w-[1400px] mx-auto min-h-screen">
       {!config && (
-        <div className="mb-10 p-10 border border-black rounded-sm bg-gray-50 flex justify-between items-center">
+        <div className="mb-10 p-6 md:p-10 border border-black rounded-sm bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h4 className="font-bold uppercase text-xs mb-1">Studio Not Initialized</h4>
             <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-relaxed">The database appears to be empty. Run the setup to populate base collections.</p>
           </div>
           <button 
             onClick={onForceSeed}
-            className="px-6 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
+            className="w-full md:w-auto px-6 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
           >
             Run Initial Setup
           </button>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-20">
         <div>
           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Operasional</span>
-          <h1 className="text-5xl font-serif italic mb-2 leading-tight">Kontrol Master</h1>
-          <div className="flex gap-8 mt-6">
+          <h1 className="text-4xl md:text-5xl font-serif italic mb-2 leading-tight">Kontrol Master</h1>
+          <div className="flex flex-wrap gap-x-8 gap-y-4 mt-6">
             <button 
               onClick={() => setActiveTab('bookings')}
               className={cn(
@@ -1323,132 +1437,209 @@ function AdminSection({ onForceSeed, config, onShowcaseUpdate, showcaseData }: {
       )}
 
       {activeTab === 'bookings' ? (
-        <div className="border border-gray-100 overflow-hidden rounded-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-xs uppercase tracking-[0.2em] font-bold text-gray-400">
-                  <th className="px-10 py-6 border-b border-gray-100">Tanggal</th>
-                  <th className="px-10 py-6 border-b border-gray-100">Nama</th>
-                  <th className="px-10 py-6 border-b border-gray-100">No Whatsapp</th>
-                  <th className="px-10 py-6 border-b border-gray-100">Paket</th>
-                  <th className="px-10 py-6 border-b border-gray-100">Status</th>
-                  <th className="px-10 py-6 border-b border-gray-100">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {bookings.length === 0 ? (
-                  <tr><td colSpan={6} className="px-10 py-32 text-center text-xs uppercase font-bold tracking-widest opacity-20 italic">Belum ada catatan pemesanan.</td></tr>
-                ) : (
-                  bookings.map(b => (
-                    <React.Fragment key={b.id}>
-                      <tr 
-                        onClick={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
-                        className={cn(
-                          "group hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-50",
-                          expandedBookingId === b.id && "bg-gray-50/80"
-                        )}
-                      >
-                        <td className="px-10 py-8">
-                          <div className="text-base font-mono font-bold">{b.date}</div>
-                          <div className="text-xs uppercase font-bold opacity-30 mt-1">{b.startTime}</div>
-                        </td>
-                        <td className="px-10 py-8">
-                          <div className="text-base font-bold uppercase tracking-tight">{b.clientName}</div>
-                        </td>
-                        <td className="px-10 py-8">
-                          <div className="text-sm font-mono font-medium text-gray-500">{b.clientPhone}</div>
-                        </td>
-                        <td className="px-10 py-8">
-                          <div className="text-xs font-bold uppercase tracking-widest">{b.packageName}</div>
-                          <div className="text-xs font-mono opacity-30 mt-1">{formatCurrency(b.totalPrice)}</div>
-                        </td>
-                        <td className="px-10 py-8">
-                          <span className={cn(
-                            "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest inline-block",
-                            b.status === 'pending' && "bg-gray-100 text-gray-500",
-                            b.status === 'confirmed' && "bg-black text-white",
-                            b.status === 'completed' && "bg-black/5 text-black border border-black/10",
-                            b.status === 'cancelled' && "bg-red-50 text-red-500",
-                          )}>
-                            {b.status === 'pending' ? 'Tunda' : 
-                             b.status === 'confirmed' ? 'Dikonfirmasi' :
-                             b.status === 'completed' ? 'Selesai' : 'Dibatalkan'}
-                          </span>
-                        </td>
-                        <td className="px-10 py-8" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-4">
-                            {b.status === 'pending' && (
+        <div className="space-y-10">
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="p-6 border border-gray-100 rounded-sm bg-white">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Total Pesanan</span>
+              <div className="text-2xl font-mono font-bold tracking-tighter">{stats.total}</div>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-sm bg-yellow-50/30">
+              <span className="text-[10px] font-bold text-yellow-600/60 uppercase tracking-widest block mb-2">Pending</span>
+              <div className="text-2xl font-mono font-bold tracking-tighter text-yellow-700/80">{stats.pending}</div>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-sm bg-green-50/30">
+              <span className="text-[10px] font-bold text-green-600/60 uppercase tracking-widest block mb-2">Dikonfirmasi</span>
+              <div className="text-2xl font-mono font-bold tracking-tighter text-green-700/80">{stats.confirmed}</div>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-sm bg-black text-white">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Selesai</span>
+              <div className="text-2xl font-mono font-bold tracking-tighter">{stats.completed}</div>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-sm bg-white col-span-2 md:col-span-1">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Estimasi Omzet</span>
+              <div className="text-2xl font-mono font-bold tracking-tighter">{formatCurrency(stats.revenue)}</div>
+            </div>
+          </div>
+
+          {/* Filtering Bar */}
+          <div className="flex flex-col md:flex-row gap-6 justify-between items-center bg-white p-6 border border-gray-100 rounded-sm">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <input 
+                type="text" 
+                placeholder="Cari Nama, ID, atau No HP..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-50/50 border border-transparent focus:border-black focus:bg-white outline-none rounded-sm text-sm transition-all"
+              />
+            </div>
+            <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
+              {(['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setStatusFilter(f)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
+                    statusFilter === f 
+                      ? "bg-black text-white" 
+                      : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-black"
+                  )}
+                >
+                  {f === 'all' ? 'Semua' : 
+                   f === 'pending' ? 'Pending' : 
+                   f === 'confirmed' ? 'Dikonfirmasi' : 
+                   f === 'completed' ? 'Selesai' : 'Batal'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border border-gray-100 overflow-hidden rounded-sm bg-white">
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                  <tr className="bg-gray-50 text-xs uppercase tracking-[0.2em] font-bold text-gray-400">
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100">Tanggal</th>
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100">Nama</th>
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100">No Whatsapp</th>
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100">Paket</th>
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100">Status</th>
+                    <th className="px-6 md:px-10 py-6 border-b border-gray-100 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredBookings.length === 0 ? (
+                    <tr><td colSpan={6} className="px-6 md:px-10 py-32 text-center text-xs uppercase font-bold tracking-widest opacity-20 italic">Tidak ada data pemesanan yang cocok.</td></tr>
+                  ) : (
+                    filteredBookings.map(b => (
+                      <React.Fragment key={b.id}>
+                        <tr 
+                          onClick={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
+                          className={cn(
+                            "group hover:bg-gray-50/50 transition-colors cursor-pointer border-b border-gray-50",
+                            expandedBookingId === b.id && "bg-gray-50/80"
+                          )}
+                        >
+                          <td className="px-6 md:px-10 py-8">
+                            <div className="text-sm md:text-base font-mono font-bold">{b.date}</div>
+                            <div className="text-[10px] uppercase font-bold opacity-30 mt-1">{b.startTime}</div>
+                          </td>
+                          <td className="px-6 md:px-10 py-8">
+                            <div className="text-sm md:text-base font-bold uppercase tracking-tight">{b.clientName}</div>
+                            <div className="text-[9px] font-mono text-gray-300 uppercase tracking-widest mt-1">ID: {b.id}</div>
+                          </td>
+                          <td className="px-6 md:px-10 py-8">
+                            <div className="flex items-center gap-2 group/wa">
+                              <div className="text-xs md:text-sm font-mono font-medium text-gray-500">{b.clientPhone}</div>
                               <button 
-                                onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                                className="text-[10px] font-bold uppercase tracking-widest hover:underline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(`https://wa.me/${b.clientPhone}`, '_blank');
+                                }}
+                                className="opacity-0 group-hover:opacity-100 group-hover/wa:text-green-500 transition-all p-1"
                               >
-                                Konfirmasi
+                                <ArrowUpRight className="w-3 h-3" />
                               </button>
-                            )}
-                            {b.status !== 'completed' && b.status !== 'cancelled' && (
-                              <button 
-                                onClick={() => handleUpdateStatus(b.id, 'cancelled')}
-                                className="text-[10px] font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors"
-                              >
-                                Batal
-                              </button>
-                            )}
-                            {b.status === 'confirmed' && (
-                              <button 
-                                onClick={() => handleUpdateStatus(b.id, 'completed')}
-                                className="text-[10px] font-bold uppercase tracking-widest hover:underline"
-                              >
-                                Selesai
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedBookingId === b.id && (
-                        <tr className="bg-gray-50/40 border-b border-gray-100">
-                          <td colSpan={6} className="px-10 py-10">
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              className="grid grid-cols-1 md:grid-cols-3 gap-12"
-                            >
-                              <div className="space-y-4">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Kontak Client</label>
-                                <div className="space-y-2">
-                                  <p className="text-sm font-medium">{b.clientEmail}</p>
-                                  <p className="text-sm font-mono text-gray-500">{b.clientPhone}</p>
-                                </div>
-                              </div>
-                              <div className="space-y-4">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Rincian Waktu</label>
-                                <div className="space-y-2">
-                                  <p className="text-sm font-mono">{b.startTime} — {b.endTime}</p>
-                                  <p className="text-xs text-gray-400 italic">Sesi berdurasi {b.startTime && b.endTime ? 'sesuai paket' : 'N/A'}</p>
-                                </div>
-                              </div>
-                              <div className="space-y-4">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Breakdown Investasi</label>
-                                <div className="space-y-3 pt-2 border-t border-gray-100">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-gray-400 uppercase tracking-widest">Base Session ({b.packageName})</span>
-                                    <span className="font-mono">{formatCurrency(b.totalPrice)}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs font-bold pt-3 border-t border-gray-200">
-                                    <span className="uppercase tracking-widest text-black">Total Akhir</span>
-                                    <span className="font-mono">{formatCurrency(b.totalPrice)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
+                            </div>
+                          </td>
+                          <td className="px-6 md:px-10 py-8">
+                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest">{b.packageName}</div>
+                            <div className="text-[10px] font-mono opacity-30 mt-1">{formatCurrency(b.totalPrice)}</div>
+                          </td>
+                          <td className="px-6 md:px-10 py-8">
+                            <span className={cn(
+                              "px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest inline-block text-center min-w-[80px]",
+                              b.status === 'pending' && "bg-yellow-50 text-yellow-600 border border-yellow-100",
+                              b.status === 'confirmed' && "bg-black text-white",
+                              b.status === 'completed' && "bg-green-50 text-green-600 border border-green-100",
+                              b.status === 'cancelled' && "bg-red-50 text-red-500 border border-red-100",
+                            )}>
+                              {b.status === 'pending' ? 'Tunda' : 
+                               b.status === 'confirmed' ? 'Dikonfirmasi' :
+                               b.status === 'completed' ? 'Selesai' : 'Dibatalkan'}
+                            </span>
+                          </td>
+                          <td className="px-6 md:px-10 py-8 text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end gap-3">
+                              {b.status === 'pending' && (
+                                <button 
+                                  onClick={() => handleUpdateStatus(b.id, 'confirmed')}
+                                  className="px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-all rounded-sm shadow-sm"
+                                >
+                                  Konfirmasi
+                                </button>
+                              )}
+                              {b.status === 'confirmed' && (
+                                <button 
+                                  onClick={() => handleUpdateStatus(b.id, 'completed')}
+                                  className="px-4 py-2 bg-green-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-green-600 transition-all rounded-sm shadow-sm"
+                                >
+                                  Selesai
+                                </button>
+                              )}
+                              {b.status !== 'cancelled' && b.status !== 'completed' && (
+                                <button 
+                                  onClick={() => handleUpdateStatus(b.id, 'cancelled')}
+                                  className="px-4 py-2 border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-500 text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                >
+                                  Batalkan
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))
-                )}
-              </tbody>
-            </table>
+                        {expandedBookingId === b.id && (
+                          <tr className="bg-gray-50/40 border-b border-gray-100">
+                            <td colSpan={6} className="px-10 py-10">
+                              <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="grid grid-cols-1 md:grid-cols-3 gap-12"
+                              >
+                                <div className="space-y-4">
+                                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Kontak Client</label>
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-medium">{b.clientEmail || 'Tidak ada email'}</p>
+                                    <button 
+                                      onClick={() => window.open(`https://wa.me/${b.clientPhone}`, '_blank')}
+                                      className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-green-600 hover:underline"
+                                    >
+                                      Chat via WhatsApp
+                                      <ArrowUpRight className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="space-y-4">
+                                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Rincian Waktu</label>
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-mono">{b.startTime} — {b.endTime}</p>
+                                    <p className="text-xs text-gray-400 italic">Dibuat pada: {new Date(b.createdAt).toLocaleString()}</p>
+                                  </div>
+                                </div>
+                                <div className="space-y-4">
+                                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Status & Pembayaran</label>
+                                  <div className="space-y-3 pt-2 border-t border-gray-100">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-gray-400 uppercase tracking-widest">Harga Paket</span>
+                                      <span className="font-mono">{formatCurrency(b.totalPrice)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs font-bold pt-3 border-t border-gray-200">
+                                      <span className="uppercase tracking-widest text-black">Total Tagihan</span>
+                                      <span className="font-mono">{formatCurrency(b.totalPrice)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       ) : activeTab === 'packages' ? (
