@@ -5,7 +5,7 @@ export interface Package {
   price: number;
   duration: number;
   features: string[];
-  category: 'Self-Photo' | 'Professional' | 'Event' | 'Special';
+  category: string;
   imageUrl?: string;
 }
 
@@ -34,6 +34,8 @@ export interface StudioConfig {
   aboutText: string;
   adminId?: string;
   adminPw?: string;
+  holidays?: string[];
+  categories?: string[];
 }
 
 export interface ShowcaseImage {

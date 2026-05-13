@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Calendar, Clock, User, Phone, Check, ChevronRight, X, Instagram, Facebook, Mail, Copy, Search, Filter, ArrowUpRight } from 'lucide-react';
 import { Package, StudioConfig, Booking, ShowcaseImage } from './types';
-import { formatCurrency, cn, generateWhatsAppLink } from './lib/utils';
+import { formatCurrency, cn, generateWhatsAppLink, formatIDR, parseIDR } from './lib/utils';
 import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage, saveStudioConfig } from './services/bookingService';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfDay, addMinutes, isAfter, parse } from 'date-fns';
 
@@ -904,7 +904,7 @@ Terima kasih!`;
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -20 }}
                         >
-                          <CalendarPicker onSelect={(date) => { setSelectedDate(date); setStep(3); }} selectedDate={selectedDate} />
+                          <CalendarPicker onSelect={(date) => { setSelectedDate(date); setStep(3); }} selectedDate={selectedDate} holidays={config?.holidays} />
                           <button onClick={() => setStep(1)} className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 mt-12 flex items-center gap-2">
                              Kembali ke Layanan
                           </button>
@@ -1013,7 +1013,7 @@ Terima kasih!`;
   );
 }
 
-function CalendarPicker({ onSelect, selectedDate }: { onSelect: (date: Date) => void, selectedDate: Date | null }) {
+function CalendarPicker({ onSelect, selectedDate, holidays = [] }: { onSelect: (date: Date) => void, selectedDate: Date | null, holidays?: string[] }) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -1038,7 +1038,9 @@ function CalendarPicker({ onSelect, selectedDate }: { onSelect: (date: Date) => 
         ))}
         {Array.from({ length: days[0].getDay() === 0 ? 6 : days[0].getDay() - 1 }).map((_, i) => <div key={`empty-${i}`} />)}
         {days.map(day => {
-          const disabled = !isAfter(day, startOfDay(new Date())) && !isToday(day);
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const isHoliday = holidays.includes(dateStr);
+          const disabled = (!isAfter(day, startOfDay(new Date())) && !isToday(day)) || isHoliday;
           const isSelected = isSameDay(day, selectedDate || new Date(0));
           return (
             <button
@@ -1046,17 +1048,88 @@ function CalendarPicker({ onSelect, selectedDate }: { onSelect: (date: Date) => 
               disabled={disabled}
               onClick={() => onSelect(day)}
               className={cn(
-                "h-14 w-full flex items-center justify-center text-xs font-mono transition-all rounded-sm",
+                "h-14 w-full flex items-center justify-center text-xs font-mono transition-all rounded-sm relative",
                 isSelected ? "bg-black text-white font-bold" : "hover:bg-gray-50",
-                disabled && "opacity-10 cursor-not-allowed",
+                disabled && !isHoliday && "opacity-10 cursor-not-allowed",
+                disabled && isHoliday && "bg-red-50 text-red-300 cursor-not-allowed",
                 isToday(day) && !isSelected && "border border-black font-bold"
               )}
             >
               {format(day, 'd')}
+              {isHoliday && (
+                <span className="absolute bottom-1 text-[6px] uppercase font-bold text-red-500">Libur</span>
+              )}
             </button>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function CategoryDropdown({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full border-b border-gray-100 py-2 text-sm focus:border-black outline-none bg-transparent flex justify-between items-center group text-left"
+      >
+        <span className={cn(value ? "text-black" : "text-gray-300 font-light italic")}>
+          {value || "Pilih Kategori"}
+        </span>
+        <ChevronRight className={cn("w-3 h-3 transition-transform duration-300 text-gray-300 group-hover:text-black", isOpen ? "-rotate-90" : "rotate-90")} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-100 shadow-2xl z-[60] overflow-hidden rounded-sm"
+          >
+            <div className="max-h-60 overflow-y-auto no-scrollbar py-2">
+              {options.length > 0 ? (
+                options.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      "w-full px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors flex justify-between items-center",
+                      value === opt ? "bg-black text-white" : "hover:bg-gray-50 text-gray-500 hover:text-black"
+                    )}
+                  >
+                    {opt}
+                    {value === opt && <Check className="w-3 h-3" />}
+                  </button>
+                ))
+              ) : (
+                <div className="px-6 py-4 text-[10px] text-gray-400 italic uppercase tracking-widest text-center">
+                  Belum ada kategori.
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1084,8 +1157,31 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
     aboutText: config?.aboutText || '',
     instagramHandle: config?.instagramHandle || '',
     openingTime: config?.openingTime || '09:00',
-    closingTime: config?.closingTime || '20:00'
+    closingTime: config?.closingTime || '20:00',
+    holidays: config?.holidays || [],
+    categories: config?.categories || ['Self-Photo', 'Professional', 'Event', 'Special']
   });
+
+  const [holidayInput, setHolidayInput] = React.useState('');
+  const [categoryInput, setCategoryInput] = React.useState('');
+
+  // Sync editConfig when config prop changes
+  React.useEffect(() => {
+    if (config) {
+      setEditConfig({
+        studioName: config.studioName || '',
+        whatsappNumber: config.whatsappNumber || '',
+        aboutText: config.aboutText || '',
+        instagramHandle: config.instagramHandle || '',
+        openingTime: config.openingTime || '09:00',
+        closingTime: config.closingTime || '20:00',
+        holidays: config.holidays || [],
+        categories: config.categories || ['Self-Photo', 'Professional', 'Event', 'Special'],
+        adminId: config.adminId,
+        adminPw: config.adminPw
+      });
+    }
+  }, [config]);
   const [newPkg, setNewPkg] = React.useState<Partial<Package>>({
     name: '',
     description: '',
@@ -1134,6 +1230,40 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
     setNewPkg(prev => ({
       ...prev,
       features: (prev.features || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const addHoliday = () => {
+    if (holidayInput && !editConfig.holidays?.includes(holidayInput)) {
+      setEditConfig(prev => ({
+        ...prev,
+        holidays: [...(prev.holidays || []), holidayInput]
+      }));
+      setHolidayInput('');
+    }
+  };
+
+  const removeHoliday = (date: string) => {
+    setEditConfig(prev => ({
+      ...prev,
+      holidays: (prev.holidays || []).filter(d => d !== date)
+    }));
+  };
+
+  const addCategory = () => {
+    if (categoryInput.trim() && !editConfig.categories?.includes(categoryInput.trim())) {
+      setEditConfig(prev => ({
+        ...prev,
+        categories: [...(prev.categories || []), categoryInput.trim()]
+      }));
+      setCategoryInput('');
+    }
+  };
+
+  const removeCategory = (cat: string) => {
+    setEditConfig(prev => ({
+      ...prev,
+      categories: (prev.categories || []).filter(c => c !== cat)
     }));
   };
 
@@ -1451,6 +1581,92 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
               />
             </div>
             
+            <div className="col-span-2 space-y-4 pt-10 border-t border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Manajemen Libur Kerja</span>
+              <p className="text-[10px] text-gray-400 mb-4 uppercase tracking-widest italic leading-relaxed">
+                Pilih tanggal dimana studio tidak melayani pesanan. Pelanggan tidak akan bisa memilih tanggal-tanggal ini.
+              </p>
+              
+              <div className="flex gap-4 mb-6">
+                <input 
+                  type="date"
+                  value={holidayInput}
+                  onChange={e => setHolidayInput(e.target.value)}
+                  className="flex-1 border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent font-mono"
+                />
+                <button 
+                  onClick={(e) => { e.preventDefault(); addHoliday(); }}
+                  className="px-8 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+                >
+                  Tambah Hari Libur
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(editConfig.holidays || []).length > 0 ? (
+                  (editConfig.holidays || []).sort().map(date => (
+                    <div key={date} className="flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                      <span className="text-xs font-mono font-bold">{date}</span>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); removeHoliday(date); }}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-6 text-center border border-dashed border-gray-100 rounded-sm opacity-20 text-[10px] font-bold uppercase tracking-widest">
+                    Belum ada jadwal libur yang diatur.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="col-span-2 space-y-4 pt-10 border-t border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Manajemen Kategori Layanan</span>
+              <p className="text-[10px] text-gray-400 mb-4 uppercase tracking-widest italic leading-relaxed">
+                Kategori ini akan muncul sebagai opsi saat Anda membuat paket layanan baru.
+              </p>
+              
+              <div className="flex gap-4 mb-6">
+                <input 
+                  type="text"
+                  value={categoryInput}
+                  onChange={e => setCategoryInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                  placeholder="Cth. Wisuda, Pre-wedding..."
+                  className="flex-1 border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent"
+                />
+                <button 
+                  onClick={(e) => { e.preventDefault(); addCategory(); }}
+                  className="px-8 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+                >
+                  Tambah Kategori
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {(editConfig.categories || []).length > 0 ? (
+                  (editConfig.categories || []).map(cat => (
+                    <div key={cat} className="flex items-center gap-3 px-4 py-2 bg-gray-50 border border-gray-100 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{cat}</span>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); removeCategory(cat); }}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-full py-6 text-center border border-dashed border-gray-100 rounded-sm opacity-20 text-[10px] font-bold uppercase tracking-widest">
+                    Belum ada kategori kustom.
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Admin Credentials Control */}
             <div className="col-span-2 pt-10 border-t border-gray-100">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-6">Keamanan Akses Admin</span>
@@ -1748,9 +1964,9 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Nilai (IDR)</label>
                     <input 
-                      type="number"
-                      value={newPkg.price}
-                      onChange={e => setNewPkg({...newPkg, price: Number(e.target.value)})}
+                      type="text"
+                      value={formatIDR(newPkg.price || 0)}
+                      onChange={e => setNewPkg({...newPkg, price: parseIDR(e.target.value)})}
                       className="w-full border-b border-gray-100 py-2 text-sm focus:border-black outline-none font-mono"
                     />
                   </div>
@@ -1767,16 +1983,11 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Kategori</label>
-                  <select 
-                    value={newPkg.category}
-                    onChange={e => setNewPkg({...newPkg, category: e.target.value as any})}
-                    className="w-full border-b border-gray-100 py-2 text-sm focus:border-black outline-none bg-transparent"
-                  >
-                    <option value="Self-Photo">Self-Photo</option>
-                    <option value="Profesional">Profesional</option>
-                    <option value="Event">Event</option>
-                    <option value="Spesial">Spesial</option>
-                  </select>
+                  <CategoryDropdown 
+                    options={editConfig.categories || []}
+                    value={newPkg.category || ''}
+                    onChange={(val) => setNewPkg({...newPkg, category: val})}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -1923,11 +2134,10 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Kategori (Opsional)</label>
-                    <input 
-                      value={newShowcase.category}
-                      onChange={e => setNewShowcase({...newShowcase, category: e.target.value})}
-                      placeholder="Cth. Portrait / B&W"
-                      className="w-full border-b border-gray-100 py-2 text-sm focus:border-black outline-none"
+                    <CategoryDropdown 
+                      options={editConfig.categories || []}
+                      value={newShowcase.category || ''}
+                      onChange={(val) => setNewShowcase({...newShowcase, category: val})}
                     />
                   </div>
                 </div>

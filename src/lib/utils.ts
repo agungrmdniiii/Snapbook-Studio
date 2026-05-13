@@ -13,6 +13,16 @@ export function formatCurrency(amount: number) {
   }).format(amount);
 }
 
+export function formatIDR(value: string | number): string {
+  const num = typeof value === 'string' ? value.replace(/\D/g, '') : value.toString();
+  if (!num) return '';
+  return new Intl.NumberFormat('id-ID').format(parseInt(num));
+}
+
+export function parseIDR(formattedValue: string): number {
+  return parseInt(formattedValue.replace(/\D/g, '')) || 0;
+}
+
 export function generateWhatsAppLink(phone: string, message: string) {
   // Remove non-digit characters from phone
   const cleanPhone = phone.replace(/\D/g, '');

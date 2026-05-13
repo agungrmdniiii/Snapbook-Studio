@@ -11,7 +11,7 @@
         "price": { "type": "number" },
         "duration": { "type": "number", "description": "Duration in minutes" },
         "features": { "type": "array", "items": { "type": "string" } },
-        "category": { "type": "string", "enum": ["Self-Photo", "Professional", "Event", "Special"] },
+        "category": { "type": "string", "enum": ["Self-Photo", "Professional", "Event", "Special", "Custom"] },
         "imageUrl": { "type": "string" }
       },
       "required": ["name", "price", "duration", "category"]
@@ -47,7 +47,10 @@
         "instagramHandle": { "type": "string" },
         "openingTime": { "type": "string", "description": "e.g., 09:00" },
         "closingTime": { "type": "string", "description": "e.g., 20:00" },
-        "aboutText": { "type": "string" }
+        "aboutText": { "type": "string" },
+        "adminId": { "type": "string" },
+        "adminPw": { "type": "string" },
+        "holidays": { "type": "array", "items": { "type": "string" } }
       }
     },
     "ShowcaseImage": {
@@ -74,7 +77,7 @@
       "schema": "Booking",
       "description": "Recorded customer bookings."
     },
-    "/settings/config": {
+    "/studioConfig/{docId}": {
       "schema": "StudioConfig",
       "description": "Global studio configuration."
     },

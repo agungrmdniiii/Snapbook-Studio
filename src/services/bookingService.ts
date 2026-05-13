@@ -11,8 +11,56 @@ import {
   serverTimestamp,
   addDoc
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { Booking, Package, StudioConfig, ShowcaseImage } from '../types';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+// Error Handler helper for Firebase as required by the Skill
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 const CONFIG_DOC_ID = 'main_config';
 const COLLECTIONS = {
@@ -29,14 +77,10 @@ const DEFAULT_CONFIG: StudioConfig = {
   closingTime: '21:00',
   aboutText: 'Lumina Studio is a premium photography destination.',
   adminId: 'admin',
-  adminPw: 'akuadmin'
+  adminPw: 'akuadmin',
+  holidays: [],
+  categories: ['Self-Photo', 'Professional', 'Event', 'Special']
 };
-
-// Error Handler helper for Firebase
-function handleFirestoreError(error: any, operation: string, path: string) {
-  console.error(`Firestore Error [${operation}] on ${path}:`, error);
-  throw error;
-}
 
 export async function getStudioConfig(): Promise<StudioConfig> {
   try {
@@ -49,17 +93,19 @@ export async function getStudioConfig(): Promise<StudioConfig> {
     await setDoc(docRef, DEFAULT_CONFIG);
     return DEFAULT_CONFIG;
   } catch (e) {
-    handleFirestoreError(e, 'GET', COLLECTIONS.CONFIG);
+    // We don't throw here to prevent app crash on first ever load if seeding fails
+    console.warn("Could not fetch config, using defaults", e);
     return DEFAULT_CONFIG;
   }
 }
 
 export async function saveStudioConfig(config: StudioConfig): Promise<void> {
+  const path = `${COLLECTIONS.CONFIG}/${CONFIG_DOC_ID}`;
   try {
     const docRef = doc(db, COLLECTIONS.CONFIG, CONFIG_DOC_ID);
     await setDoc(docRef, config, { merge: true });
   } catch (e) {
-    handleFirestoreError(e, 'SET', COLLECTIONS.CONFIG);
+    handleFirestoreError(e, OperationType.WRITE, path);
   }
 }
 
@@ -69,25 +115,27 @@ export async function getPackages(): Promise<Package[]> {
     const snap = await getDocs(colRef);
     return snap.docs.map(d => ({ ...d.data(), id: d.id } as Package));
   } catch (e) {
-    handleFirestoreError(e, 'LIST', COLLECTIONS.PACKAGES);
+    handleFirestoreError(e, OperationType.LIST, COLLECTIONS.PACKAGES);
     return [];
   }
 }
 
 export async function savePackage(pkg: Package): Promise<void> {
+  const path = `${COLLECTIONS.PACKAGES}/${pkg.id}`;
   try {
     const docRef = doc(db, COLLECTIONS.PACKAGES, pkg.id);
     await setDoc(docRef, pkg);
   } catch (e) {
-    handleFirestoreError(e, 'SET', COLLECTIONS.PACKAGES);
+    handleFirestoreError(e, OperationType.WRITE, path);
   }
 }
 
 export async function deletePackage(id: string): Promise<void> {
+  const path = `${COLLECTIONS.PACKAGES}/${id}`;
   try {
     await deleteDoc(doc(db, COLLECTIONS.PACKAGES, id));
   } catch (e) {
-    handleFirestoreError(e, 'DELETE', COLLECTIONS.PACKAGES);
+    handleFirestoreError(e, OperationType.DELETE, path);
   }
 }
 
@@ -106,7 +154,7 @@ export async function getBookings(): Promise<Booking[]> {
       } as Booking;
     });
   } catch (e) {
-    handleFirestoreError(e, 'LIST', COLLECTIONS.BOOKINGS);
+    handleFirestoreError(e, OperationType.LIST, COLLECTIONS.BOOKINGS);
     return [];
   }
 }
@@ -122,7 +170,7 @@ export async function createBooking(bookingData: Omit<Booking, 'id' | 'createdAt
     });
     return docRef.id;
   } catch (e) {
-    handleFirestoreError(e, 'CREATE', COLLECTIONS.BOOKINGS);
+    handleFirestoreError(e, OperationType.CREATE, COLLECTIONS.BOOKINGS);
     return '';
   }
 }
@@ -137,6 +185,7 @@ export async function checkAvailability(date: string, time: string): Promise<boo
 }
 
 export async function updateBookingStatus(bookingId: string, status: Booking['status']): Promise<void> {
+  const path = `${COLLECTIONS.BOOKINGS}/${bookingId}`;
   try {
     const docRef = doc(db, COLLECTIONS.BOOKINGS, bookingId);
     await updateDoc(docRef, {
@@ -144,7 +193,7 @@ export async function updateBookingStatus(bookingId: string, status: Booking['st
       updatedAt: serverTimestamp()
     });
   } catch (e) {
-    handleFirestoreError(e, 'UPDATE', COLLECTIONS.BOOKINGS);
+    handleFirestoreError(e, OperationType.UPDATE, path);
   }
 }
 
@@ -162,7 +211,7 @@ export async function getShowcaseImages(): Promise<ShowcaseImage[]> {
       } as ShowcaseImage;
     });
   } catch (e) {
-    handleFirestoreError(e, 'LIST', COLLECTIONS.SHOWCASE);
+    handleFirestoreError(e, OperationType.LIST, COLLECTIONS.SHOWCASE);
     return [];
   }
 }
@@ -176,16 +225,17 @@ export async function addShowcaseImage(image: Omit<ShowcaseImage, 'id' | 'create
     });
     return docRef.id;
   } catch (e) {
-    handleFirestoreError(e, 'CREATE', COLLECTIONS.SHOWCASE);
+    handleFirestoreError(e, OperationType.CREATE, COLLECTIONS.SHOWCASE);
     return '';
   }
 }
 
 export async function deleteShowcaseImage(id: string): Promise<void> {
+  const path = `${COLLECTIONS.SHOWCASE}/${id}`;
   try {
     await deleteDoc(doc(db, COLLECTIONS.SHOWCASE, id));
   } catch (e) {
-    handleFirestoreError(e, 'DELETE', COLLECTIONS.SHOWCASE);
+    handleFirestoreError(e, OperationType.DELETE, path);
   }
 }
 

@@ -1,25 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
+    
+    // -------------------------------------------------------------------------
+    // GLOBAL HELPERS
+    // -------------------------------------------------------------------------
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // -------------------------------------------------------------------------
+    // DEFAULT DENY
+    // -------------------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Studio Config: Anyone can read, only admin should write
-    // For the hidden key implementation, we'll allow writes if the structure is correct
+    // -------------------------------------------------------------------------
+    // STUDIO CONFIG
+    // -------------------------------------------------------------------------
     match /studioConfig/{docId} {
       allow read: if true;
-      allow write: if true; // Security note: in a real app, this should be restricted via Firebase Auth
+      // In this specific app, we allow unrestricted write for config management 
+      // but ideally this would be gated by an admin check if we had auth established
+      allow write: if true; 
     }
 
-    // Packages: Anyone can read, update allowed for admin management
+    // -------------------------------------------------------------------------
+    // PACKAGES
+    // -------------------------------------------------------------------------
     match /packages/{packageId} {
       allow read: if true;
       allow write: if true;
     }
 
-    // Bookings: Public can create, only admin can update status
+    // -------------------------------------------------------------------------
+    // BOOKINGS
+    // -------------------------------------------------------------------------
     match /bookings/{bookingId} {
       allow read: if true;
       allow create: if true;
@@ -27,7 +45,9 @@ service cloud.firestore {
       allow delete: if true;
     }
 
-    // Showcase: Anyone can read
+    // -------------------------------------------------------------------------
+    // SHOWCASE
+    // -------------------------------------------------------------------------
     match /showcase/{imageId} {
       allow read: if true;
       allow write: if true;
