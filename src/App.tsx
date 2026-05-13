@@ -117,6 +117,10 @@ export default function App() {
 
     const unavailable: string[] = [];
     const slotsToProcess = getAvailableSlots();
+    const isDayToday = isToday(date);
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
     slotsToProcess.forEach(slot => {
       const slotTime = parse(slot, 'HH:mm', new Date());
       const slotStart = slotTime.getHours() * 60 + slotTime.getMinutes();
@@ -126,7 +130,9 @@ export default function App() {
         return slotStart < range.end && range.start < slotEnd;
       });
 
-      if (isConflict) unavailable.push(slot);
+      const isPast = isDayToday && slotStart <= currentMinutes;
+
+      if (isConflict || isPast) unavailable.push(slot);
     });
 
     setUnavailableSlots(unavailable);
@@ -869,22 +875,45 @@ Terima kasih!`;
                                   key={pkg.id}
                                   onClick={() => { setSelectedPackage(pkg); setStep(2); }}
                                   className={cn(
-                                    "group text-left p-8 border transition-all duration-300",
+                                    "group text-left p-6 md:p-8 border transition-all duration-300 relative overflow-hidden",
                                     selectedPackage?.id === pkg.id 
                                       ? "bg-black text-white border-black" 
-                                      : "border-gray-100 hover:border-black"
+                                      : "border-gray-100 hover:border-black bg-white"
                                   )}
                                 >
-                                  <div className="flex justify-between items-center mb-4">
-                                    <div className="flex flex-col">
-                                      <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 mb-1 group-hover:text-gray-300">{pkg.category}</span>
-                                      <span className="font-bold uppercase text-sm tracking-tight">{pkg.name}</span>
+                                  <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+                                    {pkg.imageUrl && (
+                                      <div className="w-full md:w-48 aspect-video md:aspect-[4/3] overflow-hidden rounded-sm bg-gray-50 flex-shrink-0">
+                                        <img src={pkg.imageUrl} alt={pkg.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                      </div>
+                                    )}
+                                    <div className="flex-grow flex flex-col">
+                                      <div className="flex justify-between items-start mb-4">
+                                        <div className="flex flex-col">
+                                          <span className={cn("text-[8px] font-bold uppercase tracking-widest mb-1", selectedPackage?.id === pkg.id ? "text-gray-400" : "text-gray-400 group-hover:text-gray-500")}>
+                                            {pkg.category}
+                                          </span>
+                                          <span className="font-bold uppercase text-base sm:text-lg tracking-tight leading-none">{pkg.name}</span>
+                                        </div>
+                                        <span className={cn("text-xs font-mono font-bold", selectedPackage?.id === pkg.id ? "text-gray-300" : "text-gray-400 group-hover:text-black")}>
+                                          {formatCurrency(pkg.price)}
+                                        </span>
+                                      </div>
+                                      
+                                      <p className={cn("text-[11px] leading-relaxed mb-6 line-clamp-2", selectedPackage?.id === pkg.id ? "text-gray-400" : "text-gray-500")}>
+                                        {pkg.description}
+                                      </p>
+
+                                      <ul className="grid grid-cols-2 gap-x-4 gap-y-2 pt-6 border-t border-gray-100 group-hover:border-gray-200 transition-colors mt-auto">
+                                        {pkg.features.slice(0, 4).map((f, i) => (
+                                          <li key={i} className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest opacity-60">
+                                            <Check className="w-2.5 h-2.5" />
+                                            <span className="truncate">{f}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
                                     </div>
-                                    <span className="text-xs font-mono opacity-60 group-hover:opacity-100">{formatCurrency(pkg.price)}</span>
                                   </div>
-                                  <p className={cn("text-xs leading-relaxed", selectedPackage?.id === pkg.id ? "text-gray-400" : "text-gray-500")}>
-                                    {pkg.description}
-                                  </p>
                                 </button>
                               ))
                             ) : (
@@ -895,6 +924,26 @@ Terima kasih!`;
                             )}
                           </div>
                         </motion.div>
+                      )}
+
+                      {step > 1 && selectedPackage && (
+                        <div className="mb-12 p-6 border border-black/5 bg-gray-50 rounded-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
+                          {selectedPackage.imageUrl && (
+                            <div className="w-24 h-16 rounded-sm overflow-hidden flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-500">
+                              <img src={selectedPackage.imageUrl} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="flex-grow">
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1">
+                               <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">{selectedPackage.category}</span>
+                               <span className="text-xs font-bold uppercase tracking-tight">{selectedPackage.name}</span>
+                             </div>
+                             <p className="text-[10px] text-gray-500 line-clamp-1 italic">{selectedPackage.description}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0 pt-2 md:pt-0">
+                            <span className="text-xs font-mono font-bold">{formatCurrency(selectedPackage.price)}</span>
+                          </div>
+                        </div>
                       )}
 
                       {step === 2 && (
