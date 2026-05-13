@@ -306,7 +306,7 @@ Terima kasih!`;
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
-            className="fixed inset-0 z-50 bg-white md:hidden flex flex-col p-8 pt-24"
+            className="fixed inset-0 z-50 bg-white md:hidden flex flex-col p-8 pt-24 overflow-y-auto"
           >
             <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-8 right-8 w-12 h-12 border border-gray-100 rounded-full flex items-center justify-center"><X className="w-6 h-6" /></button>
             <div className="flex flex-col gap-10 text-xl font-bold uppercase tracking-[0.2em]">
@@ -613,14 +613,13 @@ Terima kasih!`;
                 <nav className="flex flex-col gap-4 text-xs font-medium uppercase tracking-widest">
                   <button onClick={() => setCurrentView('about_us')} className="hover:opacity-100 opacity-60 text-left">Tentang Kami</button>
                   <button onClick={() => setCurrentView('services')} className="hover:opacity-100 opacity-60 text-left">Layanan</button>
-                  <a href="#" className="hover:opacity-100 opacity-60">Kebijakan Privasi</a>
-                  <a href="#" className="hover:opacity-100 opacity-60">Syarat & Ketentuan</a>
+                  
                 </nav>
               </div>
               <div className="space-y-8">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Kantor</h4>
                 <address className="not-italic flex flex-col gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 opacity-60 leading-relaxed">
-                  <p>{config?.address || "Jakarta, Indonesia"}</p>
+                  <p>{config?.address || "Jl. Emo Kurniaatmaja No.14, Pasirkareumbi, Kec. Subang, Kabupaten Subang, Jawa Barat"}</p>
                   <p>{config?.phone}</p>
                   <p>{config?.email}</p>
                 </address>
@@ -630,7 +629,7 @@ Terima kasih!`;
             <div className="px-6 md:px-10 py-8 md:py-10 border-t border-gray-100 bg-gray-50/20">
               <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gray-400 italic text-center md:text-left">
-                  © 2024 {config?.studioName} — Built for Excellence
+                  © rmdniiagung
                 </span>
                 <div className="flex gap-8">
                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-gray-300">All Rights Reserved</span>
@@ -723,20 +722,25 @@ Terima kasih!`;
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className="relative w-full h-full md:grid md:grid-cols-[400px_1fr] lg:grid-cols-[450px_1fr] overflow-hidden bg-white"
+              className="relative w-full h-full md:grid md:grid-cols-[400px_1fr] lg:grid-cols-[450px_1fr] overflow-y-auto md:overflow-hidden bg-white"
             >
               {/* Left Column: Progress & Package Specs */}
-              <section className="bg-gray-50 border-r border-gray-100 p-8 md:p-12 lg:p-20 flex flex-col overflow-y-auto no-scrollbar">
-                <button 
-                  onClick={resetBooking}
-                  className="group flex items-center gap-3 text-xs font-bold uppercase tracking-widest mb-12 md:mb-20 hover:text-gray-400 transition-colors"
-                >
-                  <X className="w-4 h-4" /> Tutup
-                </button>
+              <section className="bg-gray-50 border-r border-gray-100 p-6 md:p-12 lg:p-20 flex flex-col md:overflow-y-auto no-scrollbar shrink-0">
+                <div className="flex justify-between items-center mb-10 md:mb-20">
+                  <button 
+                    onClick={resetBooking}
+                    className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:text-gray-400 transition-colors"
+                  >
+                    <X className="w-4 h-4" /> Tutup
+                  </button>
+                  <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Langkah 0{step} / 04
+                  </div>
+                </div>
 
-                <div className="space-y-12 md:space-y-20 flex-grow">
-                  {/* Step Display */}
-                  <div>
+                <div className="space-y-10 md:space-y-20 flex-grow">
+                  {/* Step Display - Hidden on small mobile */}
+                  <div className="hidden sm:block">
                     <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest block mb-4">Langkah 0{step} / 04</span>
                     <h2 className="text-3xl md:text-4xl font-serif italic">
                       {step === 1 && "Pilih Pengalaman"}
@@ -750,44 +754,56 @@ Terima kasih!`;
                   {selectedPackage && (
                     <motion.div 
                       layout
-                      className="space-y-10"
+                      className="space-y-8 md:space-y-10"
                     >
                       <div className="space-y-4">
-                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block">Koleksi Terpilih</label>
-                        <h4 className="text-2xl font-bold uppercase tracking-tight">{selectedPackage.name}</h4>
-                        <p className="text-xs text-gray-500 italic leading-relaxed">{selectedPackage.description}</p>
+                        <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 block">Koleksi Terpilih</label>
+                        <h4 className="text-xl md:text-2xl font-bold uppercase tracking-tight">{selectedPackage.name}</h4>
+                        <p className="text-[10px] md:text-xs text-gray-500 italic leading-relaxed line-clamp-2 md:line-clamp-none">{selectedPackage.description}</p>
                       </div>
 
-                      {selectedDate && (
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block">Tanggal & Waktu</label>
-                          <p className="text-sm font-mono">{format(selectedDate, 'dd MMM yyyy')} {selectedTime ? `@ ${selectedTime}` : ''}</p>
+                      {(selectedDate || selectedTime) && (
+                        <div className="space-y-2 pt-6 border-t border-gray-200/50 md:border-none">
+                          <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 block">Tanggal & Waktu</label>
+                          <p className="text-xs md:text-sm font-mono tracking-tighter">
+                            {selectedDate ? format(selectedDate, 'dd MMM yyyy') : '--'} 
+                            {selectedTime ? ` @ ${selectedTime}` : ''}
+                          </p>
                         </div>
                       )}
 
-                      <div className="pt-10 border-t border-gray-100">
-                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Total Investasi</label>
-                        <p className="text-4xl font-mono font-bold tracking-tighter">{formatCurrency(selectedPackage.price)}</p>
+                      <div className="pt-8 md:pt-10 border-t border-gray-100">
+                        <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Total Investasi</label>
+                        <p className="text-3xl md:text-4xl font-mono font-bold tracking-tighter">{formatCurrency(selectedPackage.price)}</p>
                       </div>
                     </motion.div>
                   )}
                 </div>
 
-                {/* Studio Occupancy (Mock for theme) */}
-                <div className="mt-auto">
-                  <h4 className="text-sm font-bold uppercase mb-3 tracking-widest opacity-40">Kepadatan Jadwal</h4>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="w-[85%] h-full bg-black"></div>
-                    </div>
-                    <span className="text-xs font-mono text-gray-500">85%</span>
+                {/* Reservation Guidelines */}
+                <div className="mt-12 md:mt-auto space-y-8 pb-10 md:pb-0">
+                  <div className="pt-10 border-t border-gray-100">
+                    <h4 className="text-[10px] font-bold uppercase mb-6 tracking-[0.2em] opacity-40">Panduan Reservasi</h4>
+                    <ul className="space-y-5">
+                      <li className="flex items-start gap-4">
+                        <div className="w-1.5 h-1.5 bg-black rounded-full mt-1.5 flex-shrink-0" />
+                        <p className="text-[9px] font-bold leading-relaxed text-gray-400 uppercase tracking-[0.2em]">Hadir 10 menit lebih awal untuk persiapan sesi.</p>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-1.5 h-1.5 bg-black rounded-full mt-1.5 flex-shrink-0" />
+                        <p className="text-[9px] font-bold leading-relaxed text-gray-400 uppercase tracking-[0.2em]">Satu slot berlaku untuk maksimal 4 orang (Sesuai Paket).</p>
+                      </li>
+                      <li className="flex items-start gap-4">
+                        <div className="w-1.5 h-1.5 bg-black rounded-full mt-1.5 flex-shrink-0" />
+                        <p className="text-[9px] font-bold leading-relaxed text-gray-400 uppercase tracking-[0.2em]">Konfirmasi otomatis akan dikirimkan melalui WhatsApp.</p>
+                      </li>
+                    </ul>
                   </div>
-                  <p className="text-xs text-gray-400 italic">Sangat diminati. Segera amankan slot Anda.</p>
                 </div>
               </section>
 
               {/* Right Column: Interaction Flow */}
-              <section className="bg-white p-8 md:p-12 lg:p-24 overflow-y-auto no-scrollbar flex flex-col">
+              <section className="bg-white p-6 md:p-12 lg:p-24 md:overflow-y-auto no-scrollbar flex flex-col min-h-screen md:min-h-0">
                 <div className="max-w-xl self-center w-full my-auto">
                   {bookingSuccess ? (
                     <motion.div 
@@ -1877,11 +1893,11 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                             </span>
                           </td>
                           <td className="px-6 md:px-10 py-8 text-right" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-3">
+                            <div className="flex flex-col md:flex-row justify-end gap-2 md:gap-3">
                               {b.status === 'pending' && (
                                 <button 
                                   onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                                  className="px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-all rounded-sm shadow-sm"
+                                  className="w-full md:w-auto px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-all rounded-sm shadow-sm"
                                 >
                                   Konfirmasi
                                 </button>
@@ -1889,7 +1905,7 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                               {b.status === 'confirmed' && (
                                 <button 
                                   onClick={() => handleUpdateStatus(b.id, 'completed')}
-                                  className="px-4 py-2 bg-green-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-green-600 transition-all rounded-sm shadow-sm"
+                                  className="w-full md:w-auto px-4 py-2 bg-green-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-green-600 transition-all rounded-sm shadow-sm"
                                 >
                                   Selesai
                                 </button>
@@ -1897,7 +1913,7 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                               {b.status !== 'cancelled' && b.status !== 'completed' && (
                                 <button 
                                   onClick={() => handleUpdateStatus(b.id, 'cancelled')}
-                                  className="px-4 py-2 border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-500 text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                  className="w-full md:w-auto px-4 py-2 border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-500 text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm"
                                 >
                                   Batalkan
                                 </button>
