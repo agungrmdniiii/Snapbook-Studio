@@ -16,6 +16,17 @@
       },
       "required": ["name", "price", "duration", "category"]
     },
+    "AddOn": {
+      "title": "Extra Layanan",
+      "description": "Additional services that can be added to a booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" }
+      },
+      "required": ["name", "price"]
+    },
     "Booking": {
       "title": "Client Booking",
       "description": "Information about a client's photo studio session booking.",
@@ -32,6 +43,7 @@
         "endTime": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
         "totalPrice": { "type": "number" },
+        "selectedAddOns": { "type": "array", "items": { "$ref": "AddOn" } },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -50,7 +62,8 @@
         "aboutText": { "type": "string" },
         "adminId": { "type": "string" },
         "adminPw": { "type": "string" },
-        "holidays": { "type": "array", "items": { "type": "string" } }
+        "holidays": { "type": "array", "items": { "type": "string" } },
+        "addOns": { "type": "array", "items": { "$ref": "AddOn" } }
       }
     },
     "ShowcaseImage": {

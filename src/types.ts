@@ -9,6 +9,12 @@ export interface Package {
   imageUrl?: string;
 }
 
+export interface AddOn {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface Booking {
   id: string;
   packageId: string;
@@ -21,6 +27,7 @@ export interface Booking {
   endTime: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   totalPrice: number;
+  selectedAddOns?: AddOn[];
   createdAt: any;
   updatedAt: any;
 }
@@ -36,6 +43,7 @@ export interface StudioConfig {
   adminPw?: string;
   holidays?: string[];
   categories?: string[];
+  addOns?: AddOn[];
 }
 
 export interface ShowcaseImage {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Calendar, Clock, User, Phone, Check, ChevronRight, X, Instagram, Facebook, Mail, Copy, Search, Filter, ArrowUpRight } from 'lucide-react';
-import { Package, StudioConfig, Booking, ShowcaseImage } from './types';
+import { Package, StudioConfig, Booking, ShowcaseImage, AddOn } from './types';
 import { formatCurrency, cn, generateWhatsAppLink, formatIDR, parseIDR } from './lib/utils';
 import { getPackages, getStudioConfig, createBooking, checkAvailability, getBookings, updateBookingStatus, getShowcaseImages, addShowcaseImage, deleteShowcaseImage, savePackage, deletePackage, saveStudioConfig } from './services/bookingService';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfDay, addMinutes, isAfter, parse } from 'date-fns';
@@ -49,10 +49,17 @@ export default function App() {
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
   const [unavailableSlots, setUnavailableSlots] = React.useState<string[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = React.useState<AddOn[]>([]);
   const [clientInfo, setClientInfo] = React.useState({ name: '', phone: '', email: '' });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [bookingSuccess, setBookingSuccess] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+
+  const calculateTotal = () => {
+    const base = selectedPackage?.price || 0;
+    const addOnsPrice = selectedAddOns.reduce((sum, ad) => sum + ad.price, 0);
+    return base + addOnsPrice;
+  };
 
   React.useEffect(() => {
     async function init() {
@@ -159,7 +166,8 @@ export default function App() {
         date: dateStr,
         startTime: selectedTime,
         endTime: format(addMinutes(parse(selectedTime, 'HH:mm', new Date()), selectedPackage.duration), 'HH:mm'),
-        totalPrice: selectedPackage.price,
+        totalPrice: calculateTotal(),
+        selectedAddOns: selectedAddOns
       };
 
       const bookingId = await createBooking(bookingData);
@@ -192,6 +200,7 @@ Terima kasih!`;
     setSelectedPackage(null);
     setSelectedDate(null);
     setSelectedTime(null);
+    setSelectedAddOns([]);
     setClientInfo({ name: '', phone: '', email: '' });
     setBookingSuccess(null);
     setIsBookingModalOpen(false);
@@ -734,19 +743,20 @@ Terima kasih!`;
                     <X className="w-4 h-4" /> Tutup
                   </button>
                   <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Langkah 0{step} / 04
+                    Langkah 0{step} / 05
                   </div>
                 </div>
 
                 <div className="space-y-10 md:space-y-20 flex-grow">
                   {/* Step Display - Hidden on small mobile */}
                   <div className="hidden sm:block">
-                    <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest block mb-4">Langkah 0{step} / 04</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest block mb-4">Langkah 0{step} / 05</span>
                     <h2 className="text-3xl md:text-4xl font-serif italic">
                       {step === 1 && "Pilih Pengalaman"}
                       {step === 2 && "Pilih Tanggal"}
                       {step === 3 && "Pilih Slot Waktu"}
-                      {step === 4 && "Lengkapi Detail"}
+                      {step === 4 && "Layanan Tambahan"}
+                      {step === 5 && "Lengkapi Detail"}
                     </h2>
                   </div>
 
@@ -774,7 +784,7 @@ Terima kasih!`;
 
                       <div className="pt-8 md:pt-10 border-t border-gray-100">
                         <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Total Investasi</label>
-                        <p className="text-3xl md:text-4xl font-mono font-bold tracking-tighter">{formatCurrency(selectedPackage.price)}</p>
+                        <p className="text-3xl md:text-4xl font-mono font-bold tracking-tighter">{formatCurrency(calculateTotal())}</p>
                       </div>
                     </motion.div>
                   )}
@@ -837,6 +847,20 @@ Terima kasih!`;
                           <div className="flex justify-between items-center">
                             <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Waktu</span>
                             <span className="text-sm font-mono">{selectedTime}</span>
+                          </div>
+                          <div className="flex justify-between items-start gap-4">
+                            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Add-ons</span>
+                            <span className="text-[10px] font-bold uppercase text-right leading-tight max-w-[200px]">
+                              {selectedAddOns.length > 0 ? (
+                                Object.values(selectedAddOns.reduce((acc, curr) => {
+                                  if (!acc[curr.id]) acc[curr.id] = { name: curr.name, count: 0 };
+                                  acc[curr.id].count += 1;
+                                  return acc;
+                                }, {} as Record<string, { name: string, count: number }>))
+                                .map(item => `${item.count}x ${item.name}`)
+                                .join(', ')
+                              ) : '-'}
+                            </span>
                           </div>
                           <div className="pt-8 mt-4 border-t border-gray-100">
                              <div className="flex justify-between items-center mb-4">
@@ -957,7 +981,7 @@ Terima kasih!`;
                              <p className="text-[10px] text-gray-500 line-clamp-1 italic">{selectedPackage.description}</p>
                           </div>
                           <div className="text-right flex-shrink-0 pt-2 md:pt-0">
-                            <span className="text-xs font-mono font-bold">{formatCurrency(selectedPackage.price)}</span>
+                            <span className="text-xs font-mono font-bold">{formatCurrency(calculateTotal())}</span>
                           </div>
                         </div>
                       )}
@@ -1020,7 +1044,106 @@ Terima kasih!`;
                           exit={{ opacity: 0, x: -20 }}
                           className="space-y-12"
                         >
-                          <div className="space-y-8">                            <div className="space-y-2">
+                          <div className="space-y-6">
+                            <div>
+                              <h3 className="text-2xl font-serif italic mb-1">Tambah Pengalaman</h3>
+                              <p className="text-[10px] text-gray-400 uppercase tracking-widest">Tingkatkan sesi foto Anda (Opsional)</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                              {(config?.addOns || []).length > 0 ? (
+                                (config?.addOns || []).map(addon => {
+                                  const count = selectedAddOns.filter(a => a.id === addon.id).length;
+                                  const isSelected = count > 0;
+                                  
+                                  return (
+                                    <div
+                                      key={addon.id}
+                                      className={cn(
+                                        "flex justify-between items-center p-6 border transition-all text-left",
+                                        isSelected ? "border-black bg-black text-white" : "border-gray-100 hover:border-black bg-white"
+                                      )}
+                                    >
+                                      <div>
+                                        <span className={cn("text-xs font-bold uppercase tracking-[0.1em] block mb-1", isSelected ? "text-white" : "text-black")}>{addon.name}</span>
+                                        <span className={cn("text-[10px] font-mono", isSelected ? "text-gray-400" : "text-gray-400")}>
+                                          + {formatCurrency(addon.price)}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-4 bg-white/10 p-1 rounded-full">
+                                        <button 
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            if (count > 0) {
+                                              const indexToRemove = selectedAddOns.findLastIndex(a => a.id === addon.id);
+                                              const newAddOns = [...selectedAddOns];
+                                              newAddOns.splice(indexToRemove, 1);
+                                              setSelectedAddOns(newAddOns);
+                                            }
+                                          }}
+                                          disabled={count === 0}
+                                          className={cn(
+                                            "w-8 h-8 rounded-full border flex items-center justify-center transition-all",
+                                            isSelected 
+                                              ? "border-white/20 hover:bg-white hover:text-black disabled:opacity-30" 
+                                              : "border-gray-100 hover:border-black"
+                                          )}
+                                        >
+                                          <span className="text-lg leading-none">-</span>
+                                        </button>
+                                        <span className="text-xs font-mono font-bold w-4 text-center">{count}</span>
+                                        <button 
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setSelectedAddOns([...selectedAddOns, addon]);
+                                          }}
+                                          className={cn(
+                                            "w-8 h-8 rounded-full border flex items-center justify-center transition-all",
+                                            isSelected 
+                                              ? "border-white/20 hover:bg-white hover:text-black" 
+                                              : "border-gray-100 hover:border-black"
+                                          )}
+                                        >
+                                          <span className="text-lg leading-none">+</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <div className="py-20 text-center border border-dashed border-gray-100 rounded-sm opacity-20 text-[10px] font-bold uppercase tracking-widest italic">
+                                  Belum ada add-on tersedia.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="pt-10 flex flex-col gap-6">
+                             <button 
+                               onClick={() => setStep(5)}
+                               className="w-full py-6 bg-black text-white rounded-full font-bold uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-4 hover:bg-gray-900 transition-all shadow-2xl shadow-black/20"
+                             >
+                               Lanjutkan ke Reservasi
+                               <ChevronRight className="w-4 h-4" />
+                             </button>
+                             <button onClick={() => setStep(3)} className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 flex items-center gap-2 self-center">
+                               Ubah Waktu
+                             </button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {step === 5 && (
+                        <motion.div 
+                          key="step5"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="space-y-12"
+                        >
+                          <div className="space-y-8">
+                            <div className="space-y-2">
                               <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block">Identitas Lengkap</label>
                               <input 
                                 value={clientInfo.name}
@@ -1060,8 +1183,8 @@ Terima kasih!`;
                               {isSubmitting ? 'Memproses...' : 'Selesaikan Reservasi'}
                               <ChevronRight className="w-4 h-4" />
                             </button>
-                            <button onClick={() => setStep(3)} className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 flex items-center gap-2 self-center">
-                              Sesuaikan Jadwal
+                            <button onClick={() => setStep(4)} className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 flex items-center gap-2 self-center">
+                              Ubah Layanan Tambahan
                             </button>
                           </div>
                         </motion.div>
@@ -1224,11 +1347,14 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
     openingTime: config?.openingTime || '09:00',
     closingTime: config?.closingTime || '20:00',
     holidays: config?.holidays || [],
-    categories: config?.categories || ['Self-Photo', 'Professional', 'Event', 'Special']
+    categories: config?.categories || ['Self-Photo', 'Professional', 'Event', 'Special'],
+    addOns: config?.addOns || []
   });
 
   const [holidayInput, setHolidayInput] = React.useState('');
   const [categoryInput, setCategoryInput] = React.useState('');
+  const [addOnInputName, setAddOnInputName] = React.useState('');
+  const [addOnInputPrice, setAddOnInputPrice] = React.useState('');
 
   // Sync editConfig when config prop changes
   React.useEffect(() => {
@@ -1242,6 +1368,7 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
         closingTime: config.closingTime || '20:00',
         holidays: config.holidays || [],
         categories: config.categories || ['Self-Photo', 'Professional', 'Event', 'Special'],
+        addOns: config.addOns || [],
         adminId: config.adminId,
         adminPw: config.adminPw
       });
@@ -1329,6 +1456,29 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
     setEditConfig(prev => ({
       ...prev,
       categories: (prev.categories || []).filter(c => c !== cat)
+    }));
+  };
+
+  const addAddOn = () => {
+    if (addOnInputName.trim() && addOnInputPrice) {
+      const newAddOn = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: addOnInputName.trim(),
+        price: Number(addOnInputPrice)
+      };
+      setEditConfig(prev => ({
+        ...prev,
+        addOns: [...(prev.addOns || []), newAddOn]
+      }));
+      setAddOnInputName('');
+      setAddOnInputPrice('');
+    }
+  };
+
+  const removeAddOn = (id: string) => {
+    setEditConfig(prev => ({
+      ...prev,
+      addOns: (prev.addOns || []).filter(a => a.id !== id)
     }));
   };
 
@@ -1732,6 +1882,59 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
               </div>
             </div>
 
+            <div className="col-span-2 space-y-4 pt-10 border-t border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Manajemen Layanan Tambahan (Add-ons)</span>
+              <p className="text-[10px] text-gray-400 mb-4 uppercase tracking-widest italic leading-relaxed">
+                Tambahkan opsi tambahan yang bisa dipilih pelanggan (Cth: Cetak Foto, Tambah Orang). Harga paket akan otomatis bertambah.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <input 
+                  type="text"
+                  value={addOnInputName}
+                  onChange={e => setAddOnInputName(e.target.value)}
+                  placeholder="Nama Add-on (Cth. +1 Orang)"
+                  className="border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent"
+                />
+                <input 
+                  type="text"
+                  value={addOnInputPrice ? formatIDR(Number(addOnInputPrice)) : ''}
+                  onChange={e => setAddOnInputPrice(parseIDR(e.target.value).toString())}
+                  placeholder="Harga (Cth. 50.000)"
+                  className="border-b border-gray-200 py-3 text-sm focus:border-black outline-none bg-transparent font-mono"
+                />
+                <button 
+                  onClick={(e) => { e.preventDefault(); addAddOn(); }}
+                  className="px-8 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+                >
+                  Tambah Add-on
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(editConfig.addOns || []).length > 0 ? (
+                  (editConfig.addOns || []).map(addon => (
+                    <div key={addon.id} className="flex justify-between items-center p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest block">{addon.name}</span>
+                        <span className="text-xs font-mono opacity-50">{formatCurrency(addon.price)}</span>
+                      </div>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); removeAddOn(addon.id); }}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-6 text-center border border-dashed border-gray-100 rounded-sm opacity-20 text-[10px] font-bold uppercase tracking-widest">
+                    Belum ada layanan tambahan.
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Admin Credentials Control */}
             <div className="col-span-2 pt-10 border-t border-gray-100">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-6">Keamanan Akses Admin</span>
@@ -1943,10 +2146,29 @@ function AdminSection({ onForceSeed, config, setConfig, onShowcaseUpdate, showca
                                   </div>
                                 </div>
                                 <div className="space-y-4">
-                                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Rincian Waktu</label>
-                                  <div className="space-y-2">
-                                    <p className="text-sm font-mono">{b.startTime} — {b.endTime}</p>
-                                    <p className="text-xs text-gray-400 italic">Dibuat pada: {new Date(b.createdAt).toLocaleString()}</p>
+                                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Rincian Layanan</label>
+                                  <div className="space-y-3">
+                                    <div className="p-3 bg-white border border-gray-100 rounded-sm">
+                                      <p className="text-sm font-bold uppercase tracking-tight mb-1">{b.packageName}</p>
+                                      {b.selectedAddOns && b.selectedAddOns.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                          {Object.values(b.selectedAddOns.reduce((acc, curr) => {
+                                            if (!acc[curr.id]) acc[curr.id] = { name: curr.name, count: 0 };
+                                            acc[curr.id].count += 1;
+                                            return acc;
+                                          }, {} as Record<string, { name: string, count: number }>)).map(item => (
+                                            <span key={item.name} className="text-[9px] font-bold uppercase px-2 py-0.5 bg-gray-50 text-gray-400 border border-gray-100 rounded-sm">
+                                              {item.count}x {item.name}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-mono text-gray-400">{b.startTime} — {b.endTime}</span>
+                                      <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                                      <span className="text-[10px] text-gray-300 italic">{b.date}</span>
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="space-y-4">

@@ -79,7 +79,8 @@ const DEFAULT_CONFIG: StudioConfig = {
   adminId: 'admin',
   adminPw: 'akuadmin',
   holidays: [],
-  categories: ['Self-Photo', 'Professional', 'Event', 'Special']
+  categories: ['Self-Photo', 'Professional', 'Event', 'Special'],
+  addOns: []
 };
 
 export async function getStudioConfig(): Promise<StudioConfig> {
