@@ -93,6 +93,24 @@ async function main() {
       isActive: true,
       sortOrder: 3,
     },
+    {
+      id: 'pkg-editorial-creative',
+      name: 'Editorial & Commercial',
+      description: 'Sesi foto personal branding, lookbook fashion, atau portofolio model dengan creative lighting.',
+      price: 950000,
+      duration: 90,
+      category: 'Editorial',
+      imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80',
+      features: JSON.stringify([
+        '1 - 3 orang dengan konsep custom',
+        '90 menit sesi foto eksklusif',
+        'Creative lighting & backdrop tone',
+        '20 foto retouch high-end editorial',
+        'Semua RAW & high-res softcopy',
+      ]),
+      isActive: true,
+      sortOrder: 4,
+    },
   ];
 
   for (const pkg of packagesData) {
@@ -171,6 +189,22 @@ async function main() {
       category: 'Couple',
       aspectRatio: 'portrait',
       sortOrder: 4,
+    },
+    {
+      id: 'img-5',
+      url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80',
+      title: 'Haute Couture Silhouette',
+      category: 'Editorial',
+      aspectRatio: 'portrait',
+      sortOrder: 5,
+    },
+    {
+      id: 'img-6',
+      url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+      title: 'Natural Light Aesthetics',
+      category: 'Portrait',
+      aspectRatio: 'square',
+      sortOrder: 6,
     },
   ];
 
