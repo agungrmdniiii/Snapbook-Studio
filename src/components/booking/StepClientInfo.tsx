@@ -1,5 +1,4 @@
 import React from 'react';
-import { User, Phone, Mail, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 
 interface StepClientInfoProps {
@@ -23,17 +22,19 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
   onChange,
 }) => {
   return (
-    <div className="space-y-6 max-w-xl mx-auto">
-      <div className="text-center space-y-1.5">
-        <h2 className="text-xl sm:text-2xl font-bold text-white">4. Informasi Data Pemesan</h2>
-        <p className="text-xs sm:text-sm text-zinc-400">
-          Data ini digunakan untuk identifikasi jadwal dan pengiriman softcopy foto.
+    <div className="space-y-8 max-w-xl mx-auto">
+      <div className="text-center space-y-2">
+        <h2 className="font-serif text-2xl sm:text-3xl font-normal text-stone-100">
+          04. Data Pemesan & Koordinat
+        </h2>
+        <p className="text-xs sm:text-sm text-stone-400 font-light">
+          Identitas resmi untuk penerbitan Reservation Pass dan pengiriman arsip softcopy.
         </p>
       </div>
 
-      <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-5">
+      <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
         <Input
-          label="Nama Lengkap *"
+          label="NAMA LENGKAP *"
           placeholder="Contoh: Rian Anggara"
           value={clientName}
           onChange={(e) => onChange({ clientName: e.target.value })}
@@ -41,33 +42,33 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
         />
 
         <Input
-          label="Nomor WhatsApp Aktif *"
+          label="NOMOR WHATSAPP AKTIF *"
           placeholder="Contoh: 081234567890"
           value={clientPhone}
           onChange={(e) => onChange({ clientPhone: e.target.value })}
-          helperText="Admin studio akan mengonfirmasi jadwal via nomor ini."
+          helperText="Admin studio akan mengirimkan verifikasi via nomor ini."
           required
         />
 
         <Input
-          label="Alamat Email (Opsional)"
+          label="ALAMAT EMAIL (OPSIONAL)"
           type="email"
           placeholder="Contoh: rian@email.com"
           value={clientEmail}
           onChange={(e) => onChange({ clientEmail: e.target.value })}
-          helperText="Untuk pengiriman link Google Drive backup."
+          helperText="Digunakan untuk tautan arsip Google Drive cadangan."
         />
 
-        <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-zinc-300">
-            Catatan Tambahan (Opsional)
+        <div className="space-y-2">
+          <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
+            Catatan Sesi / Permintaan Khusus
           </label>
           <textarea
             rows={3}
             value={notes}
             onChange={(e) => onChange({ notes: e.target.value })}
-            placeholder="Contoh: Bawa properti toga sendiri, sesi foto wisuda bersama orang tua."
-            className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+            placeholder="Contoh: Sesi foto wisuda bersama keluarga 4 orang, membawa properti toga."
+            className="w-full px-4 py-3 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400 focus:border-amber-400 transition-all font-light"
           />
         </div>
       </div>

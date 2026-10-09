@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MessageSquare, Bell, MoreVertical, Check, X, Clock } from 'lucide-react';
+import { MessageSquare, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { BookingData, BookingStatus } from '@/types';
 import { formatIDR, formatDateIndonesian } from '@/lib/utils';
@@ -28,7 +28,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
         return 'danger';
       case 'PENDING':
       default:
-        return 'warning';
+        return 'gold';
     }
   };
 
@@ -47,22 +47,22 @@ export const BookingTable: React.FC<BookingTableProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-850 bg-zinc-900/60 shadow-xl">
+    <div className="overflow-x-auto rounded-2xl border border-stone-800 bg-[#12100f] shadow-xl">
       <table className="w-full text-left text-sm">
-        <thead className="bg-zinc-950/80 text-zinc-400 text-xs uppercase tracking-wider border-b border-zinc-850">
+        <thead className="bg-[#0a0908] text-stone-400 text-[10px] uppercase tracking-[0.2em] border-b border-stone-800 font-mono">
           <tr>
-            <th className="px-5 py-4 font-semibold">Kode & Tanggal</th>
-            <th className="px-5 py-4 font-semibold">Data Pemesan</th>
-            <th className="px-5 py-4 font-semibold">Paket & Biaya</th>
-            <th className="px-5 py-4 font-semibold">Status</th>
-            <th className="px-5 py-4 font-semibold text-right">Aksi & WhatsApp</th>
+            <th className="px-5 py-4 font-normal">Pass Code & Schedule</th>
+            <th className="px-5 py-4 font-normal">Client Dossier</th>
+            <th className="px-5 py-4 font-normal">Edition & Rate</th>
+            <th className="px-5 py-4 font-normal">Status Pass</th>
+            <th className="px-5 py-4 font-normal text-right">Dispatch & Comms</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-850 text-zinc-300">
+        <tbody className="divide-y divide-stone-850 text-stone-300">
           {bookings.length === 0 ? (
             <tr>
-              <td colSpan={5} className="px-5 py-12 text-center text-zinc-500 text-xs">
-                Tidak ada data reservasi yang sesuai kriteria.
+              <td colSpan={5} className="px-5 py-12 text-center text-stone-400 text-xs font-light">
+                Tidak ada data reservasi atelier yang sesuai kriteria.
               </td>
             </tr>
           ) : (
@@ -89,31 +89,31 @@ export const BookingTable: React.FC<BookingTableProps> = ({
               )}`;
 
               return (
-                <tr key={item.id} className="hover:bg-zinc-850/40 transition-colors">
+                <tr key={item.id} className="hover:bg-stone-900/40 transition-colors">
                   {/* Col 1 */}
                   <td className="px-5 py-4 align-top">
-                    <span className="font-mono font-bold text-white text-xs block">
+                    <span className="font-mono font-bold text-stone-100 text-xs block tracking-wide">
                       {item.bookingCode}
                     </span>
-                    <span className="text-xs text-zinc-400 mt-0.5 block">
+                    <span className="text-xs text-stone-400 mt-0.5 block font-serif">
                       {formatDateIndonesian(item.date)}
                     </span>
-                    <span className="text-[11px] font-mono text-amber-400/90 block mt-0.5">
-                      {item.startTime} - {item.endTime} WIB
+                    <span className="text-[11px] font-mono text-amber-300 block mt-0.5">
+                      {item.startTime} – {item.endTime} WIB
                     </span>
                   </td>
 
                   {/* Col 2 */}
                   <td className="px-5 py-4 align-top">
-                    <span className="font-semibold text-white block">{item.clientName}</span>
-                    <span className="text-xs text-zinc-400 block">{item.clientPhone}</span>
+                    <span className="font-serif text-base text-stone-100 block font-normal">{item.clientName}</span>
+                    <span className="text-xs text-stone-400 block font-mono">{item.clientPhone}</span>
                     {item.clientEmail && (
-                      <span className="text-[11px] text-zinc-500 block truncate max-w-[180px]">
+                      <span className="text-[11px] text-stone-400 block truncate max-w-[180px] font-light">
                         {item.clientEmail}
                       </span>
                     )}
                     {item.notes && (
-                      <p className="text-[11px] text-zinc-400 italic mt-1 bg-zinc-950/60 p-1.5 rounded-lg border border-zinc-850">
+                      <p className="text-[11px] text-stone-400 italic mt-1.5 bg-[#0c0a09] p-2 rounded-lg border border-stone-850 font-light">
                         "{item.notes}"
                       </p>
                     )}
@@ -121,13 +121,13 @@ export const BookingTable: React.FC<BookingTableProps> = ({
 
                   {/* Col 3 */}
                   <td className="px-5 py-4 align-top">
-                    <span className="font-medium text-white block">{item.package?.name}</span>
+                    <span className="font-serif text-sm text-stone-100 block font-normal">{item.package?.name}</span>
                     {item.addOns && item.addOns.length > 0 && (
-                      <span className="text-[11px] text-zinc-400 block mt-0.5">
+                      <span className="text-[11px] text-stone-400 block mt-0.5 font-light">
                         +{item.addOns.map((a) => a.addOn.name).join(', ')}
                       </span>
                     )}
-                    <span className="text-xs font-bold text-emerald-400 block mt-1">
+                    <span className="text-xs font-serif text-amber-300 block mt-1">
                       {formatIDR(item.totalPrice)}
                     </span>
                   </td>
@@ -143,7 +143,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         <select
                           value={item.status}
                           onChange={(e) => onUpdateStatus(item.id, e.target.value as BookingStatus)}
-                          className="text-[11px] bg-zinc-950 border border-zinc-750 text-zinc-200 rounded-lg px-2 py-1 focus:outline-none focus:border-amber-500 cursor-pointer"
+                          className="text-[10px] uppercase font-mono tracking-wider bg-[#0c0a09] border border-stone-800 text-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer"
                         >
                           <option value="PENDING">Pending (Menunggu DP)</option>
                           <option value="CONFIRMED">Confirmed (Diterima)</option>
@@ -162,7 +162,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         target="_blank"
                         rel="noreferrer"
                         title="Chat WhatsApp Klien"
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-stone-200 text-xs font-medium border border-stone-800 transition-colors"
                       >
                         <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Chat WA</span>
@@ -173,7 +173,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         target="_blank"
                         rel="noreferrer"
                         title="Kirim Pesan Pengingat Jadwal (H-1)"
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-medium transition-colors"
                       >
                         <Bell className="w-3.5 h-3.5 text-amber-400" />
                         <span>Reminder H-1</span>

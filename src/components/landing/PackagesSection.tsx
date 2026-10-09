@@ -21,18 +21,18 @@ interface PackagesSectionProps {
 
 export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) => {
   return (
-    <section id="paket" className="py-24 border-t border-zinc-900 relative">
+    <section id="paket" className="py-24 border-b border-stone-850 relative bg-[#0c0a09]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Pilihan Paket Foto</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-900 border border-stone-800 text-[11px] font-semibold text-amber-300 uppercase tracking-[0.2em]">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Rate Card & Editions • Edisi 2026</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Tarif Transparan & Terjangkau
+          <h2 className="font-serif text-3xl sm:text-5xl font-normal text-stone-100 tracking-tight">
+            Pilihan Paket & <span className="italic text-amber-300">Edisi Sesi</span>
           </h2>
-          <p className="text-zinc-400 text-sm sm:text-base">
-            Tanpa biaya tersembunyi. Dapatkan seluruh softcopy foto Anda dan cetakan berkualitas tinggi langsung dari studio.
+          <p className="text-stone-400 text-sm sm:text-base font-light max-w-xl mx-auto">
+            Tarif transparan tanpa biaya tersembunyi. Dapatkan seluruh softcopy original resolusi tinggi serta cetakan fine-art langsung dari studio.
           </p>
         </div>
 
@@ -46,72 +46,85 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
               featuresList = [];
             }
 
-            const isPopular = idx === 1; // Middle package highlight
+            const isSignature = idx === 1; // Middle package highlight
 
             return (
               <div
                 key={pkg.id}
-                className={`relative rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 ${
-                  isPopular
-                    ? 'bg-zinc-900 border-2 border-amber-500/60 shadow-2xl shadow-amber-500/10 lg:-translate-y-2'
-                    : 'bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 shadow-xl'
+                className={`relative rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 ${
+                  isSignature
+                    ? 'bg-[#141210] border-2 border-amber-400/80 shadow-2xl shadow-amber-500/10 lg:-translate-y-2'
+                    : 'bg-[#12100f] border border-stone-800/90 hover:border-stone-700 shadow-xl'
                 }`}
               >
-                {isPopular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-zinc-950 text-xs font-bold uppercase tracking-wider shadow-md">
-                    Paling Favorit 🔥
+                {/* Signature Tag */}
+                {isSignature && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 text-stone-950 text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg">
+                    Signature Edition • Favorit
                   </div>
                 )}
 
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 px-2.5 py-1 rounded-lg bg-amber-500/10">
-                      {pkg.category}
+                  {/* Top Index & Meta */}
+                  <div className="flex items-center justify-between gap-2 mb-5">
+                    <span className="font-mono text-2xl font-light text-stone-500">
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <span className="flex items-center gap-1 text-xs text-zinc-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{pkg.duration} Menit Sesi</span>
+                    <span className="flex items-center gap-1.5 text-xs text-stone-400 font-mono tracking-wide">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{pkg.duration} MENIT SESI</span>
                     </span>
                   </div>
 
-                  <h3 className="text-2xl font-bold text-white mb-2">{pkg.name}</h3>
-                  <p className="text-xs text-zinc-400 min-h-[36px] leading-relaxed mb-6">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-400 block mb-1">
+                    {pkg.category}
+                  </span>
+                  
+                  <h3 className="font-serif text-2xl sm:text-3xl font-normal text-stone-100 mb-2">
+                    {pkg.name}
+                  </h3>
+                  
+                  <p className="text-xs sm:text-sm text-stone-400 min-h-[40px] leading-relaxed mb-6 font-light">
                     {pkg.description}
                   </p>
 
-                  <div className="flex items-baseline gap-1 mb-6 pb-6 border-b border-zinc-800">
-                    <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  {/* Price Block */}
+                  <div className="flex items-baseline gap-1.5 mb-6 pb-6 border-b border-stone-800">
+                    <span className="font-serif text-3xl sm:text-4xl font-normal text-stone-100 tracking-tight">
                       {formatIDR(pkg.price)}
                     </span>
-                    <span className="text-xs text-zinc-500">/ sesi</span>
+                    <span className="text-xs text-stone-400 font-mono uppercase tracking-wider">/ sesi</span>
                   </div>
 
-                  {/* Feature Bullets */}
+                  {/* Features List */}
                   <div className="space-y-3 mb-8">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                      Fasilitas Termasuk:
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">
+                      Inklusi Fasilitas:
                     </p>
                     {featuresList.map((feat, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-3 text-sm text-zinc-300">
-                        <div className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                          <Check className="w-3 h-3 stroke-[3]" />
+                      <div key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm text-stone-300">
+                        <div className="w-4 h-4 rounded-full bg-amber-400/15 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
-                        <span className="text-xs sm:text-sm leading-relaxed">{feat}</span>
+                        <span className="font-light leading-snug">{feat}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <Link href={`/book?packageId=${pkg.id}`} className="w-full">
-                  <Button
-                    variant={isPopular ? 'primary' : 'outline'}
-                    size="lg"
-                    className="w-full"
-                  >
-                    <span>Pilih Paket Ini</span>
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
+                {/* Card Action */}
+                <div className="pt-4 border-t border-stone-850">
+                  <Link href={`/book?packageId=${pkg.id}`} className="block w-full">
+                    <Button
+                      variant={isSignature ? 'gold' : 'outline'}
+                      size="md"
+                      className="w-full"
+                    >
+                      <span>Reserve Edisi Ini</span>
+                      <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             );
           })}

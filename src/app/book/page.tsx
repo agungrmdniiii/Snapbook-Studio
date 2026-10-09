@@ -25,7 +25,7 @@ export default async function BookPage({
   ]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0c0d0e]">
+    <div className="flex flex-col min-h-screen bg-[#0c0a09]">
       <Navbar
         studioName={config?.studioName}
         openingTime={config?.openingTime}

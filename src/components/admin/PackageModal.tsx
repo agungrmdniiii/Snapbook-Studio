@@ -111,20 +111,20 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   };
 
   const title = initialData
-    ? `Edit ${type === 'package' ? 'Paket Foto' : 'Add-on'}`
-    : `Tambah ${type === 'package' ? 'Paket Foto Baru' : 'Add-on Baru'}`;
+    ? `Edit ${type === 'package' ? 'Edisi Paket' : 'Add-on'}`
+    : `Tambah ${type === 'package' ? 'Edisi Paket Baru' : 'Add-on Baru'}`;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-rose-950/60 border border-rose-900 text-rose-300 text-xs rounded-xl">
+          <div className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
             {error}
           </div>
         )}
 
         <Input
-          label="Nama *"
+          label="NAMA *"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={type === 'package' ? 'Contoh: Graduation Special' : 'Contoh: Ekstra Cetak 10R'}
@@ -133,7 +133,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <Input
-            label="Harga (Rp) *"
+            label="HARGA (RP) *"
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -143,7 +143,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
           {type === 'package' ? (
             <Input
-              label="Durasi (Menit)"
+              label="DURASI (MENIT)"
               type="number"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
@@ -156,9 +156,9 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 id="addonActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 cursor-pointer"
+                className="w-4 h-4 rounded text-amber-400 accent-amber-400 cursor-pointer"
               />
-              <label htmlFor="addonActive" className="text-xs text-zinc-300 cursor-pointer">
+              <label htmlFor="addonActive" className="text-xs text-stone-300 cursor-pointer">
                 Status Aktif
               </label>
             </div>
@@ -168,14 +168,14 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         {type === 'package' && (
           <>
             <Input
-              label="Kategori"
+              label="KATEGORI"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="Contoh: Portrait, Graduation, Family"
             />
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-zinc-300">
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
                 Fitur / Fasilitas (Satu baris per poin)
               </label>
               <textarea
@@ -183,7 +183,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
                 placeholder="60 menit sesi foto&#10;10 foto diedit retouch&#10;Semua softcopy Google Drive"
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs font-mono focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-xs font-mono focus:outline-none focus:border-amber-400"
               />
             </div>
 
@@ -193,9 +193,9 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 id="pkgActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 cursor-pointer"
+                className="w-4 h-4 rounded text-amber-400 accent-amber-400 cursor-pointer"
               />
-              <label htmlFor="pkgActive" className="text-xs text-zinc-300 cursor-pointer">
+              <label htmlFor="pkgActive" className="text-xs text-stone-300 cursor-pointer">
                 Paket Aktif & Tampil di Publik
               </label>
             </div>
@@ -203,21 +203,21 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         )}
 
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-zinc-300">Deskripsi Singkat</label>
+          <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">Deskripsi Singkat</label>
           <textarea
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Deskripsi layanan..."
-            className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:outline-none focus:border-amber-500"
+            className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-xs focus:outline-none focus:border-amber-400"
           />
         </div>
 
-        <div className="pt-4 flex items-center justify-end gap-2 border-t border-zinc-800">
+        <div className="pt-4 flex items-center justify-end gap-2 border-t border-stone-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" size="sm" isLoading={isLoading}>
+          <Button type="submit" variant="gold" size="sm" isLoading={isLoading}>
             Simpan Data
           </Button>
         </div>

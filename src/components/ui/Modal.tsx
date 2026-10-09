@@ -46,24 +46,25 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       <div
         className={cn(
-          'relative w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl z-10 my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200',
+          'relative w-full bg-[#141211] border border-stone-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200',
           maxWidths[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800/80 mb-5">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-800 mb-5">
           {title ? (
-            <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>
+            <h3 className="font-serif text-xl font-normal text-stone-100">{title}</h3>
           ) : (
             <div />
           )}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="p-1 rounded-full text-stone-400 hover:text-stone-100 hover:bg-stone-800/60 transition-colors cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>

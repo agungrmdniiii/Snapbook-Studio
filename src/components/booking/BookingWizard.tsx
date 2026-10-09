@@ -8,7 +8,7 @@ import { StepAddOns } from './StepAddOns';
 import { StepClientInfo } from './StepClientInfo';
 import { StepConfirmation } from './StepConfirmation';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 
 interface BookingWizardProps {
   packages: PackageItem[];
@@ -41,11 +41,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [whatsappUrl, setWhatsappUrl] = useState<string>('');
 
   const stepsList = [
-    { num: 1, label: 'Paket' },
-    { num: 2, label: 'Jadwal' },
-    { num: 3, label: 'Add-ons' },
-    { num: 4, label: 'Data Diri' },
-    { num: 5, label: 'Selesai' },
+    { num: 1, label: 'Collection', stepNum: '01' },
+    { num: 2, label: 'Schedule', stepNum: '02' },
+    { num: 3, label: 'Add-ons', stepNum: '03' },
+    { num: 4, label: 'Details', stepNum: '04' },
+    { num: 5, label: 'Pass', stepNum: '05' },
   ];
 
   const handleToggleAddOn = (id: string) => {
@@ -59,7 +59,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
     if (currentStep === 1) {
       if (!selectedPackage) {
-        setErrorMessage('Silakan pilih salah satu paket foto terlebih dahulu.');
+        setErrorMessage('Silakan pilih salah satu paket edisi foto terlebih dahulu.');
         return;
       }
       setCurrentStep(2);
@@ -124,18 +124,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       setWhatsappUrl(data.whatsappUrl);
       setCurrentStep(5);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      setErrorMessage(err.message || 'Terjadi kesalahan saat memproses reservasi.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      {/* Progress Steps Header */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      {/* Wizard Masthead */}
+      <div className="text-center mb-10 space-y-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-900 border border-stone-800 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300">
+          <Sparkles className="w-3 h-3 text-amber-400" />
+          <span>Atelier Session Reservation</span>
+        </div>
+        <h1 className="font-serif text-3xl sm:text-4xl font-normal text-stone-100">
+          Reservasi Sesi Studio
+        </h1>
+        <p className="text-stone-400 text-xs sm:text-sm font-light">
+          Ikuti langkah mudah di bawah untuk mengamankan slot waktu privat Anda.
+        </p>
+      </div>
+
+      {/* Progress Steps Header - Editorial Step Indicator */}
       {currentStep < 5 && (
-        <div className="mb-10">
-          <div className="flex items-center justify-between max-w-xl mx-auto">
+        <div className="mb-12">
+          <div className="flex items-center justify-between max-w-xl mx-auto px-2">
             {stepsList.slice(0, 4).map((s, idx) => {
               const isPast = currentStep > s.num;
               const isCurrent = currentStep === s.num;
@@ -143,19 +157,23 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 <div key={s.num} className="flex items-center">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+                      className={`w-9 h-9 rounded-full flex items-center justify-center font-mono text-xs transition-all ${
                         isPast
-                          ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20'
+                          ? 'bg-amber-400 text-stone-950 font-bold shadow-md shadow-amber-400/20'
                           : isCurrent
-                          ? 'bg-amber-500/20 border-2 border-amber-500 text-amber-400'
-                          : 'bg-zinc-800 text-zinc-500'
+                          ? 'border-2 border-amber-400 text-amber-300 bg-amber-400/10 font-bold'
+                          : 'border border-stone-800 bg-stone-900 text-stone-400'
                       }`}
                     >
-                      {isPast ? <Check className="w-4 h-4 stroke-[3]" /> : s.num}
+                      {isPast ? <Check className="w-4 h-4 stroke-[3]" /> : s.stepNum}
                     </div>
                     <span
-                      className={`text-[11px] font-medium mt-1.5 ${
-                        isCurrent || isPast ? 'text-zinc-200 font-semibold' : 'text-zinc-500'
+                      className={`text-[10px] uppercase tracking-[0.15em] mt-2 font-medium ${
+                        isCurrent
+                          ? 'text-amber-300 font-bold'
+                          : isPast
+                          ? 'text-stone-200'
+                          : 'text-stone-400'
                       }`}
                     >
                       {s.label}
@@ -164,8 +182,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
                   {idx < 3 && (
                     <div
-                      className={`w-12 sm:w-20 h-0.5 mx-2 transition-colors ${
-                        currentStep > idx + 1 ? 'bg-amber-500' : 'bg-zinc-800'
+                      className={`w-12 sm:w-20 h-[1px] mx-2 -mt-4 transition-colors ${
+                        currentStep > idx + 1 ? 'bg-amber-400/80' : 'bg-stone-800'
                       }`}
                     />
                   )}
@@ -178,7 +196,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="mb-6 p-4 rounded-2xl bg-rose-950/60 border border-rose-900 text-rose-300 text-sm flex items-center justify-between">
+        <div className="mb-8 p-4 rounded-xl bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs sm:text-sm flex items-center justify-between max-w-2xl mx-auto">
           <span>{errorMessage}</span>
           <button
             onClick={() => setErrorMessage(null)}
@@ -240,7 +258,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Navigation Footer Controls */}
       {currentStep < 5 && (
-        <div className="mt-12 pt-6 border-t border-zinc-800 flex items-center justify-between max-w-2xl mx-auto">
+        <div className="mt-14 pt-6 border-t border-stone-850 flex items-center justify-between max-w-2xl mx-auto">
           {currentStep > 1 ? (
             <Button
               type="button"
@@ -249,7 +267,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               onClick={handleBack}
               disabled={isSubmitting}
             >
-              <ArrowLeft className="w-4 h-4 mr-1" />
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
               <span>Kembali</span>
             </Button>
           ) : (
@@ -258,12 +276,13 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
           <Button
             type="button"
+            variant="gold"
             size="md"
             onClick={handleNext}
             isLoading={isSubmitting}
           >
-            <span>{currentStep === 4 ? 'Konfirmasi & Simpan Booking' : 'Lanjutkan'}</span>
-            {currentStep < 4 && <ArrowRight className="w-4 h-4 ml-1" />}
+            <span>{currentStep === 4 ? 'Konfirmasi & Terbitkan Pass' : 'Langkah Berikutnya'}</span>
+            {currentStep < 4 && <ArrowRight className="w-4 h-4 ml-1.5" />}
           </Button>
         </div>
       )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 import { AddOnItem } from '@/types';
 import { formatIDR } from '@/lib/utils';
 
@@ -21,47 +21,49 @@ export const StepAddOns: React.FC<StepAddOnsProps> = ({
   const total = basePrice + addOnsTotal;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="text-center space-y-1.5">
-        <h2 className="text-xl sm:text-2xl font-bold text-white">3. Layanan Tambahan (Add-ons)</h2>
-        <p className="text-xs sm:text-sm text-zinc-400">
-          Opsional: Tingkatkan pengalaman foto Anda dengan layanan ekstra favorit studio.
+    <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="text-center space-y-2">
+        <h2 className="font-serif text-2xl sm:text-3xl font-normal text-stone-100">
+          03. Layanan Tambahan (Add-ons)
+        </h2>
+        <p className="text-xs sm:text-sm text-stone-400 font-light">
+          Opsional: Personalisasikan sesi Anda dengan cetakan fine-art, background ekstra, atau durasi tambahan.
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {addOns.map((addon) => {
           const isSelected = selectedAddOnIds.includes(addon.id);
           return (
             <div
               key={addon.id}
               onClick={() => onToggleAddOn(addon.id)}
-              className={`p-4.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+              className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
                 isSelected
-                  ? 'bg-amber-500/10 border-amber-500 shadow-md shadow-amber-500/10'
-                  : 'bg-zinc-900/80 border-zinc-800 hover:border-zinc-700'
+                  ? 'bg-[#151311] border-amber-400 shadow-md shadow-amber-400/10'
+                  : 'bg-[#12100f] border-stone-800 hover:border-stone-700'
               }`}
             >
-              <div className="flex items-start gap-3.5">
+              <div className="flex items-start gap-4">
                 <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                  className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
                     isSelected
-                      ? 'bg-amber-500 border-amber-500 text-zinc-950'
-                      : 'border-zinc-700 bg-zinc-800 text-transparent'
+                      ? 'bg-amber-400 border-amber-400 text-stone-950'
+                      : 'border-stone-700 bg-stone-900 text-transparent'
                   }`}
                 >
-                  <Check className="w-4 h-4 stroke-[3]" />
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">{addon.name}</h4>
+                  <h4 className="font-serif text-base font-normal text-stone-100">{addon.name}</h4>
                   {addon.description && (
-                    <p className="text-xs text-zinc-400 mt-0.5">{addon.description}</p>
+                    <p className="text-xs text-stone-400 mt-0.5 font-light">{addon.description}</p>
                   )}
                 </div>
               </div>
 
               <div className="text-right shrink-0">
-                <span className="text-sm font-bold text-amber-400">
+                <span className="font-serif text-base font-normal text-amber-300">
                   +{formatIDR(addon.price)}
                 </span>
               </div>
@@ -71,14 +73,16 @@ export const StepAddOns: React.FC<StepAddOnsProps> = ({
       </div>
 
       {/* Live Total Calculation Bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center justify-between">
+      <div className="bg-[#12100f] border border-stone-800 rounded-2xl p-5 flex items-center justify-between">
         <div>
-          <p className="text-xs text-zinc-400">Estimasi Subtotal Sementara</p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
+            Estimasi Subtotal Sesi
+          </p>
+          <p className="text-xs text-stone-400 font-light mt-0.5">
             Paket ({formatIDR(basePrice)}) + Add-ons ({formatIDR(addOnsTotal)})
           </p>
         </div>
-        <p className="text-xl font-extrabold text-white">{formatIDR(total)}</p>
+        <p className="font-serif text-2xl sm:text-3xl font-normal text-stone-100">{formatIDR(total)}</p>
       </div>
     </div>
   );

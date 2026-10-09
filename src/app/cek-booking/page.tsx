@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Calendar, Clock, MapPin, CheckCircle, AlertCircle, Phone, ArrowLeft } from 'lucide-react';
+import { Search, Calendar, Clock, MapPin, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
@@ -41,7 +41,7 @@ function CekBookingContent() {
   const handleSearch = async (searchQuery?: string) => {
     const q = (searchQuery ?? query).trim();
     if (!q) {
-      setError('Masukkan kode booking (misal: SB-20261009-XXXX) atau nomor WhatsApp.');
+      setError('Masukkan kode pass reservasi (misal: SB-20261009-XXXX) atau nomor WhatsApp.');
       return;
     }
 
@@ -74,40 +74,40 @@ function CekBookingContent() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
-        return <Badge variant="success">✓ Jadwal Terkonfirmasi</Badge>;
+        return <Badge variant="success">✓ Sesi Terkonfirmasi</Badge>;
       case 'COMPLETED':
         return <Badge variant="info">Sesi Selesai</Badge>;
       case 'CANCELLED':
         return <Badge variant="danger">Dibatalkan</Badge>;
       case 'PENDING':
       default:
-        return <Badge variant="warning">Menunggu Konfirmasi DP</Badge>;
+        return <Badge variant="gold">Menunggu Verifikasi Admin</Badge>;
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0c0d0e]">
+    <div className="flex flex-col min-h-screen bg-[#0c0a09]">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-stone-400 hover:text-amber-300 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Beranda</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
+            <span>Kembali ke Atelier</span>
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-3">
-            Cek Status Reservasi Anda
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-stone-100 mt-4">
+            Verifikasi Reservation Pass
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Pantau status verifikasi, jadwal kedatangan, dan detail sesi foto studio Anda.
+          <p className="text-xs sm:text-sm text-stone-400 mt-1 font-light">
+            Pantau status jadwal terkurasi, panduan kedatangan atelier, dan rincian edisi pemotretan Anda.
           </p>
         </div>
 
         {/* Search Box */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl mb-8">
+        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-7 shadow-xl mb-8">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -116,92 +116,99 @@ function CekBookingContent() {
             className="flex flex-col sm:flex-row gap-3"
           >
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Masukkan Kode Booking (SB-...) atau No. WhatsApp"
-                className="w-full pl-11 pr-4 py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                placeholder="Masukkan Kode Pass (SB-...) atau No. WhatsApp"
+                className="w-full pl-11 pr-4 py-3.5 bg-[#0c0a09] border border-stone-800 rounded-2xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-light"
               />
             </div>
-            <Button type="submit" size="lg" isLoading={isLoading} className="shrink-0">
-              <span>Lacak Jadwal</span>
+            <Button type="submit" variant="gold" size="lg" isLoading={isLoading} className="shrink-0">
+              <span>Lacak Jadwal Pass</span>
             </Button>
           </form>
 
           {error && (
-            <div className="mt-4 p-4 rounded-xl bg-rose-950/40 border border-rose-900 text-rose-300 text-xs flex items-center gap-2">
+            <div className="mt-4 p-4 rounded-xl bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
         </div>
 
-        {/* Search Result Card */}
+        {/* Search Result Card - Editorial Pass */}
         {result && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in duration-300">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+          <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-400" />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-850">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
-                  Kode Reservasi
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">
+                  Official Reservation Pass
                 </span>
-                <h3 className="text-2xl font-mono font-extrabold text-white mt-0.5">
+                <h3 className="font-mono text-2xl font-bold text-stone-100 mt-1 tracking-wider">
                   {result.bookingCode}
                 </h3>
-                <p className="text-xs text-zinc-400 mt-1">Atas nama: <span className="text-white font-medium">{result.clientName}</span></p>
+                <p className="text-xs text-stone-400 mt-1 font-light">
+                  Nama Tamu:{' '}
+                  <span className="text-stone-200 font-medium">{result.clientName}</span>
+                </p>
               </div>
               <div>{getStatusBadge(result.status)}</div>
             </div>
 
             {/* Session Time & Location */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-850 space-y-1.5">
-                <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-                  <Calendar className="w-4 h-4" />
-                  <span>Jadwal Sesi Foto</span>
+              <div className="p-5 rounded-2xl bg-[#0c0a09] border border-stone-800 space-y-1.5">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 uppercase tracking-[0.2em]">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Jadwal Sesi Pemotretan</span>
                 </div>
-                <p className="text-base font-bold text-white">
+                <p className="font-serif text-lg font-normal text-stone-100">
                   {formatDateIndonesian(result.date)}
                 </p>
-                <p className="text-xs text-zinc-400 font-mono">
-                  Pukul {result.startTime} - {result.endTime} WIB ({result.packageDuration} menit)
+                <p className="text-xs text-stone-400 font-mono">
+                  Pukul {result.startTime} – {result.endTime} WIB ({result.packageDuration} Menit)
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-850 space-y-1.5">
-                <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-                  <MapPin className="w-4 h-4" />
-                  <span>Lokasi Studio</span>
+              <div className="p-5 rounded-2xl bg-[#0c0a09] border border-stone-800 space-y-1.5">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 uppercase tracking-[0.2em]">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Lokasi Studio Atelier</span>
                 </div>
-                <p className="text-sm font-bold text-white">{result.studio.name}</p>
-                <p className="text-xs text-zinc-400 leading-snug">{result.studio.address}</p>
+                <p className="font-serif text-base font-normal text-stone-100">{result.studio.name}</p>
+                <p className="text-xs text-stone-400 font-light leading-snug">{result.studio.address}</p>
               </div>
             </div>
 
             {/* Package & Addons breakdown */}
-            <div className="border-t border-zinc-800 pt-5 space-y-2 text-xs sm:text-sm">
+            <div className="border-t border-stone-850 pt-5 space-y-2.5 text-xs sm:text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Paket Foto</span>
-                <span className="font-semibold text-white">{result.packageName}</span>
+                <span className="text-stone-400 uppercase tracking-wider text-[11px]">Edisi Paket</span>
+                <span className="font-serif text-base text-stone-100">{result.packageName}</span>
               </div>
               {result.addOns.length > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400">Layanan Ekstra (Add-ons)</span>
-                  <span className="font-semibold text-white">{result.addOns.join(', ')}</span>
+                  <span className="text-stone-400 uppercase tracking-wider text-[11px]">Add-ons</span>
+                  <span className="font-light text-stone-200">{result.addOns.join(', ')}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between pt-3 border-t border-zinc-800 text-sm sm:text-base font-bold">
-                <span className="text-zinc-300">Total Biaya</span>
-                <span className="text-emerald-400">{formatIDR(result.totalPrice)}</span>
+              <div className="flex items-center justify-between pt-4 border-t border-stone-850 font-normal">
+                <span className="font-serif text-base text-stone-300">Total Tarif Sesi</span>
+                <span className="font-serif text-2xl text-amber-300">{formatIDR(result.totalPrice)}</span>
               </div>
             </div>
 
             {/* Arrival Rules Guidance */}
-            <div className="p-4.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 space-y-1">
-              <p className="font-bold text-amber-400">📌 Panduan Kedatangan:</p>
-              <p>• Harap hadir 10–15 menit sebelum waktu sesi ({result.startTime} WIB) untuk briefing & persiapan.</p>
-              <p>• Jika memerlukan bantuan atau ingin bertanya ke admin, hubungi WhatsApp: +{result.studio.whatsappNumber}</p>
+            <div className="p-5 rounded-2xl bg-amber-400/[0.06] border border-amber-400/20 text-xs text-stone-300 space-y-1.5 font-light">
+              <p className="font-bold uppercase tracking-wider text-amber-400 text-[11px]">
+                Protocol Kedatangan:
+              </p>
+              <p>• Harap hadir 10–15 menit sebelum slot ({result.startTime} WIB) untuk touch-up & briefing gaya.</p>
+              <p>• Untuk pertanyaan mendesak, silakan hubungi WhatsApp Studio: +{result.studio.whatsappNumber}</p>
             </div>
           </div>
         )}
@@ -216,8 +223,8 @@ export default function CekBookingPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0c0d0e] flex items-center justify-center text-zinc-400">
-          Memuat pencarian...
+        <div className="min-h-screen bg-[#0c0a09] flex items-center justify-center text-stone-400 font-mono text-xs">
+          MEMUAT VERIFIKASI PASS...
         </div>
       }
     >

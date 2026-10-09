@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Image as ImageIcon, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -90,12 +90,15 @@ export default function AdminGalleryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white">Portofolio Galeri Studio</h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Foto yang aktif di sini akan tampil di section portofolio landing page publik.
+          <div className="text-[10px] uppercase font-mono tracking-[0.25em] text-amber-400 mb-1">
+            Visual Archive Curation
+          </div>
+          <h1 className="font-serif text-3xl font-normal text-stone-100">Arsip & Portofolio Galeri Studio</h1>
+          <p className="text-xs text-stone-400 mt-1 font-light">
+            Foto yang terdaftar di sini akan tampil di section portofolio landing page publik.
           </p>
         </div>
-        <Button size="sm" onClick={() => setIsModalOpen(true)}>
+        <Button variant="gold" size="sm" onClick={() => setIsModalOpen(true)}>
           <Plus className="w-3.5 h-3.5 mr-1" />
           <span>Tambah Foto Baru</span>
         </Button>
@@ -103,42 +106,45 @@ export default function AdminGalleryPage() {
 
       {/* Gallery Grid */}
       {isLoading ? (
-        <div className="p-16 text-center text-xs text-zinc-400 bg-zinc-900/40 rounded-2xl border border-zinc-850">
-          Memuat galeri foto...
+        <div className="p-16 text-center text-xs text-stone-400 bg-[#12100f] rounded-2xl border border-stone-850 font-light">
+          Memuat arsip foto atelier...
         </div>
       ) : images.length === 0 ? (
-        <div className="p-16 text-center text-xs text-zinc-500 bg-zinc-900/40 rounded-2xl border border-zinc-850">
+        <div className="p-16 text-center text-xs text-stone-400 bg-[#12100f] rounded-2xl border border-stone-850 font-light">
           Belum ada foto portofolio. Klik tombol "Tambah Foto Baru" di atas.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {images.map((img) => (
+          {images.map((img, idx) => (
             <div
               key={img.id}
-              className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-xl aspect-[3/4] flex flex-col justify-end"
+              className="group relative rounded-2xl overflow-hidden bg-[#12100f] border border-stone-800 shadow-xl aspect-[3/4] flex flex-col justify-end"
             >
               <img
                 src={img.url}
                 alt={img.title || 'Foto Portofolio'}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter contrast-[1.04]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent p-4 flex flex-col justify-between">
-                <div className="flex justify-end">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a09] via-transparent to-transparent p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-mono text-stone-300 bg-[#0c0a09]/80 px-2 py-0.5 rounded border border-stone-800">
+                    N° {String(idx + 1).padStart(2, '0')}
+                  </span>
                   <button
                     onClick={() => handleDelete(img.id)}
                     title="Hapus Foto"
-                    className="p-1.5 rounded-lg bg-zinc-900/80 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/60 backdrop-blur-sm transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-[#0c0a09]/80 text-stone-400 hover:text-rose-400 hover:bg-rose-950/60 border border-stone-800 backdrop-blur-sm transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 px-2 py-0.5 rounded bg-zinc-900/80">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 px-2 py-0.5 rounded bg-[#0c0a09]/80">
                     {img.category}
                   </span>
-                  <p className="text-xs font-semibold text-white mt-1.5 truncate">
-                    {img.title || 'Tanpa Judul'}
+                  <p className="font-serif text-sm font-normal text-stone-100 mt-1.5 truncate">
+                    {img.title || 'Untitled Session'}
                   </p>
                 </div>
               </div>
@@ -151,17 +157,17 @@ export default function AdminGalleryPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Tambah Foto Portofolio"
+        title="Kurasi Foto Baru ke Arsip"
       >
         <form onSubmit={handleAddImage} className="space-y-4">
           {error && (
-            <div className="p-3 bg-rose-950/60 border border-rose-900 text-rose-300 text-xs rounded-xl">
+            <div className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
               {error}
             </div>
           )}
 
           <Input
-            label="URL Gambar Foto *"
+            label="URL GAMBAR FOTO *"
             placeholder="https://images.unsplash.com/... atau URL gambar lainnya"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -169,7 +175,7 @@ export default function AdminGalleryPage() {
           />
 
           <Input
-            label="Judul Foto (Opsional)"
+            label="JUDUL FOTO (OPSIONAL)"
             placeholder="Contoh: Graduation Session 2026"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -177,11 +183,11 @@ export default function AdminGalleryPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-zinc-300">Kategori</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">Kategori</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
               >
                 <option value="Portrait">Portrait</option>
                 <option value="Graduation">Graduation</option>
@@ -193,11 +199,11 @@ export default function AdminGalleryPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-zinc-300">Orientasi</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">Orientasi</label>
               <select
                 value={aspectRatio}
                 onChange={(e) => setAspectRatio(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
               >
                 <option value="portrait">Portrait (3:4)</option>
                 <option value="square">Square (1:1)</option>
@@ -206,11 +212,11 @@ export default function AdminGalleryPage() {
             </div>
           </div>
 
-          <div className="pt-4 flex items-center justify-end gap-2 border-t border-zinc-800">
+          <div className="pt-4 flex items-center justify-end gap-2 border-t border-stone-800">
             <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
               Batal
             </Button>
-            <Button type="submit" size="sm" isLoading={isSubmitting}>
+            <Button type="submit" variant="gold" size="sm" isLoading={isSubmitting}>
               Tambahkan Foto
             </Button>
           </div>
