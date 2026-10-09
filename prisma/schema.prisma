@@ -1,0 +1,93 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model StudioConfig {
+  id              String   @id @default("default")
+  studioName      String   @default("Snapbook Studio")
+  whatsappNumber  String   @default("6281234567890")
+  instagramHandle String   @default("@snapbookstudio")
+  openingTime     String   @default("09:00")
+  closingTime     String   @default("20:00")
+  slotDuration    Int      @default(60)
+  address         String   @default("Jl. Studio Foto No. 10, Jakarta")
+  aboutText       String   @default("Studio foto profesional untuk mengabadikan momen berharga Anda dengan hasil estetik dan memukau.")
+  updatedAt       DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Package {
+  id          String         @id @default(cuid())
+  name        String
+  description String
+  price       Int
+  duration    Int
+  category    String
+  imageUrl    String?
+  features    String
+  isActive    Boolean        @default(true)
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  bookings    Booking[]
+}
+
+model AddOn {
+  id            String         @id @default(cuid())
+  name          String
+  price         Int
+  description   String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookingAddOns BookingAddOn[]
+}
+
+model Booking {
+  id          String         @id @default(cuid())
+  bookingCode String         @unique
+  packageId   String
+  package     Package        @relation(fields: [packageId], references: [id])
+  clientName  String
+  clientEmail String
+  clientPhone String
+  date        String
+  startTime   String
+  endTime     String
+  status      String         @default("PENDING")
+  totalPrice  Int
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  addOns      BookingAddOn[]
+}
+
+model BookingAddOn {
+  id             String   @id @default(cuid())
+  bookingId      String
+  booking        Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOnId        String
+  addOn          AddOn    @relation(fields: [addOnId], references: [id])
+  priceAtBooking Int
+}
+
+model ShowcaseImage {
+  id          String   @id @default(cuid())
+  url         String
+  title       String?
+  category    String   @default("General")
+  aspectRatio String   @default("portrait")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
