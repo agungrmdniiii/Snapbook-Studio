@@ -143,7 +143,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         <select
                           value={item.status}
                           onChange={(e) => onUpdateStatus(item.id, e.target.value as BookingStatus)}
-                          className="text-[11px] bg-[#0a0a0c] border border-neutral-800 text-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:border-neutral-500 cursor-pointer"
+                          className="text-[11px] bg-[#0a0a0c] border border-neutral-800 text-neutral-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors duration-150"
                         >
                           <option value="PENDING">Pending (Menunggu DP)</option>
                           <option value="CONFIRMED">Confirmed (Diterima)</option>
@@ -162,7 +162,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         target="_blank"
                         rel="noreferrer"
                         title="Chat WhatsApp Klien"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-all duration-150 active:scale-[0.98] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
                       >
                         <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Chat WA</span>
@@ -173,7 +173,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                         target="_blank"
                         rel="noreferrer"
                         title="Kirim Pesan Pengingat Jadwal (H-1)"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-all duration-150 active:scale-[0.98] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
                       >
                         <Bell className="w-3.5 h-3.5 text-neutral-400" />
                         <span>Reminder H-1</span>

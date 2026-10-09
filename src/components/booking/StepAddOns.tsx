@@ -37,8 +37,17 @@ export const StepAddOns: React.FC<StepAddOnsProps> = ({
           return (
             <div
               key={addon.id}
+              role="checkbox"
+              aria-checked={isSelected}
+              tabIndex={0}
               onClick={() => onToggleAddOn(addon.id)}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onToggleAddOn(addon.id);
+                }
+              }}
+              className={`p-5 rounded-2xl border transition-all duration-150 cursor-pointer flex items-center justify-between gap-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-300 active:scale-[0.99] motion-reduce:active:scale-100 ${
                 isSelected
                   ? 'bg-[#15151a] border-white'
                   : 'bg-[#101013] border-neutral-800 hover:border-neutral-700'

@@ -204,7 +204,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       )}
 
       {/* Dynamic Step View */}
-      <div className="py-2">
+      <div key={currentStep} className="py-2 animate-studio-fade">
         {currentStep === 1 && (
           <StepPackage
             packages={packages}

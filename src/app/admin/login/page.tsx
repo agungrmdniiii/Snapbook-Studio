@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-8 animate-in fade-in duration-300">
+      <div className="w-full max-w-md space-y-8 animate-studio-fade">
         {/* Brand */}
         <div className="text-center space-y-2">
           <span className="font-serif text-2xl uppercase tracking-[0.16em] text-white block">

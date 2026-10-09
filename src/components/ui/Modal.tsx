@@ -51,7 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
       />
       <div
         className={cn(
-          'relative w-full bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 my-8 overflow-hidden animate-in fade-in duration-200',
+          'relative w-full bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 my-8 overflow-hidden animate-studio-fade',
           maxWidths[maxWidth]
         )}
       >
@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="p-1 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
             aria-label="Close"
           >
             <X className="w-5 h-5" />

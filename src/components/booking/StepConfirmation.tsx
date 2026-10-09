@@ -25,7 +25,7 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="max-w-xl mx-auto space-y-8 animate-studio-fade">
       {/* Header */}
       <div className="text-center space-y-3">
         <div className="w-14 h-14 rounded-full border border-neutral-700 bg-neutral-900 mx-auto flex items-center justify-center text-white">
@@ -113,7 +113,7 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
           >
             <button
               type="button"
-              className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 shadow-lg transition-colors cursor-pointer"
+              className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 shadow-lg transition-all duration-150 cursor-pointer active:scale-[0.98] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
               <span>Konfirmasi via WhatsApp Studio</span>

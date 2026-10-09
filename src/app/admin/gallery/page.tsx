@@ -120,7 +120,7 @@ export default function AdminGalleryPage() {
               <img
                 src={img.url}
                 alt={img.title || 'Foto Portofolio'}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:group-hover:scale-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-between">
                 <div className="flex justify-end">
@@ -181,7 +181,7 @@ export default function AdminGalleryPage() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 cursor-pointer"
+                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors duration-150"
               >
                 <option value="Portrait">Portrait</option>
                 <option value="Graduation">Graduation</option>
@@ -197,7 +197,7 @@ export default function AdminGalleryPage() {
               <select
                 value={aspectRatio}
                 onChange={(e) => setAspectRatio(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 cursor-pointer"
+                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors duration-150"
               >
                 <option value="portrait">Portrait (3:4)</option>
                 <option value="square">Square (1:1)</option>

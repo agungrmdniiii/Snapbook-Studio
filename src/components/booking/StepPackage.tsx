@@ -38,8 +38,16 @@ export const StepPackage: React.FC<StepPackageProps> = ({
           return (
             <div
               key={pkg.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(pkg)}
-              className={`p-6 sm:p-7 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(pkg);
+                }
+              }}
+              className={`p-6 sm:p-7 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-300 active:scale-[0.99] motion-reduce:active:scale-100 ${
                 isSelected
                   ? 'bg-[#15151a] border-white shadow-xl'
                   : 'bg-[#101013] border-neutral-800 hover:border-neutral-700'

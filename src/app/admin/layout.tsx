@@ -20,7 +20,7 @@ export default async function AdminLayout({
       {session ? (
         <>
           <AdminSidebar username={session.username} />
-          <main className="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen">
+          <main className="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen animate-studio-fade">
             {children}
           </main>
         </>

@@ -129,7 +129,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             Silakan pilih tanggal terlebih dahulu untuk melihat ketersediaan jam.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 animate-studio-subtle">
             {slots.map((slot) => {
               const isSelected = selectedTime === slot.time;
               return (
@@ -138,7 +138,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                   type="button"
                   disabled={!slot.available}
                   onClick={() => onSelectTime(slot.time)}
-                  className={`p-3.5 rounded-xl border font-mono transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                  className={`p-3.5 rounded-xl border font-mono transition-all duration-150 flex flex-col items-center justify-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-300 active:scale-[0.98] motion-reduce:active:scale-100 ${
                     !slot.available
                       ? 'bg-neutral-950/40 border-neutral-900 text-neutral-700 cursor-not-allowed opacity-30'
                       : isSelected

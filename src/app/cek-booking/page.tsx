@@ -122,7 +122,7 @@ function CekBookingContent() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Masukkan Kode Booking (SB-...) atau No. WhatsApp"
-                className="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0c] border border-neutral-800 rounded-2xl text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors font-light"
+                className="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0c] border border-neutral-800 rounded-2xl text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 transition-colors duration-150 motion-reduce:transition-none font-light"
               />
             </div>
             <Button type="submit" variant="primary" size="lg" isLoading={isLoading} className="shrink-0">
@@ -140,7 +140,7 @@ function CekBookingContent() {
 
         {/* Search Result Card - Clean Studio Receipt */}
         {result && (
-          <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in duration-300">
+          <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-studio-fade">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-neutral-800">
               <div>
                 <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">

@@ -46,10 +46,10 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs uppercase tracking-[0.16em] transition-all cursor-pointer ${
+                  className={`px-4 py-2 rounded-full text-xs uppercase tracking-[0.16em] transition-all duration-150 cursor-pointer active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
                     isActive
-                      ? 'bg-neutral-100 text-neutral-950 font-medium'
-                      : 'bg-neutral-900/80 text-neutral-400 hover:text-neutral-200 border border-neutral-800'
+                      ? 'bg-neutral-100 text-neutral-950 font-medium shadow-sm'
+                      : 'bg-[#101013] text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 border border-neutral-800'
                   }`}
                 >
                   {cat}
@@ -60,21 +60,24 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
         </div>
 
         {/* Gallery Grid - Architectural Museum Aspect */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div
+          key={selectedCategory}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 animate-studio-subtle"
+        >
           {filteredImages.map((image) => (
             <div
               key={image.id}
-              className="group relative rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 aspect-[3/4] transition-all"
+              className="group relative rounded-2xl overflow-hidden bg-[#0f0f12] border border-neutral-800/90 hover:border-neutral-700 aspect-[3/4] transition-colors duration-300"
             >
               <img
                 src={image.url}
                 alt={image.title || 'Foto Portofolio Snapbook Studio'}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
                 loading="lazy"
               />
 
               {/* Minimalist Hover Info */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out flex flex-col justify-end p-5">
                 <span className="text-[10px] font-medium text-neutral-300 uppercase tracking-[0.2em]">
                   {image.category}
                 </span>

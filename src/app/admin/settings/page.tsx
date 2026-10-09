@@ -151,7 +151,7 @@ export default function AdminSettingsPage() {
               rows={2}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 font-light"
+              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 font-light transition-colors duration-150 motion-reduce:transition-none"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function AdminSettingsPage() {
               rows={3}
               value={aboutText}
               onChange={(e) => setAboutText(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 font-light"
+              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 font-light transition-colors duration-150 motion-reduce:transition-none"
             />
           </div>
         </div>

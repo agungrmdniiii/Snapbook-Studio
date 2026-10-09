@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -76,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-neutral-800 bg-[#09090b] px-6 py-6 space-y-4">
+        <div className="md:hidden border-b border-neutral-800 bg-[#09090b] px-6 py-6 space-y-4 animate-studio-fade">
           <a
             href="#galeri"
             onClick={() => setMobileMenuOpen(false)}

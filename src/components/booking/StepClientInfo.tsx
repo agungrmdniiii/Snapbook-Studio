@@ -68,7 +68,7 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
             value={notes}
             onChange={(e) => onChange({ notes: e.target.value })}
             placeholder="Contoh: Bawa properti wisuda sendiri, sesi foto keluarga 4 orang."
-            className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 transition-colors font-light"
+            className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-300 focus:border-neutral-300 transition-colors duration-150 motion-reduce:transition-none font-light"
           />
         </div>
       </div>

@@ -47,9 +47,9 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
             return (
               <div
                 key={pkg.id}
-                className={`relative rounded-2xl p-8 sm:p-9 flex flex-col justify-between transition-all ${
+                className={`relative rounded-2xl p-8 sm:p-9 flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-neutral-600 ${
                   isHighlight
-                    ? 'bg-[#141418] border-2 border-neutral-600 shadow-2xl'
+                    ? 'bg-[#141418] border-2 border-neutral-500 shadow-2xl'
                     : 'bg-[#101013] border border-neutral-800/90'
                 }`}
               >

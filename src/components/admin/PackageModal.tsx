@@ -183,7 +183,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
                 placeholder="60 menit sesi foto&#10;10 foto diedit retouch&#10;Semua softcopy Google Drive"
-                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs font-mono focus:outline-none focus:border-neutral-400"
+                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs font-mono focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 transition-colors duration-150 motion-reduce:transition-none"
               />
             </div>
 
@@ -209,7 +209,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Deskripsi layanan..."
-            className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs focus:outline-none focus:border-neutral-400 font-light"
+            className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 transition-colors duration-150 motion-reduce:transition-none font-light"
           />
         </div>
 
