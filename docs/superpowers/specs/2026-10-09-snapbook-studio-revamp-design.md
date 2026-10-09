@@ -18,11 +18,11 @@ Pengguna meminta perombakan total dari awal (*overhaul from scratch*) untuk memi
 | :--- | :--- | :--- |
 | **Framework** | Next.js (App Router) | Server-side rendering (SSR), struktur modular, Route Handlers & Server Actions |
 | **Bahasa** | TypeScript | Type safety penuh dari database schema hingga komponen UI |
-| **Styling** | Tailwind CSS | Utility-first styling modern, responsif, dan ringan |
+| **Styling** | Tailwind CSS | Utility-first styling modern, estetik editorial studio, responsif, dan ringan |
 | **Icons** | Lucide React | Koleksi icon bersih dan konsisten |
 | **Database & ORM** | SQLite + Prisma ORM | Zero-config lokal (`prisma/dev.db`), skema relasional terstruktur, siap upgrade ke PostgreSQL |
 | **Autentikasi Admin** | HTTP-Only Session Cookie | Aman terhadap XSS, signed session token tanpa bloat dependency eksternal |
-| **Integrasi Eksternal**| WhatsApp Direct API (`https://wa.me/...`) | Format pesan reservasi otomatis dengan rincian biaya & kode booking |
+| **Integrasi Eksternal**| WhatsApp Direct API (`https://wa.me/...`) | Format pesan reservasi otomatis dengan rincian biaya, kode booking, dan tombol pesan reminder H-1 |
 
 ---
 
@@ -35,14 +35,16 @@ Pengguna meminta perombakan total dari awal (*overhaul from scratch*) untuk memi
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx                 # Root layout dengan font & meta tag
-│   │   ├── page.tsx                   # Landing page publik (Hero, Portofolio, Layanan, Kontak)
+│   │   ├── page.tsx                   # Landing page publik (Hero, Portofolio, Layanan, FAQ, Kontak)
 │   │   ├── book/
 │   │   │   └── page.tsx               # Halaman mandiri Booking Wizard interaktif
+│   │   ├── cek-booking/
+│   │   │   └── page.tsx               # Halaman publik pelacakan status reservasi klien
 │   │   ├── admin/
 │   │   │   ├── login/page.tsx         # Halaman login administrator
 │   │   │   ├── layout.tsx             # Layout admin dengan sidebar & guard autentikasi
 │   │   │   ├── page.tsx               # Dashboard overview & metrik statistik
-│   │   │   ├── bookings/page.tsx      # Manajemen status reservasi & filter
+│   │   │   ├── bookings/page.tsx      # Manajemen status reservasi, filter & reminder WhatsApp
 │   │   │   ├── packages/page.tsx      # CRUD paket foto & add-ons
 │   │   │   ├── gallery/page.tsx       # Kelola foto showcase portofolio
 │   │   │   └── settings/page.tsx      # Pengaturan jam operasional & profil studio
@@ -54,13 +56,14 @@ Pengguna meminta perombakan total dari awal (*overhaul from scratch*) untuk memi
 │   │       └── settings/              # Route handlers konfigurasi studio
 │   ├── components/
 │   │   ├── ui/                        # Komponen atomik: Button, Input, Modal, Badge, Card
-│   │   ├── landing/                   # Komponen publik: Navbar, Hero, Services, Gallery, About, Footer
+│   │   ├── landing/                   # Komponen publik: Navbar, Hero, Services, Gallery, FAQ, Footer
 │   │   ├── booking/                   # Komponen alur: StepPackage, StepDateTime, StepAddOns, StepClientInfo, StepConfirmation
+│   │   ├── tracking/                  # Komponen pencarian & kartu status reservasi
 │   │   └── admin/                     # Komponen admin: Sidebar, StatsCard, BookingTable, PackageModal
 │   └── lib/
 │       ├── prisma.ts                  # Prisma Client singleton
 │       ├── auth.ts                    # Utility verifikasi sesi & password hash
-│       ├── whatsapp.ts                # Generator teks dan URL WhatsApp
+│       ├── whatsapp.ts                # Generator teks reservasi & reminder WhatsApp
 │       └── utils.ts                   # Formatting mata uang IDR & date helper
 ```
 
@@ -166,22 +169,21 @@ model ShowcaseImage {
 
 ---
 
-## 5. Alur Pemesanan Klien (Booking Flow)
+## 5. Alur Pemesanan Klien & Tracking
 
-1. **Pilih Paket:** Klien memilih paket dari daftar paket aktif dengan preview harga dan fitur.
+1. **Pilih Paket:** Klien memilih paket dari daftar paket aktif dengan preview harga, durasi, dan daftar fasilitas yang didapatkan.
 2. **Pilih Tanggal & Jam:**
    - Kalender dinamis membatasi tanggal (hanya tanggal sekarang ke depan).
    - Sistem melakukan query ke database mencari booking pada tanggal tersebut dengan status `PENDING` atau `CONFIRMED`.
    - Jam yang bentrok otomatis berstatus *Disabled* / tidak dapat dipilih.
-3. **Pilih Layanan Tambahan (Add-ons):** Opsi opsional seperti ekstra cetak atau makeup, dengan kalkulasi harga subtotal real-time.
+3. **Pilih Layanan Tambahan (Add-ons):** Opsi opsional seperti ekstra cetak atau softcopy tambahan, dengan kalkulasi subtotal real-time.
 4. **Data Klien:** Input Nama Lengkap, Nomor WhatsApp, Email, dan Catatan.
 5. **Konfirmasi & WhatsApp:**
    - Sistem membuat reservasi secara atomik di database (status `PENDING`).
    - Kode booking acak unik dihasilkan (misal `SB-20261009-9182`).
-   - Tombol *"Kirim Konfirmasi WhatsApp"* membuka tautan:
-     ```text
-     https://wa.me/{studioConfig.whatsappNumber}?text=Halo%20Snapbook%20Studio...
-     ```
+   - Tombol *"Kirim Konfirmasi WhatsApp"* membuka WhatsApp admin studio dengan format pesan booking lengkap. Alur DP / pembayaran diserahkan sesuai aturan masing-masing studio pada saat chat berlangsung.
+6. **Pelacakan Status Mandiri (`/cek-booking`):**
+   - Klien dapat memasukkan Kode Booking atau Nomor WhatsApp untuk melihat status reservasi (Menunggu Konfirmasi / Terkonfirmasi / Selesai) beserta info petunjuk kedatangan studio.
 
 ---
 
@@ -193,11 +195,13 @@ model ShowcaseImage {
   - Password: `adminpassword123` (diberi opsi ubah password di pengaturan)
 * **Manajemen Reservasi:**
   - Filter status: *Semua, Pending, Confirmed, Completed, Cancelled*.
-  - Aksi instan: Update status dan tautan langsung untuk mengirim pesan WhatsApp ke klien.
+  - Aksi instan: Update status booking.
+  - Tautan langsung chat WhatsApp konfirmasi ke nomor klien.
+  - Tombol **"Kirim Reminder Jadwal"** via WhatsApp untuk mengingatkan klien H-1 atau hari-H sesi foto.
 * **Manajemen Konten:**
   - Tambah/edit paket foto & Add-on.
   - Tambah/hapus foto galeri portofolio.
-  - Ubah informasi studio (jam buka/tutup, nomor WhatsApp, alamat).
+  - Ubah informasi studio (jam buka/tutup, nomor WhatsApp tujuan pesan, alamat studio).
 
 ---
 
@@ -205,5 +209,5 @@ model ShowcaseImage {
 - **Self-Check Test Script:** Script mandiri yang dapat dijalankan langsung (`scripts/verify-system.ts`):
   1. Memverifikasi konektivitas Prisma & seeding data.
   2. Menguji pencegahan bentrok jadwal (mencegah pembuatan dua booking pada tanggal & jam yang sama).
-  3. Menguji kalkulasi total harga (paket + add-ons) dan format tautan WhatsApp.
-  4. Menguji utilitas autentikasi admin.
+  3. Menguji kalkulasi total harga (paket + add-ons) dan format tautan WhatsApp (pesan booking & reminder).
+  4. Menguji utilitas autentikasi admin dan query pelacakan booking.
