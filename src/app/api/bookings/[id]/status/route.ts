@@ -39,3 +39,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Gagal memperbarui status booking' }, { status: 500 });
   }
 }
+
+export const PUT = PATCH;
+
