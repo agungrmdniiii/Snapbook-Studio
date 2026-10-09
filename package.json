@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "seed": "tsx prisma/seed.ts",
     "lint": "tsc --noEmit"
