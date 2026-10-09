@@ -3,15 +3,19 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
 
+import { DEFAULT_GALLERY } from '@/lib/constants';
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const images = await prisma.showcaseImage.findMany({
       orderBy: { sortOrder: 'asc' },
     });
-    return NextResponse.json(images);
+    return NextResponse.json(images.length > 0 ? images : DEFAULT_GALLERY);
   } catch (error) {
-    console.error('Error fetching gallery:', error);
-    return NextResponse.json({ error: 'Gagal mengambil galeri' }, { status: 500 });
+    console.error('Error fetching gallery, returning fallback:', error);
+    return NextResponse.json(DEFAULT_GALLERY);
   }
 }
 

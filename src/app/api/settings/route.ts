@@ -3,15 +3,19 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { verifySessionToken, SESSION_COOKIE_NAME, hashPassword } from '@/lib/auth';
 
+import { DEFAULT_CONFIG } from '@/lib/constants';
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const config = await prisma.studioConfig.findUnique({
       where: { id: 'default' },
     });
-    return NextResponse.json(config);
+    return NextResponse.json(config || DEFAULT_CONFIG);
   } catch (error) {
-    console.error('Error fetching settings:', error);
-    return NextResponse.json({ error: 'Gagal mengambil pengaturan' }, { status: 500 });
+    console.error('Error fetching settings, returning fallback:', error);
+    return NextResponse.json(DEFAULT_CONFIG);
   }
 }
 

@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
 
+import { DEFAULT_PACKAGES, DEFAULT_ADDONS } from '@/lib/constants';
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -17,10 +21,13 @@ export async function GET(request: Request) {
       where: includeInactive ? {} : { isActive: true },
     });
 
-    return NextResponse.json({ packages, addOns });
+    const finalPackages = packages.length > 0 ? packages : DEFAULT_PACKAGES;
+    const finalAddOns = addOns.length > 0 ? addOns : DEFAULT_ADDONS;
+
+    return NextResponse.json({ packages: finalPackages, addOns: finalAddOns });
   } catch (error) {
-    console.error('Error fetching packages:', error);
-    return NextResponse.json({ error: 'Gagal mengambil paket' }, { status: 500 });
+    console.error('Error fetching packages, returning fallbacks:', error);
+    return NextResponse.json({ packages: DEFAULT_PACKAGES, addOns: DEFAULT_ADDONS });
   }
 }
 
