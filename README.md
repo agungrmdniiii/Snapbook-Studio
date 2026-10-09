@@ -1,99 +1,75 @@
-# Snapbook Studio - Modern Photo Studio & Booking System
+# Snapbook Studio
 
-Sistem manajemen dan pemesanan studio foto full-stack modern yang dibangun ulang dari awal (*revamped from scratch*) menggunakan **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, dan **Prisma ORM** dengan database **SQLite** mandiri (*zero-config*).
-
----
-
-## ✨ Fitur Utama
-
-### 1. 🌐 Landing Page Publik Bergaya Editorial Modern
-- **Hero Showcase:** Visual estetik dengan headline menarik dan nilai unggulan studio.
-- **Portofolio Galeri:** Filter foto dinamis (*Portrait, Graduation, Family, Couple*).
-- **Katalog Paket & Tarif:** Rincian durasi sesi, fasilitas termasuk, dan harga transparan format Rupiah.
-- **FAQ Interaktif:** Tanya jawab seputar jam kedatangan, aturan reschedule, dan pengiriman file softcopy.
-- **Profil Studio:** Jam operasional, alamat fisik, nomor WhatsApp, dan akun Instagram.
-
-### 2. 📅 Alur Booking 5 Langkah Interaktif (Anti Double-Booking)
-- **Langkah 1 (Pilih Paket):** Kartu perbandingan paket dengan tombol seleksi instan.
-- **Langkah 2 (Pilih Tanggal & Jam):** Kalender dinamis dengan query ketersediaan slot real-time. Jam yang telah dipesan otomatis berstatus **"Penuh" / Disabled**, mencegah tabrakan jadwal (*race-condition safe*).
-- **Langkah 3 (Add-ons):** Pilihan ekstra layanan (cetak 10R, ekstra retouch, wardrobe) dengan kalkulasi subtotal harga langsung.
-- **Langkah 4 (Data Diri):** Form nama, no WhatsApp, email, dan catatan khusus.
-- **Langkah 5 (Konfirmasi & WhatsApp):** Pembuatan kode booking unik (misal: `SB-20261009-8472`) dan tombol aksi utama **"Kirim Konfirmasi via WhatsApp"** yang langsung membuka WhatsApp admin studio dengan format pesan terstruktur.
-
-### 3. 🔍 Pelacakan Mandiri untuk Klien (`/cek-booking`)
-- Klien dapat memasukkan **Kode Booking** atau **Nomor WhatsApp** mereka kapan saja.
-- Menampilkan kartu status real-time (*Menunggu DP*, *Terkonfirmasi*, *Selesai*), rincian sesi, alamat studio, dan panduan kedatangan.
-
-### 4. 🛡️ Portal Administrasi Lengkap (`/admin`)
-- **Autentikasi Aman:** Login admin dengan verifikasi hash bcrypt dan cookie sesi HTTP-only (*XSS-safe*).
-- **Dashboard Ringkasan:** Statistik total reservasi, pesanan pending, sesi foto hari ini, dan estimasi omset.
-- **Kelola Reservasi (`/admin/bookings`):** Filter tab status, pencarian cepat, update status, tombol chat WhatsApp klien, serta tombol **"Reminder H-1"** otomatis via WhatsApp.
-- **Kelola Paket & Add-on (`/admin/packages`):** Tambah, edit, aktif/nonaktifkan, dan hapus paket atau add-on.
-- **Kelola Galeri (`/admin/gallery`):** Upload foto portofolio baru dan hapus foto lama.
-- **Pengaturan Studio (`/admin/settings`):** Konfigurasi nama studio, jam buka-tutup, nomor WhatsApp tujuan booking, alamat, dan ubah password admin.
+> **Sistem Reservasi & Portofolio Studio Foto Profesional** bergaya *architectural editorial luxury*. Dilengkapi mesin booking 5-langkah anti-bentrok jadwal, pelacakan mandiri e-receipt untuk klien, dan integrasi WhatsApp instan.
 
 ---
 
-## 🛠️ Tech Stack
+## 📸 Pratinjau Tampilan Sistem
 
-- **Framework:** Next.js 15.x (App Router)
-- **Library:** React 19, TypeScript
-- **Styling:** Tailwind CSS
-- **Database & ORM:** SQLite (`prisma/dev.db`) + Prisma ORM
-- **Security:** HTTP-only Signed Session Cookies, bcryptjs
-- **Icons:** Lucide React
+### 1. Landing Page & Editorial Atelier
+Tampilan beranda bergaya rumah mode mewah (*high-fashion atelier*) dengan tipografi Playfair Display & Plus Jakarta Sans, pita marquee berjalan kontinu, dan pengubah grading pencahayaan interaktif (*interactive tone switcher*).
+
+![Snapbook Studio Landing Page](public/preview-home.png)
 
 ---
 
-## 🚀 Cara Menjalankan Secara Lokal
+### 2. Galeri Karya & Katalog Tarif Transparan
+Galeri pameran kurasi dengan filter kategori dinamis, *interactive exhibition lightbox*, dan kartu paket foto transparan berformat Rupiah tanpa biaya tersembunyi.
 
-### 1. Prasyarat
-- Node.js versi 18+ (direkomendasikan Node.js 20 atau 22+)
-- npm atau pnpm
+![Galeri Karya & Paket Foto](public/preview-gallery.png)
 
-### 2. Instalasi Dependensi
+---
+
+### 3. Alur Booking 5-Langkah (Anti Double-Booking)
+Wizard reservasi mandiri dengan pemilihan tanggal kalender dan pengecekan ketersediaan slot waktu secara *real-time*. Jam yang telah terisi otomatis terkunci (*disabled*) demi mencegah tabrakan jadwal antar klien.
+
+![Alur Booking Interaktif](public/preview-booking.png)
+
+---
+
+### 4. Pelacakan Mandiri & E-Receipt Klien (`/cek-booking`)
+Halaman pelacakan status jadwal (*Pending*, *Terkonfirmasi*, *Selesai*) berbasis kode booking atau nomor WhatsApp, dilengkapi rincian biaya, alamat studio, dan panduan kedatangan.
+
+![Pelacakan Booking Mandiri](public/preview-cek-booking.png)
+
+---
+
+### 5. Portal Manajemen Admin (`/admin`)
+Pusat kontrol operasional studio terproteksi cookie sesi HTTP-only dan enkripsi bcrypt untuk mengelola seluruh data booking, ketersediaan slot, upload galeri, dan konfigurasi studio.
+
+![Portal Admin Snapbook](public/preview-admin.png)
+
+---
+
+## ⚡ Ringkasan Fitur Unggulan
+
+| Modul | Kemampuan Utama |
+|---|---|
+| **Public Atelier** | Hero section interaktif, infinite marquee ticker, galeri lightbox modal, integrasi WhatsApp floating pill. |
+| **Booking Engine** | Alur 5 tahap (Paket $\rightarrow$ Jadwal $\rightarrow$ Add-ons $\rightarrow$ Data Diri $\rightarrow$ E-Receipt WhatsApp). |
+| **Anti-Collision** | Query slot dinamis mencegah dua pelanggan memesan jam yang sama (*race-condition safe*). |
+| **Self-Tracking** | Akses mandiri klien untuk memeriksa status reservasi via kode unik `SB-YYYYMMDD-XXXX`. |
+| **Admin Back-Office** | Dashboard statistik, tabel filter booking, reminder H-1 WhatsApp otomatis, dan manajemen paket. |
+
+---
+
+## 🚀 Menjalankan Project
+
 ```bash
+# 1. Pasang dependensi
 npm install
-```
 
-### 3. Sinkronisasi Database SQLite
-```bash
+# 2. Setup database & isi data awal
 npx prisma db push
-```
-
-### 4. Isi Data Awal (Seeding)
-Mengisi konfigurasi studio default, paket foto default, add-ons, foto galeri, dan akun admin:
-```bash
 npm run seed
-```
 
-### 5. Jalankan Server Development
-```bash
+# 3. Jalankan server lokal
 npm run dev
 ```
-Buka peramban di: **`http://localhost:3000`**
 
----
+Buka di peramban: **`http://localhost:3000`**
 
-## 🔑 Kredensial Admin Bawaan
-
-- **URL Login Admin:** `http://localhost:3000/admin/login`
-- **Username:** `admin`
-- **Password:** `adminpassword123`
-
-*(Password dapat diubah kapan saja melalui menu Pengaturan di dalam portal admin).*
-
----
-
-## 🧪 Pengujian & Verifikasi Mandiri
-
-Sistem dilengkapi suite pengujian otomatis mandiri:
-```bash
-npx tsx scripts/verify-all.ts
-```
-Pengujian ini memverifikasi:
-1. Integritas skema dan koneksi database SQLite.
-2. Generator slot jam & formatter Rupiah (IDR).
-3. Mesin transaksi pencegah bentrok booking (*anti double-booking*).
-4. Template dan URL generator WhatsApp.
-5. Keamanan hash password dan validasi sesi cookie admin.
+### 🔑 Kredensial Admin Bawaan
+* **URL Login:** `http://localhost:3000/admin/login`
+* **Username:** `admin`
+* **Password:** `adminpassword123`
