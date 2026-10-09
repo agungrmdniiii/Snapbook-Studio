@@ -17,27 +17,15 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   icon: Icon,
   variant = 'amber',
 }) => {
-  const variants = {
-    amber: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    sky: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-    rose: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  };
-
   return (
-    <div className="bg-[#12100f] border border-stone-800 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+    <div className="bg-[#101013] border border-neutral-800 rounded-2xl p-6 shadow-xl flex items-center justify-between">
       <div>
-        <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-[0.2em]">{title}</p>
-        <p className="font-serif text-3xl font-normal text-stone-100 mt-1">{value}</p>
-        {subtitle && <p className="text-xs text-stone-400 font-light mt-1">{subtitle}</p>}
+        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[0.18em]">{title}</p>
+        <p className="font-serif text-3xl font-normal text-white mt-1.5">{value}</p>
+        {subtitle && <p className="text-xs text-neutral-400 font-light mt-1">{subtitle}</p>}
       </div>
-      <div
-        className={cn(
-          'w-11 h-11 rounded-full border flex items-center justify-center shrink-0',
-          variants[variant]
-        )}
-      >
-        <Icon className="w-5 h-5 stroke-[1.8]" />
+      <div className="w-10 h-10 rounded-full border border-neutral-800 bg-neutral-900 flex items-center justify-center shrink-0 text-neutral-300">
+        <Icon className="w-4 h-4" />
       </div>
     </div>
   );

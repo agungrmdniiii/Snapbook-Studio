@@ -51,19 +51,19 @@ export const Modal: React.FC<ModalProps> = ({
       />
       <div
         className={cn(
-          'relative w-full bg-[#141211] border border-stone-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200',
+          'relative w-full bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 my-8 overflow-hidden animate-in fade-in duration-200',
           maxWidths[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-stone-800 mb-5">
+        <div className="flex items-center justify-between pb-4 border-b border-neutral-800 mb-5">
           {title ? (
-            <h3 className="font-serif text-xl font-normal text-stone-100">{title}</h3>
+            <h3 className="font-serif text-xl font-normal text-white">{title}</h3>
           ) : (
             <div />
           )}
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-stone-400 hover:text-stone-100 hover:bg-stone-800/60 transition-colors cursor-pointer"
+            className="p-1 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />

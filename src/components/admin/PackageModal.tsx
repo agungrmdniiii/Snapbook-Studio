@@ -99,7 +99,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan.');
+      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan data.');
 
       onSuccess();
       onClose();
@@ -111,8 +111,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   };
 
   const title = initialData
-    ? `Edit ${type === 'package' ? 'Edisi Paket' : 'Add-on'}`
-    : `Tambah ${type === 'package' ? 'Edisi Paket Baru' : 'Add-on Baru'}`;
+    ? `Edit ${type === 'package' ? 'Paket Foto' : 'Add-on'}`
+    : `Tambah ${type === 'package' ? 'Paket Foto Baru' : 'Add-on Baru'}`;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="lg">
@@ -156,9 +156,9 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 id="addonActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-400 accent-amber-400 cursor-pointer"
+                className="w-4 h-4 rounded text-white accent-white cursor-pointer"
               />
-              <label htmlFor="addonActive" className="text-xs text-stone-300 cursor-pointer">
+              <label htmlFor="addonActive" className="text-xs text-neutral-300 cursor-pointer">
                 Status Aktif
               </label>
             </div>
@@ -175,7 +175,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
             />
 
             <div className="space-y-1">
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
+              <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
                 Fitur / Fasilitas (Satu baris per poin)
               </label>
               <textarea
@@ -183,7 +183,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
                 placeholder="60 menit sesi foto&#10;10 foto diedit retouch&#10;Semua softcopy Google Drive"
-                className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-xs font-mono focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs font-mono focus:outline-none focus:border-neutral-400"
               />
             </div>
 
@@ -193,9 +193,9 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 id="pkgActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-400 accent-amber-400 cursor-pointer"
+                className="w-4 h-4 rounded text-white accent-white cursor-pointer"
               />
-              <label htmlFor="pkgActive" className="text-xs text-stone-300 cursor-pointer">
+              <label htmlFor="pkgActive" className="text-xs text-neutral-300 cursor-pointer">
                 Paket Aktif & Tampil di Publik
               </label>
             </div>
@@ -203,21 +203,21 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         )}
 
         <div className="space-y-1">
-          <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">Deskripsi Singkat</label>
+          <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">Deskripsi Singkat</label>
           <textarea
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Deskripsi layanan..."
-            className="w-full px-3.5 py-2.5 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-xs focus:outline-none focus:border-amber-400"
+            className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-600 text-xs focus:outline-none focus:border-neutral-400 font-light"
           />
         </div>
 
-        <div className="pt-4 flex items-center justify-end gap-2 border-t border-stone-800">
+        <div className="pt-4 flex items-center justify-end gap-2 border-t border-neutral-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" variant="gold" size="sm" isLoading={isLoading}>
+          <Button type="submit" variant="primary" size="sm" isLoading={isLoading}>
             Simpan Data
           </Button>
         </div>

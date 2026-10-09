@@ -16,7 +16,7 @@ export default async function AdminLayout({
   // Let login page render without sidebar
   // But for protected pages, if not authenticated, redirect to /admin/login
   return (
-    <div className="min-h-screen bg-[#0c0a09] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#09090b] flex flex-col md:flex-row">
       {session ? (
         <>
           <AdminSidebar username={session.username} />

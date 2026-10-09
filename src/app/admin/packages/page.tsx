@@ -73,35 +73,32 @@ export default function AdminPackagesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-[10px] uppercase font-mono tracking-[0.25em] text-amber-400 mb-1">
-            Rate Card & Service Inventory
-          </div>
-          <h1 className="font-serif text-3xl font-normal text-stone-100">Katalog Edisi & Layanan Tambahan</h1>
-          <p className="text-xs text-stone-400 mt-1 font-light">
+          <h1 className="font-serif text-3xl font-normal text-white">Paket Foto & Layanan Tambahan</h1>
+          <p className="text-xs text-neutral-400 mt-1 font-light">
             Kelola katalog harga, durasi sesi foto, dan layanan ekstra studio.
           </p>
         </div>
         <div className="flex items-center gap-2.5">
           <Button variant="outline" size="sm" onClick={openAddAddon}>
-            <Plus className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            <Plus className="w-3.5 h-3.5 mr-1" />
             <span>Tambah Add-on</span>
           </Button>
-          <Button variant="gold" size="sm" onClick={openAddPackage}>
+          <Button variant="primary" size="sm" onClick={openAddPackage}>
             <Plus className="w-3.5 h-3.5 mr-1" />
-            <span>Tambah Edisi Paket</span>
+            <span>Tambah Paket Foto</span>
           </Button>
         </div>
       </div>
 
       {/* Section 1: Packages */}
       <div className="space-y-4">
-        <h2 className="text-xs uppercase tracking-[0.2em] font-semibold text-stone-300 flex items-center gap-2">
-          <Package className="w-4 h-4 text-amber-400" />
-          <span>Daftar Edisi Paket Foto ({packages.length})</span>
+        <h2 className="text-xs uppercase tracking-[0.18em] font-medium text-neutral-300 flex items-center gap-2">
+          <Package className="w-4 h-4 text-neutral-400" />
+          <span>Daftar Paket Foto ({packages.length})</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg, idx) => {
+          {packages.map((pkg) => {
             let features: string[] = [];
             try {
               features = JSON.parse(pkg.features);
@@ -112,11 +109,11 @@ export default function AdminPackagesPage() {
             return (
               <div
                 key={pkg.id}
-                className="bg-[#12100f] border border-stone-800 rounded-2xl p-6 sm:p-7 shadow-xl flex flex-col justify-between"
+                className="bg-[#101013] border border-neutral-800 rounded-2xl p-6 sm:p-7 shadow-xl flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 px-2.5 py-0.5 rounded-full bg-amber-400/10">
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-400 px-2.5 py-0.5 rounded-full bg-neutral-900 border border-neutral-800">
                       {pkg.category}
                     </span>
                     <Badge variant={pkg.isActive ? 'success' : 'default'}>
@@ -124,31 +121,31 @@ export default function AdminPackagesPage() {
                     </Badge>
                   </div>
 
-                  <h3 className="font-serif text-2xl font-normal text-stone-100">{pkg.name}</h3>
-                  <p className="text-xs text-stone-400 mt-1 mb-4 leading-relaxed font-light">{pkg.description}</p>
+                  <h3 className="font-serif text-2xl font-normal text-white">{pkg.name}</h3>
+                  <p className="text-xs text-neutral-400 mt-1 mb-4 leading-relaxed font-light">{pkg.description}</p>
 
-                  <div className="flex items-baseline justify-between mb-4 pb-4 border-b border-stone-850">
-                    <span className="font-serif text-2xl text-stone-100">{formatIDR(pkg.price)}</span>
-                    <span className="text-xs text-stone-400 flex items-center gap-1 font-mono">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="flex items-baseline justify-between mb-4 pb-4 border-b border-neutral-800">
+                    <span className="font-serif text-2xl text-white">{formatIDR(pkg.price)}</span>
+                    <span className="text-xs text-neutral-400 flex items-center gap-1 font-mono">
+                      <Clock className="w-3.5 h-3.5" />
                       <span>{pkg.duration} mnt</span>
                     </span>
                   </div>
 
                   <div className="space-y-2 mb-6">
                     {features.slice(0, 4).map((f, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-stone-300">
-                        <Check className="w-3 h-3 text-amber-400 shrink-0" />
+                      <div key={i} className="flex items-center gap-2 text-xs text-neutral-300">
+                        <Check className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                         <span className="truncate font-light">{f}</span>
                       </div>
                     ))}
                     {features.length > 4 && (
-                      <p className="text-[10px] text-stone-400 font-mono">+{features.length - 4} fasilitas lainnya</p>
+                      <p className="text-[10px] text-neutral-400 font-mono">+{features.length - 4} fasilitas lainnya</p>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-stone-850 flex items-center justify-end gap-2">
+                <div className="pt-4 border-t border-neutral-800 flex items-center justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={() => openEdit(pkg, 'package')}>
                     <Edit2 className="w-3 h-3 mr-1" />
                     <span>Edit</span>
@@ -165,8 +162,8 @@ export default function AdminPackagesPage() {
       </div>
 
       {/* Section 2: Add-Ons */}
-      <div className="space-y-4 pt-6 border-t border-stone-850">
-        <h2 className="text-xs uppercase tracking-[0.2em] font-semibold text-stone-300 flex items-center gap-2">
+      <div className="space-y-4 pt-6 border-t border-neutral-800">
+        <h2 className="text-xs uppercase tracking-[0.18em] font-medium text-neutral-300 flex items-center gap-2">
           <span>Layanan Tambahan / Add-ons ({addOns.length})</span>
         </h2>
 
@@ -174,24 +171,24 @@ export default function AdminPackagesPage() {
           {addOns.map((ad) => (
             <div
               key={ad.id}
-              className="p-5 rounded-2xl bg-[#12100f] border border-stone-800 flex items-center justify-between"
+              className="p-5 rounded-2xl bg-[#101013] border border-neutral-800 flex items-center justify-between"
             >
               <div>
-                <p className="font-serif text-base font-normal text-stone-100">{ad.name}</p>
-                <p className="font-serif text-sm text-amber-300 font-normal mt-0.5">{formatIDR(ad.price)}</p>
-                {ad.description && <p className="text-[11px] text-stone-400 mt-0.5 font-light">{ad.description}</p>}
+                <p className="font-serif text-base font-normal text-white">{ad.name}</p>
+                <p className="font-serif text-sm text-neutral-200 mt-0.5">{formatIDR(ad.price)}</p>
+                {ad.description && <p className="text-[11px] text-neutral-400 mt-0.5 font-light">{ad.description}</p>}
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0 ml-3">
                 <button
                   onClick={() => openEdit(ad, 'addon')}
-                  className="p-2 text-stone-400 hover:text-stone-100 hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => handleDelete(ad.id, true)}
-                  className="p-2 text-stone-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-neutral-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

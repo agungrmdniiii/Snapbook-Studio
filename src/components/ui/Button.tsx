@@ -10,18 +10,18 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-stone-100 hover:bg-white text-stone-950 font-medium tracking-wider uppercase shadow-md active:scale-[0.98]',
-      gold: 'bg-gradient-to-r from-[#d4af37] to-[#e6ca65] hover:brightness-110 text-stone-950 font-semibold tracking-wider uppercase shadow-lg shadow-[#d4af37]/15 active:scale-[0.98]',
-      secondary: 'bg-stone-900 hover:bg-stone-800 text-stone-200 border border-stone-800 active:scale-[0.98]',
-      outline: 'border border-stone-700 hover:border-stone-400 text-stone-200 hover:bg-stone-900/60 tracking-wider uppercase active:scale-[0.98]',
-      ghost: 'text-stone-400 hover:text-stone-100 hover:bg-stone-900/50',
-      danger: 'bg-rose-700 hover:bg-rose-600 text-white font-medium active:scale-[0.98]',
+      primary: 'bg-white hover:bg-neutral-200 text-black font-medium tracking-[0.18em] uppercase transition-colors',
+      gold: 'bg-[#c5a880] hover:bg-[#d2b893] text-black font-medium tracking-[0.18em] uppercase transition-colors',
+      secondary: 'bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 tracking-[0.15em] uppercase transition-colors',
+      outline: 'border border-neutral-700 hover:border-neutral-300 text-neutral-200 hover:bg-white/5 tracking-[0.18em] uppercase transition-colors',
+      ghost: 'text-neutral-400 hover:text-white tracking-[0.15em] uppercase transition-colors',
+      danger: 'bg-rose-900/80 hover:bg-rose-800 text-white tracking-[0.15em] uppercase border border-rose-800 transition-colors',
     };
 
     const sizes = {
-      sm: 'px-3.5 py-1.5 text-[11px] rounded-full gap-1.5',
-      md: 'px-5 py-2.5 text-xs rounded-full gap-2',
-      lg: 'px-7 py-3.5 text-xs rounded-full gap-2.5 font-semibold tracking-widest',
+      sm: 'px-3.5 py-1.5 text-[10px] rounded-full gap-1.5',
+      md: 'px-5 py-2.5 text-[11px] rounded-full gap-2',
+      lg: 'px-7 py-3 text-xs rounded-full gap-2.5',
     };
 
     return (
@@ -29,7 +29,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none',
+          'inline-flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none transition-all duration-200 active:scale-[0.99]',
           variants[variant],
           sizes[size],
           className
@@ -37,7 +37,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading && (
-          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin -ml-1 mr-2 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"

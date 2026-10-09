@@ -47,11 +47,8 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
       <div>
-        <div className="text-[10px] uppercase font-mono tracking-[0.25em] text-amber-400 mb-1">
-          Console Overview • Issue N° 26
-        </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-normal text-stone-100">Ringkasan Operasional Atelier</h1>
-        <p className="text-xs sm:text-sm text-stone-400 mt-1 font-light">
+        <h1 className="font-serif text-3xl font-normal text-white">Ringkasan Operasional</h1>
+        <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-light">
           Pantau statistik reservasi dan jadwal sesi foto studio hari ini.
         </p>
       </div>
@@ -63,43 +60,39 @@ export default async function AdminDashboardPage() {
           value={allBookings}
           subtitle="Seluruh waktu"
           icon={CalendarCheck}
-          variant="amber"
         />
         <StatsCard
           title="Menunggu Konfirmasi"
           value={pendingCount}
           subtitle="Butuh verifikasi DP"
           icon={Clock}
-          variant="rose"
         />
         <StatsCard
           title="Sesi Hari Ini"
           value={todayBookings.length}
           subtitle={formatDateIndonesian(today)}
           icon={Users}
-          variant="sky"
         />
         <StatsCard
           title="Estimasi Omset"
           value={formatIDR(revenueAgg._sum.totalPrice || 0)}
           subtitle="Booking Terkonfirmasi/Selesai"
           icon={DollarSign}
-          variant="emerald"
         />
       </div>
 
       {/* Grid: Today's Schedule & Pending Approvals */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Card 1: Today's Agenda */}
-        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-800">
+        <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
             <div>
-              <h3 className="font-serif text-lg font-normal text-stone-100">Jadwal Sesi Hari Ini</h3>
-              <p className="text-xs text-stone-400 font-light">{todayBookings.length} klien terdaftar</p>
+              <h3 className="font-serif text-lg font-normal text-white">Jadwal Sesi Hari Ini</h3>
+              <p className="text-xs text-neutral-400 font-light">{todayBookings.length} klien terdaftar</p>
             </div>
             <Link
               href="/admin/bookings"
-              className="text-xs uppercase tracking-wider font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1"
+              className="text-xs uppercase tracking-wider text-neutral-400 hover:text-white flex items-center gap-1 transition-colors"
             >
               <span>Semua Reservasi</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -108,23 +101,23 @@ export default async function AdminDashboardPage() {
 
           <div className="space-y-3">
             {todayBookings.length === 0 ? (
-              <p className="py-8 text-center text-xs text-stone-400 font-light">
+              <p className="py-8 text-center text-xs text-neutral-500 font-light">
                 Tidak ada jadwal sesi foto untuk hari ini.
               </p>
             ) : (
               todayBookings.map((b) => (
                 <div
                   key={b.id}
-                  className="p-3.5 rounded-2xl bg-[#0c0a09] border border-stone-800 flex items-center justify-between"
+                  className="p-3.5 rounded-2xl bg-[#0a0a0c] border border-neutral-800 flex items-center justify-between"
                 >
                   <div>
-                    <span className="text-xs font-mono font-bold text-amber-300">
+                    <span className="text-xs font-mono font-medium text-white">
                       {b.startTime} – {b.endTime} WIB
                     </span>
-                    <p className="font-serif text-base text-stone-100 mt-0.5">{b.clientName}</p>
-                    <p className="text-xs text-stone-400 font-light">{b.package.name}</p>
+                    <p className="text-sm font-medium text-white mt-0.5">{b.clientName}</p>
+                    <p className="text-xs text-neutral-400 font-light">{b.package.name}</p>
                   </div>
-                  <Badge variant={b.status === 'CONFIRMED' ? 'success' : 'gold'}>
+                  <Badge variant={b.status === 'CONFIRMED' ? 'success' : 'warning'}>
                     {b.status}
                   </Badge>
                 </div>
@@ -134,15 +127,15 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Card 2: Recent Pending */}
-        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-800">
+        <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
             <div>
-              <h3 className="font-serif text-lg font-normal text-stone-100">Menunggu Konfirmasi DP</h3>
-              <p className="text-xs text-stone-400 font-light">Verifikasi chat WA dan status pass</p>
+              <h3 className="font-serif text-lg font-normal text-white">Menunggu Konfirmasi DP</h3>
+              <p className="text-xs text-neutral-400 font-light">Verifikasi chat WA dan status booking</p>
             </div>
             <Link
               href="/admin/bookings?status=PENDING"
-              className="text-xs uppercase tracking-wider font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1"
+              className="text-xs uppercase tracking-wider text-neutral-400 hover:text-white flex items-center gap-1 transition-colors"
             >
               <span>Lihat Pending</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -151,28 +144,28 @@ export default async function AdminDashboardPage() {
 
           <div className="space-y-3">
             {recentPending.length === 0 ? (
-              <p className="py-8 text-center text-xs text-stone-400 font-light">
+              <p className="py-8 text-center text-xs text-neutral-500 font-light">
                 Semua reservasi telah terkonfirmasi. Tidak ada antrean pending.
               </p>
             ) : (
               recentPending.map((b) => (
                 <div
                   key={b.id}
-                  className="p-3.5 rounded-2xl bg-[#0c0a09] border border-stone-800 flex items-center justify-between"
+                  className="p-3.5 rounded-2xl bg-[#0a0a0c] border border-neutral-800 flex items-center justify-between"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-stone-200">
+                      <span className="text-xs font-mono font-medium text-white">
                         {b.bookingCode}
                       </span>
-                      <span className="text-[11px] text-stone-400 font-mono">• {b.date}</span>
+                      <span className="text-[11px] text-neutral-500 font-mono">• {b.date}</span>
                     </div>
-                    <p className="font-serif text-base text-stone-100 mt-0.5">{b.clientName}</p>
-                    <p className="text-xs text-amber-300 font-serif">{formatIDR(b.totalPrice)}</p>
+                    <p className="text-sm font-medium text-white mt-0.5">{b.clientName}</p>
+                    <p className="text-xs text-neutral-300">{formatIDR(b.totalPrice)}</p>
                   </div>
                   <Link
                     href={`/admin/bookings?search=${b.bookingCode}`}
-                    className="px-3 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-xs text-stone-200 border border-stone-800 transition-colors uppercase tracking-wider"
+                    className="px-3.5 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-xs text-neutral-200 border border-neutral-800 transition-colors uppercase tracking-wider"
                   >
                     Tinjau
                   </Link>

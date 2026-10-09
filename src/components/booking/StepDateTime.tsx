@@ -61,19 +61,19 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="text-center space-y-2">
-        <h2 className="font-serif text-2xl sm:text-3xl font-normal text-stone-100">
-          02. Jadwal Sesi & Alokasi Waktu
+        <h2 className="font-serif text-2xl sm:text-3xl font-normal text-white">
+          Pilih Tanggal & Jam Sesi
         </h2>
-        <p className="text-xs sm:text-sm text-stone-400 font-light">
-          Sistem otomatis mengamankan privasi penuh dan mencegah bentrok jadwal dengan klien lain.
+        <p className="text-xs sm:text-sm text-neutral-400 font-light">
+          Sistem otomatis mencegah bentrok jadwal dengan pelanggan lain.
         </p>
       </div>
 
       {/* Date Picker Input */}
-      <div className="bg-[#12100f] border border-stone-800 rounded-2xl p-6 sm:p-7 space-y-3.5">
-        <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
-          <Calendar className="w-4 h-4" />
-          <span>Tanggal Kedatangan Atelier</span>
+      <div className="bg-[#101013] border border-neutral-800 rounded-2xl p-6 sm:p-7 space-y-3.5">
+        <label className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
+          <Calendar className="w-4 h-4 text-neutral-400" />
+          <span>Tanggal Kedatangan</span>
         </label>
         <input
           type="date"
@@ -83,12 +83,12 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             onSelectDate(e.target.value);
             onSelectTime(''); // reset time slot on date change
           }}
-          className="w-full px-4 py-3 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 font-medium text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all cursor-pointer"
+          className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white font-medium text-sm focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors cursor-pointer"
         />
         {selectedDate && (
-          <p className="text-xs text-stone-400 font-light pt-1">
-            Jadwal dipilih:{' '}
-            <span className="font-serif text-sm font-normal text-amber-300">
+          <p className="text-xs text-neutral-400 font-light pt-1">
+            Tanggal dipilih:{' '}
+            <span className="font-medium text-white">
               {formatDateIndonesian(selectedDate)}
             </span>
           </p>
@@ -98,17 +98,17 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
       {/* Time Slot Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-300">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <span>Alokasi Jam Sesi (WIB)</span>
+          <label className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
+            <Clock className="w-4 h-4 text-neutral-400" />
+            <span>Pilihan Jam Sesi (WIB)</span>
           </label>
-          <span className="text-[11px] font-mono text-stone-400">INTERVAL: 60 MENIT</span>
+          <span className="text-[11px] font-mono text-neutral-400">Durasi slot: 60 Menit</span>
         </div>
 
         {isLoadingSlots ? (
-          <div className="flex items-center justify-center p-12 bg-[#12100f]/60 rounded-2xl border border-stone-850">
-            <div className="flex items-center gap-3 text-xs text-stone-400">
-              <svg className="animate-spin h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24">
+          <div className="flex items-center justify-center p-12 bg-[#101013] rounded-2xl border border-neutral-800">
+            <div className="flex items-center gap-3 text-xs text-neutral-400 font-light">
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
@@ -116,7 +116,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              <span>Memverifikasi ketersediaan slot atelier...</span>
+              <span>Memeriksa ketersediaan jadwal...</span>
             </div>
           </div>
         ) : error ? (
@@ -125,8 +125,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             <span>{error}</span>
           </div>
         ) : slots.length === 0 ? (
-          <div className="p-8 text-center bg-[#12100f]/60 rounded-2xl border border-stone-850 text-xs text-stone-400 font-light">
-            Silakan tentukan tanggal pemotretan terlebih dahulu untuk melihat ketersediaan jam.
+          <div className="p-8 text-center bg-[#101013] rounded-2xl border border-neutral-800 text-xs text-neutral-400 font-light">
+            Silakan pilih tanggal terlebih dahulu untuk melihat ketersediaan jam.
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -140,15 +140,15 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                   onClick={() => onSelectTime(slot.time)}
                   className={`p-3.5 rounded-xl border font-mono transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                     !slot.available
-                      ? 'bg-stone-950/40 border-stone-900 text-stone-650 cursor-not-allowed opacity-40'
+                      ? 'bg-neutral-950/40 border-neutral-900 text-neutral-700 cursor-not-allowed opacity-30'
                       : isSelected
-                      ? 'bg-amber-400 border-amber-400 text-stone-950 font-bold shadow-lg shadow-amber-400/20'
-                      : 'bg-[#12100f] border-stone-800 text-stone-200 hover:border-stone-700 hover:bg-stone-900'
+                      ? 'bg-white border-white text-black font-bold shadow-lg'
+                      : 'bg-[#101013] border-neutral-800 text-neutral-200 hover:border-neutral-600 hover:bg-neutral-900'
                   }`}
                 >
-                  <span className="text-sm font-semibold tracking-wide">{slot.time}</span>
+                  <span className="text-sm font-medium tracking-wide">{slot.time}</span>
                   <span className="text-[10px] uppercase tracking-wider font-sans">
-                    {slot.available ? (isSelected ? '✓ Terpilih' : 'Tersedia') : 'Terisi'}
+                    {slot.available ? (isSelected ? '✓ Dipilih' : 'Tersedia') : 'Penuh'}
                   </span>
                 </button>
               );

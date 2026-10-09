@@ -93,11 +93,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <div className="text-[10px] uppercase font-mono tracking-[0.25em] text-amber-400 mb-1">
-          System Configuration
-        </div>
-        <h1 className="font-serif text-3xl font-normal text-stone-100">Pengaturan Studio & Keamanan</h1>
-        <p className="text-xs text-stone-400 mt-1 font-light">
+        <h1 className="font-serif text-3xl font-normal text-white">Pengaturan Studio & Keamanan</h1>
+        <p className="text-xs text-neutral-400 mt-1 font-light">
           Sesuaikan profil studio, jam operasional, nomor WhatsApp tujuan booking, dan keamanan sistem.
         </p>
       </div>
@@ -118,20 +115,20 @@ export default function AdminSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-8">
         {/* Card 1: Studio Profile */}
-        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
-          <h2 className="font-serif text-lg font-normal text-stone-100 pb-3 border-b border-stone-850">
-            Profil & Kontak Atelier
+        <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+          <h2 className="font-serif text-lg font-normal text-white pb-3 border-b border-neutral-800">
+            Profil & Kontak Studio
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="NAMA ATELIER / STUDIO"
+              label="NAMA STUDIO"
               value={studioName}
               onChange={(e) => setStudioName(e.target.value)}
               required
             />
             <Input
-              label="NOMOR WHATSAPP RESMI (TUJUAN PASS)"
+              label="NOMOR WHATSAPP ADMIN (TUJUAN BOOKING)"
               value={whatsappNumber}
               onChange={(e) => setWhatsappNumber(e.target.value)}
               helperText="Format: 628... atau 08... (Pesan konfirmasi klien masuk ke nomor ini)"
@@ -147,46 +144,46 @@ export default function AdminSettingsPage() {
           />
 
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
+            <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
               Alamat Fisik Studio
             </label>
             <textarea
               rows={2}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 text-xs focus:outline-none focus:border-amber-400 font-light"
+              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 font-light"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
-              Tentang Studio (Editorial Bio)
+            <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
+              Tentang Studio (About Bio)
             </label>
             <textarea
               rows={3}
               value={aboutText}
               onChange={(e) => setAboutText(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0c0a09] border border-stone-800 rounded-xl text-stone-100 text-xs focus:outline-none focus:border-amber-400 font-light"
+              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-400 font-light"
             />
           </div>
         </div>
 
         {/* Card 2: Operational Hours */}
-        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
-          <h2 className="font-serif text-lg font-normal text-stone-100 pb-3 border-b border-stone-850">
+        <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+          <h2 className="font-serif text-lg font-normal text-white pb-3 border-b border-neutral-800">
             Jam Operasional & Interval Slot
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
-              label="JAM BUKA ATELIER"
+              label="JAM BUKA STUDIO"
               type="time"
               value={openingTime}
               onChange={(e) => setOpeningTime(e.target.value)}
               required
             />
             <Input
-              label="JAM TUTUP ATELIER"
+              label="JAM TUTUP STUDIO"
               type="time"
               value={closingTime}
               onChange={(e) => setClosingTime(e.target.value)}
@@ -203,9 +200,9 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Card 3: Security & Password */}
-        <div className="bg-[#12100f] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
-          <h2 className="font-serif text-lg font-normal text-stone-100 pb-3 border-b border-stone-850 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-amber-400" />
+        <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+          <h2 className="font-serif text-lg font-normal text-white pb-3 border-b border-neutral-800 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-neutral-400" />
             <span>Keamanan Akun Admin</span>
           </h2>
 
@@ -215,14 +212,14 @@ export default function AdminSettingsPage() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Kosongkan jika tidak ingin mengubah password"
-            helperText="Minimal 6 karakter kombinasi aman."
+            helperText="Minimal 6 karakter."
           />
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="gold" size="lg" isLoading={isSaving}>
+          <Button type="submit" variant="primary" size="lg" isLoading={isSaving}>
             <Save className="w-4 h-4 mr-1.5" />
-            <span>Simpan Semua Perubahan</span>
+            <span>Simpan Semua Pengaturan</span>
           </Button>
         </div>
       </form>
