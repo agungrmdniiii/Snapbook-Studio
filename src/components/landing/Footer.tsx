@@ -101,6 +101,23 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Floating Luxury Consultation Pill with Pulse Motion */}
+      <div className="fixed bottom-6 right-6 z-30 hidden sm:flex items-center">
+        <a
+          href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+            'Halo Snapbook Studio, saya ingin menanyakan jadwal sesi foto...'
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#111115]/95 hover:bg-[#181820] text-neutral-300 hover:text-white border border-neutral-700/80 shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow" />
+          <span className="text-[11px] uppercase tracking-[0.18em] font-medium">
+            Konsultasi Studio
+          </span>
+        </a>
+      </div>
     </footer>
   );
 };

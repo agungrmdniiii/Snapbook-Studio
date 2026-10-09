@@ -2,6 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
+import { MarqueeBanner } from '@/components/landing/MarqueeBanner';
 import { ShowcaseGallery } from '@/components/landing/ShowcaseGallery';
 import { PackagesSection } from '@/components/landing/PackagesSection';
 import { FaqSection } from '@/components/landing/FaqSection';
@@ -31,6 +32,7 @@ export default async function HomePage() {
       />
       <main className="flex-1">
         <HeroSection />
+        <MarqueeBanner />
         <ShowcaseGallery images={showcaseImages} />
         <PackagesSection packages={packages} />
         <FaqSection />
