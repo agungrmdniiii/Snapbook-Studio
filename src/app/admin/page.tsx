@@ -22,26 +22,36 @@ export default async function AdminDashboardPage() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const [allBookings, pendingCount, revenueAgg, todayBookings] = await Promise.all([
-    prisma.booking.count(),
-    prisma.booking.count({ where: { status: 'PENDING' } }),
-    prisma.booking.aggregate({
-      where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
-      _sum: { totalPrice: true },
-    }),
-    prisma.booking.findMany({
-      where: { date: today },
-      include: { package: true },
-      orderBy: { startTime: 'asc' },
-    }),
-  ]);
+  let allBookings = 0;
+  let pendingCount = 0;
+  let revenueAgg: any = { _sum: { totalPrice: 0 } };
+  let todayBookings: any[] = [];
+  let recentPending: any[] = [];
 
-  const recentPending = await prisma.booking.findMany({
-    where: { status: 'PENDING' },
-    include: { package: true },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-  });
+  try {
+    [allBookings, pendingCount, revenueAgg, todayBookings] = await Promise.all([
+      prisma.booking.count(),
+      prisma.booking.count({ where: { status: 'PENDING' } }),
+      prisma.booking.aggregate({
+        where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
+        _sum: { totalPrice: true },
+      }),
+      prisma.booking.findMany({
+        where: { date: today },
+        include: { package: true },
+        orderBy: { startTime: 'asc' },
+      }),
+    ]);
+
+    recentPending = await prisma.booking.findMany({
+      where: { status: 'PENDING' },
+      include: { package: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
+  } catch (err) {
+    console.warn('Admin metrics query fallback:', err);
+  }
 
   return (
     <div className="space-y-8 max-w-6xl">
