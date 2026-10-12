@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-const SECRET = process.env.SESSION_SECRET || 'snapbook-studio-super-secure-secret-2026';
+const SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'snapbook-studio-super-secure-secret-2026');
+if (process.env.NODE_ENV === 'production' && !SECRET) { throw new Error('SESSION_SECRET is required in production'); }
 export const SESSION_COOKIE_NAME = 'snapbook_admin_session';
 
 export interface SessionPayload {

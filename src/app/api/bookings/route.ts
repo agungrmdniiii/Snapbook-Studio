@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         });
       });
     } catch (dbError: any) {
-      if (dbError.message === 'SLOT_TAKEN') {
+      if (dbError.message === 'SLOT_TAKEN' || dbError?.code === 'P2002') {
         return NextResponse.json(
           { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
           { status: 409 }

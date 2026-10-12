@@ -72,6 +72,8 @@ model Booking {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   addOns      BookingAddOn[]
+
+  @@unique([date, startTime], name: "date_startTime")
 }
 
 model BookingAddOn {
