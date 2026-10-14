@@ -42,19 +42,35 @@ export async function GET(request: Request) {
       console.warn('Database query fallback for available-slots:', dbError);
     }
 
+    const nowWibDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+    const nowWibTime = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jakarta',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(new Date());
+
+    const isToday = date === nowWibDate;
+
     const allSlots = generateTimeSlots(openingTime, closingTime, slotDuration);
 
-    const slots = allSlots.map((time) => ({
-      time,
-      available: !bookedSlotTimes.has(time),
-    }));
+    const slots = allSlots.map((time) => {
+      const isPast = isToday && time <= nowWibTime;
+      const isBooked = bookedSlotTimes.has(time);
+      return {
+        time,
+        available: !isPast && !isBooked,
+        isPast,
+      };
+    });
 
-    return NextResponse.json({ date, slots });
+    return NextResponse.json({ date, slots, isToday });
   } catch (error) {
     console.error('Error in available-slots route:', error);
     const fallbackSlots = generateTimeSlots(DEFAULT_CONFIG.openingTime, DEFAULT_CONFIG.closingTime, DEFAULT_CONFIG.slotDuration).map((time) => ({
       time,
       available: true,
+      isPast: false,
     }));
     return NextResponse.json({ date: 'selected', slots: fallbackSlots });
   }
