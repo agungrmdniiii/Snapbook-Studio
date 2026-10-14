@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: 'Pesan sesi foto studio modern, self-photo, wisuda, dan keluarga secara online tanpa antre.',
 };
 
+import { AdminSecretShortcut } from '@/components/ui/AdminSecretShortcut';
+
 export default function RootLayout({
   children,
 }: {
@@ -27,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${playfair.variable} ${plusJakarta.variable}`}>
       <body className="min-h-screen bg-[#09090b] text-neutral-100 antialiased selection:bg-neutral-800 selection:text-white">
+        <AdminSecretShortcut />
         {children}
       </body>
     </html>

@@ -28,6 +28,17 @@
 
 html {
   scroll-behavior: smooth;
+  view-transition-name: root;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 input[type="date"] {
