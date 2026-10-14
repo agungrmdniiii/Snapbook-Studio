@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { X, ArrowRight, Eye, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,11 @@ interface ShowcaseGalleryProps {
 export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [activePhoto, setActivePhoto] = useState<ShowcaseImageItem | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const categories = ['Semua', ...Array.from(new Set(images.map((img) => img.category)))];
 
@@ -128,9 +134,9 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
         </div>
       </div>
 
-      {/* Interactive Lightbox Exhibition Modal - Always Side-by-Side (Berdampingan) */}
-      {activePhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 animate-studio-fade">
+      {/* Interactive Lightbox Exhibition Modal - Always Side-by-Side (Berdampingan) rendered to body */}
+      {activePhoto && mounted && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 md:p-8 animate-studio-fade">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity"
@@ -216,7 +222,8 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );

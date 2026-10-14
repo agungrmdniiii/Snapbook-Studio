@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
-    <div className="animate-studio-fade min-h-screen flex flex-col">
+    <div className="animate-studio-subtle min-h-screen flex flex-col">
       {children}
     </div>
   );

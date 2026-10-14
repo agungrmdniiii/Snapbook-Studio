@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, X, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -8,6 +9,11 @@ import { Button } from '@/components/ui/Button';
 export const HeroSection: React.FC = () => {
   const [activeMood, setActiveMood] = useState<'editorial' | 'noir' | 'warm'>('editorial');
   const [showHeroDetail, setShowHeroDetail] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const moodStyles = {
     editorial: 'grayscale-[10%] contrast-[1.05] brightness-100',
@@ -36,7 +42,7 @@ export const HeroSection: React.FC = () => {
   }, [showHeroDetail]);
 
   return (
-    <section className="relative pt-16 sm:pt-24 pb-20 sm:pb-28 border-b border-neutral-800/80 animate-studio-fade">
+    <section className="relative pt-16 sm:pt-24 pb-20 sm:pb-28 border-b border-neutral-800/80 animate-studio-subtle">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Narrative */}
@@ -173,9 +179,9 @@ export const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero Photo Detail Modal */}
-      {showHeroDetail && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 md:p-8 animate-studio-fade">
+      {/* Hero Photo Detail Modal - Rendered via Portal to viewport */}
+      {showHeroDetail && mounted && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 md:p-8 animate-studio-fade">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity"
@@ -261,7 +267,8 @@ export const HeroSection: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
