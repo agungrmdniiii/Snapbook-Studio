@@ -98,6 +98,10 @@ export const AdminSidebar: React.FC<{ username?: string }> = ({ username = 'admi
             <LogOut className="w-4 h-4" />
           </button>
         </div>
+
+        <p className="text-[10px] text-neutral-500 font-mono text-center pt-1">
+          © {new Date().getFullYear()} Snapbook • by rmdniiagung
+        </p>
       </div>
     </aside>
   );

@@ -89,7 +89,10 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400 font-light">
-          <p>© {new Date().getFullYear()} {studioName}. Seluruh Hak Cipta Dilindungi.</p>
+          <p>
+            © {new Date().getFullYear()} {studioName}. Crafted with precision by{' '}
+            <span className="font-mono text-neutral-200 font-medium">rmdniiagung</span>. Seluruh Hak Cipta Dilindungi.
+          </p>
           <div className="flex items-center gap-6">
             <Link
               href="/admin/login"
