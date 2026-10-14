@@ -130,7 +130,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
 
       {/* Interactive Lightbox Exhibition Modal */}
       {activePhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 animate-studio-fade">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 md:p-8 animate-studio-fade">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity"
@@ -138,48 +138,57 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
           />
 
           {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-4xl bg-[#101013] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+          <div className="relative z-10 w-full max-w-4xl bg-[#101013] border border-neutral-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[92vh] sm:max-h-[88vh] my-auto">
             {/* Close Button */}
             <button
               onClick={() => setActivePhoto(null)}
-              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/70 text-neutral-300 hover:text-white border border-neutral-700 backdrop-blur-sm transition-colors cursor-pointer"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 rounded-full bg-black/75 text-neutral-300 hover:text-white border border-neutral-700 backdrop-blur-md transition-colors cursor-pointer shadow-lg"
               aria-label="Tutup pratinjau"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             {/* Photo Column */}
-            <div className="md:w-3/5 bg-black flex items-center justify-center p-2 sm:p-4 aspect-[4/5] sm:aspect-auto">
+            <div className="w-full md:w-3/5 bg-black/95 flex items-center justify-center p-3 sm:p-6 relative shrink-0 max-h-[38vh] sm:max-h-[46vh] md:max-h-none md:h-auto overflow-hidden">
               <img
                 src={activePhoto.url}
                 alt={activePhoto.title || 'Foto Portofolio Snapbook'}
-                className="max-h-[75vh] w-full object-contain rounded-xl"
+                className="max-h-[36vh] sm:max-h-[42vh] md:max-h-[75vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-md"
               />
             </div>
 
-            {/* Curated Details Column */}
-            <div className="md:w-2/5 p-6 sm:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-neutral-800">
+            {/* Curated Details Column - Always visible & scrollable */}
+            <div className="w-full md:w-2/5 p-5 sm:p-6 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-neutral-800 overflow-y-auto">
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] uppercase tracking-[0.2em] text-[#c5a880]">
                   <Sparkles className="w-3 h-3" />
                   <span>{activePhoto.category} Session</span>
                 </div>
 
-                <h3 className="font-serif text-2xl sm:text-3xl font-normal text-white">
-                  {activePhoto.title || 'Studio Portrait'}
-                </h3>
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-normal text-white">
+                    {activePhoto.title || 'Studio Portrait'}
+                  </h3>
+                  <p className="text-xs text-neutral-400 font-light leading-relaxed mt-2">
+                    Dokumentasi profesional dengan tata cahaya 3-point Profoto di studio privat Snapbook. Menghasilkan karakter visual jernih dengan retusir halus natural.
+                  </p>
+                </div>
 
-                <p className="text-xs text-neutral-400 font-light leading-relaxed">
-                  Dokumentasi profesional dengan tata cahaya 3-point Profoto di studio privat Snapbook. Menghasilkan karakter visual jernih dengan retusir halus natural.
-                </p>
-
-                <div className="space-y-2 pt-4 border-t border-neutral-800 text-xs">
+                <div className="space-y-2 pt-3 border-t border-neutral-800 text-xs">
+                  <div className="flex items-center justify-between text-neutral-400">
+                    <span>Kategori Sesi:</span>
+                    <span className="text-white font-medium">{activePhoto.category}</span>
+                  </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Lokasi:</span>
                     <span className="text-white font-medium">Snapbook Private Atelier</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
-                    <span>Output:</span>
+                    <span>Pencahayaan:</span>
+                    <span className="text-white font-medium">Profoto Softbox & Rim Light</span>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-400">
+                    <span>Output File:</span>
                     <span className="text-white font-medium">Resolusi Penuh + Google Drive</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
@@ -189,7 +198,7 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-neutral-800 space-y-3">
+              <div className="pt-5 mt-4 border-t border-neutral-800 space-y-2.5">
                 <Link href="/book" onClick={() => setActivePhoto(null)} className="block w-full">
                   <Button variant="primary" size="md" className="w-full">
                     <span>Pesan Sesi Foto Ini</span>
