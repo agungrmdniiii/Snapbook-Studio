@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -17,6 +18,39 @@ export const Navbar: React.FC<NavbarProps> = ({
   closingTime = '20:00',
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Handle smooth scroll when landing with hash on home page
+  useEffect(() => {
+    if (pathname === '/' && typeof window !== 'undefined' && window.location.hash) {
+      const id = window.location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      }
+    }
+  }, [pathname]);
+
+  const handleSectionClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string
+  ) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+
+    if (pathname === '/') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        window.history.pushState(null, '', `/#${sectionId}`);
+      }
+    } else {
+      // From any other route (/cek-booking, /book, etc.), navigate reliably to the homepage section
+      window.location.href = `/#${sectionId}`;
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#09090b]/95 backdrop-blur-md border-b border-neutral-800/80 transition-all">
@@ -34,18 +68,32 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-medium tracking-[0.2em] uppercase text-neutral-400">
-            <Link href="/#galeri" className="hover:text-white transition-colors">
+            <a
+              href="/#galeri"
+              onClick={(e) => handleSectionClick(e, 'galeri')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Galeri Karya
-            </Link>
-            <Link href="/#paket" className="hover:text-white transition-colors">
+            </a>
+            <a
+              href="/#paket"
+              onClick={(e) => handleSectionClick(e, 'paket')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Paket Foto
-            </Link>
-            <Link href="/#faq" className="hover:text-white transition-colors">
+            </a>
+            <a
+              href="/#faq"
+              onClick={(e) => handleSectionClick(e, 'faq')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Panduan
-            </Link>
+            </a>
             <Link
               href="/cek-booking"
-              className="flex items-center gap-1.5 hover:text-white transition-colors text-neutral-300"
+              className={`flex items-center gap-1.5 transition-colors ${
+                pathname === '/cek-booking' ? 'text-white font-semibold' : 'text-neutral-300 hover:text-white'
+              }`}
             >
               <Search className="w-3.5 h-3.5 text-neutral-400" />
               <span>Cek Booking</span>
@@ -77,27 +125,27 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-neutral-800 bg-[#09090b] px-6 py-6 space-y-4 animate-studio-fade">
-          <Link
+          <a
             href="/#galeri"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2"
+            onClick={(e) => handleSectionClick(e, 'galeri')}
+            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2 cursor-pointer"
           >
             Galeri Karya
-          </Link>
-          <Link
+          </a>
+          <a
             href="/#paket"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2"
+            onClick={(e) => handleSectionClick(e, 'paket')}
+            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2 cursor-pointer"
           >
             Paket Foto
-          </Link>
-          <Link
+          </a>
+          <a
             href="/#faq"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2"
+            onClick={(e) => handleSectionClick(e, 'faq')}
+            className="block text-xs uppercase tracking-[0.2em] text-neutral-300 hover:text-white py-2 cursor-pointer"
           >
             Panduan & FAQ
-          </Link>
+          </a>
           <Link
             href="/cek-booking"
             onClick={() => setMobileMenuOpen(false)}

@@ -104,6 +104,37 @@ function CekBookingContent() {
           <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-light">
             Pantau status verifikasi jadwal, lokasi studio, dan detail reservasi foto Anda.
           </p>
+
+          {/* Quick Nav Shortcuts */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-neutral-800/80">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 mr-1">
+              Menu Cepat:
+            </span>
+            <a
+              href="/#paket"
+              className="px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-xs text-neutral-300 hover:text-white transition-colors"
+            >
+              Paket Foto & Tarif
+            </a>
+            <a
+              href="/#galeri"
+              className="px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-xs text-neutral-300 hover:text-white transition-colors"
+            >
+              Galeri Karya
+            </a>
+            <a
+              href="/#faq"
+              className="px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-xs text-neutral-300 hover:text-white transition-colors"
+            >
+              Panduan Studio
+            </a>
+            <Link
+              href="/book"
+              className="px-3 py-1 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors ml-auto"
+            >
+              Pesan Jadwal Sesi →
+            </Link>
+          </div>
         </div>
 
         {/* Search Box */}
