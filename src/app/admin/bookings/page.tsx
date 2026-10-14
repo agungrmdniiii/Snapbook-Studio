@@ -4,9 +4,10 @@ import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookingTable } from '@/components/admin/BookingTable';
 import { BookingData, BookingStatus } from '@/types';
-import { Search, RefreshCw, Calendar, CheckCircle2, Clock, Check, X, DollarSign } from 'lucide-react';
+import { Search, RefreshCw, Calendar, CheckCircle2, Clock, Check, X, DollarSign, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { formatIDR } from '@/lib/utils';
+import { StudioCalendar } from '@/components/ui/StudioCalendar';
+import { formatIDR, formatDateIndonesian } from '@/lib/utils';
 
 function BookingsContent() {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ function BookingsContent() {
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [dateFilter, setDateFilter] = useState('ALL'); // 'ALL' | 'TODAY' | 'TOMORROW' | 'CUSTOM'
   const [customDate, setCustomDate] = useState('');
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +77,6 @@ function BookingsContent() {
   }, [statusFilter, dateFilter, customDate]);
 
   useEffect(() => {
-    // fetch studio name
     fetch('/api/settings')
       .then((r) => r.json())
       .then((cfg) => {
@@ -97,7 +98,6 @@ function BookingsContent() {
         throw new Error(errData.error || 'Gagal mengupdate status');
       }
 
-      // Update local state
       setBookings((prev) =>
         prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
       );
@@ -276,7 +276,7 @@ function BookingsContent() {
           </form>
         </div>
 
-        {/* Row 2: Date Filter Pills */}
+        {/* Row 2: Clean Date Filter Pills (NO raw native date picker popup) */}
         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-neutral-800/80">
           <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5 mr-1">
             <Calendar className="w-3.5 h-3.5" />
@@ -289,13 +289,13 @@ function BookingsContent() {
               setDateFilter('ALL');
               setCustomDate('');
             }}
-            className={`px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
+            className={`px-3.5 py-1 rounded-full text-[11px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
               dateFilter === 'ALL'
-                ? 'bg-neutral-200 text-black font-semibold'
+                ? 'bg-white text-black font-semibold'
                 : 'bg-[#0a0a0c] text-neutral-400 hover:text-white border border-neutral-800'
             }`}
           >
-            Semua Tanggal
+            Semua
           </button>
 
           <button
@@ -304,9 +304,9 @@ function BookingsContent() {
               setDateFilter('TODAY');
               setCustomDate('');
             }}
-            className={`px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
+            className={`px-3.5 py-1 rounded-full text-[11px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
               dateFilter === 'TODAY'
-                ? 'bg-neutral-200 text-black font-semibold'
+                ? 'bg-white text-black font-semibold'
                 : 'bg-[#0a0a0c] text-neutral-400 hover:text-white border border-neutral-800'
             }`}
           >
@@ -319,39 +319,56 @@ function BookingsContent() {
               setDateFilter('TOMORROW');
               setCustomDate('');
             }}
-            className={`px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
+            className={`px-3.5 py-1 rounded-full text-[11px] uppercase font-mono tracking-wider transition-colors cursor-pointer ${
               dateFilter === 'TOMORROW'
-                ? 'bg-neutral-200 text-black font-semibold'
+                ? 'bg-white text-black font-semibold'
                 : 'bg-[#0a0a0c] text-neutral-400 hover:text-white border border-neutral-800'
             }`}
           >
             Besok
           </button>
 
-          <div className="flex items-center gap-1.5">
-            <input
-              type="date"
-              value={customDate}
-              onChange={(e) => {
-                setCustomDate(e.target.value);
-                setDateFilter(e.target.value ? 'CUSTOM' : 'ALL');
+          {/* Custom Date Button using StudioCalendar */}
+          <button
+            type="button"
+            onClick={() => setShowCalendarModal(!showCalendarModal)}
+            className={`px-3 py-1 rounded-full text-[11px] uppercase font-mono tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 ${
+              dateFilter === 'CUSTOM' && customDate
+                ? 'bg-white text-black font-semibold'
+                : 'bg-[#0a0a0c] text-neutral-400 hover:text-white border border-neutral-800'
+            }`}
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>{customDate ? formatDateIndonesian(customDate) : 'Pilih Tanggal...'}</span>
+          </button>
+
+          {customDate && (
+            <button
+              type="button"
+              onClick={() => {
+                setCustomDate('');
+                setDateFilter('ALL');
               }}
-              className="px-2.5 py-1 bg-[#0a0a0c] border border-neutral-800 rounded-lg text-xs text-neutral-300 font-mono focus:outline-none focus:border-neutral-400 cursor-pointer"
-            />
-            {customDate && (
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomDate('');
-                  setDateFilter('ALL');
-                }}
-                className="text-[10px] text-neutral-400 hover:text-white font-mono cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
-          </div>
+              className="text-[11px] text-neutral-400 hover:text-white font-mono cursor-pointer ml-1 underline"
+            >
+              Reset
+            </button>
+          )}
         </div>
+
+        {/* Custom Studio Calendar Expander */}
+        {showCalendarModal && (
+          <div className="pt-3 max-w-sm border-t border-neutral-800 animate-studio-fade">
+            <StudioCalendar
+              selectedDate={customDate}
+              onSelectDate={(date) => {
+                setCustomDate(date);
+                setDateFilter('CUSTOM');
+                setShowCalendarModal(false);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Bookings Table */}

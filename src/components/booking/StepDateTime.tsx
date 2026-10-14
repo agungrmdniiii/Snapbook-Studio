@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Calendar, Clock, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Calendar, Clock, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
 import { formatDateIndonesian } from '@/lib/utils';
+import { StudioCalendar } from '@/components/ui/StudioCalendar';
 
 interface SlotItem {
   time: string;
@@ -27,7 +28,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<'ALL' | 'PAGI' | 'SIANG' | 'SORE'>('ALL');
-  const [showFullDatePicker, setShowFullDatePicker] = useState(false);
+  const [viewMode, setViewMode] = useState<'STRIP' | 'CALENDAR'>('STRIP');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Helper date YYYY-MM-DD
@@ -43,7 +44,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
   const today = getLocalDate(0);
   const tomorrow = getLocalDate(1);
 
-  // Generate 14 upcoming days
+  // Generate 14 upcoming days for quick strip
   const upcomingDays = useMemo(() => {
     const days = [];
     const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -70,7 +71,6 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
         dayName: dayNames[d.getDay()],
         monthName: monthNames[d.getMonth()],
         tag,
-        isWeekend: d.getDay() === 0 || d.getDay() === 6,
       });
     }
     return days;
@@ -100,7 +100,6 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
         }
       } catch (err: any) {
         if (isMounted) {
-          // Fallback slots agar proses booking tidak pernah terblokir
           const fallbackTimes = [
             '09:00', '10:00', '11:00', '12:00', '13:00',
             '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
@@ -167,7 +166,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
         </p>
       </div>
 
-      {/* Date Strip Section */}
+      {/* Date Picker Section */}
       <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
@@ -175,93 +174,108 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             <span>Pilih Tanggal Reservasi</span>
           </label>
 
-          <button
-            type="button"
-            onClick={() => setShowFullDatePicker(!showFullDatePicker)}
-            className="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-light"
-          >
-            <span>{showFullDatePicker ? 'Tutup Kalender' : 'Pilih Tanggal Lain'}</span>
-            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showFullDatePicker ? 'rotate-90' : ''}`} />
-          </button>
+          {/* Toggle between Strip and Calendar View */}
+          <div className="flex items-center p-1 bg-neutral-900 border border-neutral-800 rounded-full">
+            <button
+              type="button"
+              onClick={() => setViewMode('STRIP')}
+              className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                viewMode === 'STRIP'
+                  ? 'bg-white text-black font-semibold shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              14 Hari
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('CALENDAR')}
+              className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
+                viewMode === 'CALENDAR'
+                  ? 'bg-white text-black font-semibold shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <CalendarDays className="w-3 h-3" />
+              <span>Kalender</span>
+            </button>
+          </div>
         </div>
 
-        {/* 14-Day Horizontal Interactive Carousel */}
-        <div className="relative group">
-          <div
-            ref={scrollContainerRef}
-            className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x focus:outline-none"
-            tabIndex={0}
-            role="region"
-            aria-label="Pilihan 14 hari ke depan"
-          >
-            {upcomingDays.map((d) => {
-              const isSelected = selectedDate === d.date;
-              return (
-                <button
-                  key={d.date}
-                  type="button"
-                  onClick={() => {
-                    onSelectDate(d.date);
-                    onSelectTime('');
-                  }}
-                  className={`snap-start shrink-0 flex flex-col items-center justify-between min-w-[72px] sm:min-w-[80px] p-3 rounded-2xl border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white active:scale-95 ${
-                    isSelected
-                      ? 'bg-white border-white text-black shadow-lg scale-102'
-                      : 'bg-[#0a0a0c] border-neutral-800/80 text-neutral-300 hover:border-neutral-600 hover:bg-neutral-900/60'
-                  }`}
-                >
-                  <span
-                    className={`text-[10px] uppercase font-mono tracking-wider font-semibold ${
-                      isSelected ? 'text-neutral-700' : d.tag ? 'text-amber-400' : 'text-neutral-400'
+        {/* View Mode 1: 14-Day Quick Horizontal Strip */}
+        {viewMode === 'STRIP' && (
+          <div className="relative group animate-studio-fade">
+            <div
+              ref={scrollContainerRef}
+              className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x focus:outline-none"
+              tabIndex={0}
+              role="region"
+              aria-label="Pilihan 14 hari ke depan"
+            >
+              {upcomingDays.map((d) => {
+                const isSelected = selectedDate === d.date;
+                return (
+                  <button
+                    key={d.date}
+                    type="button"
+                    onClick={() => {
+                      onSelectDate(d.date);
+                      onSelectTime('');
+                    }}
+                    className={`snap-start shrink-0 flex flex-col items-center justify-between min-w-[72px] sm:min-w-[80px] p-3 rounded-2xl border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white active:scale-95 ${
+                      isSelected
+                        ? 'bg-white border-white text-black shadow-lg scale-102'
+                        : 'bg-[#0a0a0c] border-neutral-800/80 text-neutral-300 hover:border-neutral-600 hover:bg-neutral-900/60'
                     }`}
                   >
-                    {d.tag || d.dayName}
-                  </span>
-                  <span className="font-serif text-2xl sm:text-3xl my-1 leading-none font-normal">
-                    {d.dayNum}
-                  </span>
-                  <span className={`text-[10px] tracking-wider uppercase font-mono ${isSelected ? 'text-neutral-700' : 'text-neutral-400'}`}>
-                    {d.monthName}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className={`text-[10px] uppercase font-mono tracking-wider font-semibold ${
+                        isSelected ? 'text-neutral-700' : d.tag ? 'text-amber-400' : 'text-neutral-400'
+                      }`}
+                    >
+                      {d.tag || d.dayName}
+                    </span>
+                    <span className="font-serif text-2xl sm:text-3xl my-1 leading-none font-normal">
+                      {d.dayNum}
+                    </span>
+                    <span className={`text-[10px] tracking-wider uppercase font-mono ${isSelected ? 'text-neutral-700' : 'text-neutral-400'}`}>
+                      {d.monthName}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick scroll controls for desktop */}
+            <button
+              type="button"
+              onClick={() => scrollStrip('left')}
+              className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-neutral-900/90 border border-neutral-700 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+              aria-label="Geser ke kiri"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollStrip('right')}
+              className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-neutral-900/90 border border-neutral-700 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+              aria-label="Geser ke kanan"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
+        )}
 
-          {/* Quick scroll controls for desktop */}
-          <button
-            type="button"
-            onClick={() => scrollStrip('left')}
-            className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-neutral-900/90 border border-neutral-700 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
-            aria-label="Geser ke kiri"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollStrip('right')}
-            className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-neutral-900/90 border border-neutral-700 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
-            aria-label="Geser ke kanan"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Extended Date Picker dropdown */}
-        {showFullDatePicker && (
-          <div className="pt-3 border-t border-neutral-800 animate-studio-fade">
-            <label className="block text-[11px] text-neutral-400 mb-2 font-mono uppercase tracking-wider">
-              Pilih Tanggal Tertentu (Kalender):
-            </label>
-            <input
-              type="date"
-              min={today}
-              value={selectedDate}
-              onChange={(e) => {
-                onSelectDate(e.target.value);
+        {/* View Mode 2: Custom Studio Calendar */}
+        {viewMode === 'CALENDAR' && (
+          <div className="animate-studio-fade">
+            <StudioCalendar
+              selectedDate={selectedDate}
+              onSelectDate={(date) => {
+                onSelectDate(date);
                 onSelectTime('');
               }}
-              className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white font-medium text-sm focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 transition-colors cursor-pointer"
+              minDate={today}
             />
           </div>
         )}
@@ -270,8 +284,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
         {selectedDate && (
           <div className="pt-2 flex items-center justify-between text-xs border-t border-neutral-800/80">
             <span className="text-neutral-400 font-light">Tanggal dipilih:</span>
-            <span className="font-medium text-white flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-medium text-white flex items-center gap-1.5 font-serif text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>{formatDateIndonesian(selectedDate)}</span>
             </span>
           </div>

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageSquare, Bell, Eye, Trash2, CheckCircle2, Clock, Check, X, AlertTriangle } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import { MessageSquare, Bell, Eye, Trash2, CheckCircle2, Clock, Check, X, ArrowUpRight } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { BookingData, BookingStatus } from '@/types';
@@ -40,7 +39,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
 
   const handleDelete = async (id: string) => {
     if (!onDeleteBooking) return;
-    if (!confirm('Apakah Anda yakin ingin menghapus data reservasi ini secara permanen?')) return;
+    if (!confirm('Hapus data reservasi ini secara permanen dari sistem?')) return;
     setIsDeleting(true);
     try {
       await onDeleteBooking(id);
@@ -50,57 +49,57 @@ export const BookingTable: React.FC<BookingTableProps> = ({
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const renderStatusBadge = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-800">
-            <CheckCircle2 className="w-3 h-3" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-emerald-950/40 text-emerald-300 border border-emerald-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span>Terkonfirmasi</span>
-          </span>
+          </div>
         );
       case 'COMPLETED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider font-semibold bg-sky-950/60 text-sky-300 border border-sky-800">
-            <Check className="w-3 h-3" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-sky-950/40 text-sky-300 border border-sky-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
             <span>Selesai</span>
-          </span>
+          </div>
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider font-semibold bg-rose-950/60 text-rose-300 border border-rose-800">
-            <X className="w-3 h-3" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-rose-950/40 text-rose-300 border border-rose-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
             <span>Dibatalkan</span>
-          </span>
+          </div>
         );
       case 'PENDING':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider font-semibold bg-amber-950/60 text-amber-300 border border-amber-800">
-            <Clock className="w-3 h-3 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-amber-950/40 text-amber-300 border border-amber-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             <span>Menunggu DP</span>
-          </span>
+          </div>
         );
     }
   };
 
   return (
     <>
-      <div className="overflow-x-auto rounded-3xl border border-neutral-800 bg-[#101013] shadow-xl">
+      <div className="overflow-x-auto rounded-3xl border border-neutral-800 bg-[#101013] shadow-2xl">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#0a0a0c] text-neutral-400 text-[10px] uppercase tracking-[0.18em] border-b border-neutral-800 font-mono">
+          <thead className="bg-[#0a0a0c] text-neutral-400 text-[10px] uppercase tracking-[0.2em] border-b border-neutral-800 font-mono">
             <tr>
-              <th className="px-5 py-4 font-medium">Kode & Jadwal Sesi</th>
-              <th className="px-5 py-4 font-medium">Data Klien</th>
-              <th className="px-5 py-4 font-medium">Paket & Total</th>
-              <th className="px-5 py-4 font-medium">Status & Aksi Cepat</th>
-              <th className="px-5 py-4 font-medium text-right">Aksi WhatsApp</th>
+              <th className="px-6 py-4 font-medium">Kode & Jadwal Sesi</th>
+              <th className="px-6 py-4 font-medium">Data Klien</th>
+              <th className="px-6 py-4 font-medium">Paket & Total</th>
+              <th className="px-6 py-4 font-medium">Status & Aksi</th>
+              <th className="px-6 py-4 font-medium text-right">Aksi WhatsApp</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800/80 text-neutral-300">
             {bookings.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-5 py-16 text-center text-neutral-500 text-xs font-light">
+                <td colSpan={5} className="px-6 py-16 text-center text-neutral-500 text-xs font-light">
                   Tidak ada data reservasi yang sesuai dengan filter yang dipilih.
                 </td>
               </tr>
@@ -132,7 +131,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                 return (
                   <tr key={item.id} className="hover:bg-neutral-900/40 transition-colors">
                     {/* Col 1: Kode & Jadwal */}
-                    <td className="px-5 py-4 align-top">
+                    <td className="px-6 py-4 align-top">
                       <button
                         type="button"
                         onClick={() => setSelectedBooking(item)}
@@ -149,7 +148,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                     </td>
 
                     {/* Col 2: Klien */}
-                    <td className="px-5 py-4 align-top">
+                    <td className="px-6 py-4 align-top">
                       <span className="font-medium text-white block">{item.clientName}</span>
                       <a
                         href={chatClientUrl}
@@ -172,7 +171,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                     </td>
 
                     {/* Col 3: Paket & Biaya */}
-                    <td className="px-5 py-4 align-top">
+                    <td className="px-6 py-4 align-top">
                       <span className="text-sm font-medium text-white block">{item.package?.name}</span>
                       {item.addOns && item.addOns.length > 0 && (
                         <span className="text-[11px] text-neutral-400 block mt-0.5 font-light">
@@ -184,11 +183,11 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                       </span>
                     </td>
 
-                    {/* Col 4: Status & Quick Status Switcher */}
-                    <td className="px-5 py-4 align-top">
-                      <div className="space-y-2">
+                    {/* Col 4: Status & Clean Action Buttons (NO DROPDOWN) */}
+                    <td className="px-6 py-4 align-top">
+                      <div className="space-y-2.5">
                         <div className="flex items-center gap-2">
-                          {getStatusBadge(item.status)}
+                          {renderStatusBadge(item.status)}
                           {isItemUpdating && (
                             <svg className="animate-spin h-3.5 w-3.5 text-white shrink-0" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -197,71 +196,83 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                           )}
                         </div>
 
-                        {/* Quick 1-click Action Buttons */}
+                        {/* Direct Contextual Action Buttons */}
                         {item.status === 'PENDING' && (
-                          <div className="flex items-center gap-1.5 pt-1">
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               disabled={isItemUpdating}
                               onClick={() => handleStatusChange(item.id, 'CONFIRMED')}
-                              className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 transition-colors cursor-pointer flex items-center gap-1"
+                              className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-950/70 hover:bg-emerald-800 text-emerald-200 border border-emerald-700/80 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
                             >
-                              <Check className="w-3 h-3 text-emerald-400" />
-                              <span>Terima DP</span>
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Konfirmasi DP</span>
                             </button>
                             <button
                               type="button"
                               disabled={isItemUpdating}
                               onClick={() => handleStatusChange(item.id, 'CANCELLED')}
-                              className="px-2 py-1 rounded-lg text-[10px] font-medium bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 transition-colors cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-full text-xs font-medium text-neutral-400 hover:text-rose-300 hover:bg-rose-950/40 border border-transparent hover:border-rose-900 transition-all cursor-pointer"
                             >
-                              Batal
+                              Batalkan
                             </button>
                           </div>
                         )}
 
                         {item.status === 'CONFIRMED' && (
-                          <div className="flex items-center gap-1.5 pt-1">
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               disabled={isItemUpdating}
                               onClick={() => handleStatusChange(item.id, 'COMPLETED')}
-                              className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-sky-950/80 hover:bg-sky-900 border border-sky-800 text-sky-200 transition-colors cursor-pointer flex items-center gap-1"
+                              className="px-3 py-1.5 rounded-full text-xs font-medium bg-sky-950/70 hover:bg-sky-800 text-sky-200 border border-sky-700/80 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
                             >
-                              <CheckCircle2 className="w-3 h-3 text-sky-400" />
-                              <span>Selesai Sesi</span>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
+                              <span>Selesaikan Sesi</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isItemUpdating}
+                              onClick={() => handleStatusChange(item.id, 'CANCELLED')}
+                              className="px-2.5 py-1.5 rounded-full text-xs font-medium text-neutral-400 hover:text-rose-300 hover:bg-rose-950/40 border border-transparent hover:border-rose-900 transition-all cursor-pointer"
+                            >
+                              Batalkan
                             </button>
                           </div>
                         )}
 
-                        {/* Status Select Fallback */}
-                        <div>
-                          <select
+                        {item.status === 'COMPLETED' && (
+                          <span className="text-[11px] text-neutral-500 font-light flex items-center gap-1">
+                            <Check className="w-3 h-3 text-neutral-400" />
+                            <span>Sesi Selesai</span>
+                          </span>
+                        )}
+
+                        {item.status === 'CANCELLED' && (
+                          <button
+                            type="button"
                             disabled={isItemUpdating}
-                            value={item.status}
-                            onChange={(e) => handleStatusChange(item.id, e.target.value as BookingStatus)}
-                            className="text-[11px] bg-[#0a0a0c] border border-neutral-800 text-neutral-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors"
+                            onClick={() => handleStatusChange(item.id, 'PENDING')}
+                            className="text-[11px] text-neutral-400 hover:text-white underline cursor-pointer"
                           >
-                            <option value="PENDING">Menunggu DP (Pending)</option>
-                            <option value="CONFIRMED">Terkonfirmasi (Confirmed)</option>
-                            <option value="COMPLETED">Selesai (Completed)</option>
-                            <option value="CANCELLED">Dibatalkan (Cancelled)</option>
-                          </select>
-                        </div>
+                            Pulihkan ke Pending
+                          </button>
+                        )}
                       </div>
                     </td>
 
                     {/* Col 5: WhatsApp & View Actions */}
-                    <td className="px-5 py-4 align-top text-right">
-                      <div className="flex flex-col items-end gap-1.5">
+                    <td className="px-6 py-4 align-top text-right">
+                      <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => setSelectedBooking(item)}
-                            title="Lihat Detail Lengkap"
-                            className="p-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer"
+                            title="Buka Detail Lengkap"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs border border-neutral-800 transition-colors cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" />
+                            <span>Detail</span>
                           </button>
 
                           <a
@@ -269,7 +280,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                             target="_blank"
                             rel="noreferrer"
                             title="Chat WhatsApp Klien"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-all cursor-pointer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-950/50 hover:bg-emerald-900/70 text-emerald-300 text-xs font-medium border border-emerald-800/80 transition-all cursor-pointer"
                           >
                             <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                             <span>WA</span>
@@ -279,8 +290,8 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                             href={reminderUrl}
                             target="_blank"
                             rel="noreferrer"
-                            title="Kirim Pengingat Jadwal (H-1)"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-medium border border-neutral-800 transition-all cursor-pointer"
+                            title="Kirim Pesan Pengingat H-1"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs border border-neutral-800 transition-all cursor-pointer"
                           >
                             <Bell className="w-3.5 h-3.5 text-neutral-400" />
                             <span>H-1</span>
@@ -292,7 +303,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                             type="button"
                             onClick={() => handleDelete(item.id)}
                             title="Hapus Reservasi"
-                            className="text-[10px] text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1 font-mono pt-1"
+                            className="text-[10px] text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1 font-mono"
                           >
                             <Trash2 className="w-3 h-3" />
                             <span>Hapus</span>
@@ -321,7 +332,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-neutral-800">
               <div>
                 <p className="text-xs text-neutral-400 font-light">Status Reservasi</p>
-                <div className="mt-1">{getStatusBadge(selectedBooking.status)}</div>
+                <div className="mt-1.5">{renderStatusBadge(selectedBooking.status)}</div>
               </div>
               <div className="text-right">
                 <p className="text-xs text-neutral-400 font-light">Jadwal Sesi</p>
@@ -395,24 +406,29 @@ export const BookingTable: React.FC<BookingTableProps> = ({
               </div>
             </div>
 
-            {/* Quick Status Update inside modal */}
-            <div className="p-4 rounded-2xl bg-[#101013] border border-neutral-800 space-y-3">
+            {/* Status Switcher (Pills, NO Dropdown) */}
+            <div className="p-4 rounded-2xl bg-[#101013] border border-neutral-800 space-y-2.5">
               <span className="text-xs text-neutral-300 font-medium block">
                 Ubah Status Reservasi:
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'] as BookingStatus[]).map((st) => (
+                {[
+                  { key: 'PENDING', label: 'Menunggu DP' },
+                  { key: 'CONFIRMED', label: 'Terkonfirmasi' },
+                  { key: 'COMPLETED', label: 'Selesai' },
+                  { key: 'CANCELLED', label: 'Dibatalkan' },
+                ].map((st) => (
                   <button
-                    key={st}
+                    key={st.key}
                     type="button"
-                    onClick={() => handleStatusChange(selectedBooking.id, st)}
+                    onClick={() => handleStatusChange(selectedBooking.id, st.key as BookingStatus)}
                     className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                      selectedBooking.status === st
-                        ? 'bg-white text-black font-bold border-white'
+                      selectedBooking.status === st.key
+                        ? 'bg-white text-black font-semibold border-white shadow-md'
                         : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-600'
                     }`}
                   >
-                    {st}
+                    {st.label}
                   </button>
                 ))}
               </div>
