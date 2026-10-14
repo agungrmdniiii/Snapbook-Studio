@@ -36,19 +36,19 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
             <ul className="space-y-2.5 text-neutral-400">
               <li>
-                <a href="#galeri" className="hover:text-white transition-colors tracking-wide">
+                <Link href="/#galeri" className="hover:text-white transition-colors tracking-wide">
                   Galeri Karya
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#paket" className="hover:text-white transition-colors tracking-wide">
+                <Link href="/#paket" className="hover:text-white transition-colors tracking-wide">
                   Paket & Tarif
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors tracking-wide">
+                <Link href="/#faq" className="hover:text-white transition-colors tracking-wide">
                   Panduan (FAQ)
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/cek-booking" className="hover:text-white transition-colors tracking-wide">
