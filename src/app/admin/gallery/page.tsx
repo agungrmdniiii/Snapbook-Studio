@@ -5,6 +5,7 @@ import { Plus, Trash2, Upload, Link as LinkIcon, Image as ImageIcon, CheckCircle
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { ShowcaseImageData } from '@/types';
 
 // Helper client-side image compression
@@ -389,39 +390,31 @@ export default function AdminGalleryPage() {
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
-                Kategori
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors"
-              >
-                <option value="Portrait">Portrait</option>
-                <option value="Graduation">Graduation</option>
-                <option value="Family">Family</option>
-                <option value="Couple">Couple</option>
-                <option value="Maternity">Maternity</option>
-                <option value="General">Lainnya</option>
-              </select>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CustomSelect
+              label="Kategori Foto"
+              value={category}
+              onChange={setCategory}
+              options={[
+                { value: 'Portrait', label: 'Portrait' },
+                { value: 'Graduation', label: 'Graduation' },
+                { value: 'Family', label: 'Family' },
+                { value: 'Couple', label: 'Couple' },
+                { value: 'Maternity', label: 'Maternity' },
+                { value: 'General', label: 'Lainnya' },
+              ]}
+            />
 
-            <div className="space-y-1">
-              <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
-                Orientasi
-              </label>
-              <select
-                value={aspectRatio}
-                onChange={(e) => setAspectRatio(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white text-xs focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 cursor-pointer transition-colors"
-              >
-                <option value="portrait">Portrait (3:4)</option>
-                <option value="square">Square (1:1)</option>
-                <option value="landscape">Landscape (4:3)</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Orientasi Foto"
+              value={aspectRatio}
+              onChange={setAspectRatio}
+              options={[
+                { value: 'portrait', label: 'Portrait (3:4)' },
+                { value: 'square', label: 'Square (1:1)' },
+                { value: 'landscape', label: 'Landscape (4:3)' },
+              ]}
+            />
           </div>
 
           <div className="pt-4 flex items-center justify-end gap-2 border-t border-neutral-800">
