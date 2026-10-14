@@ -12,3 +12,4 @@ prisma/dev.db-journal
 .superpowers/
 .firebase/
 firebase-debug*.log
+*.tsbuildinfo

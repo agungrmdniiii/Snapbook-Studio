@@ -108,47 +108,45 @@ export async function POST(request: Request) {
     const dateCode = date.replace(/-/g, '');
     const bookingCode = `SB-${dateCode}-${randomSuffix}`;
 
-    // Prevent double booking collision
-    const collision = await prisma.booking.findFirst({
-      where: {
-        date,
-        startTime,
-        status: { in: ['PENDING', 'CONFIRMED'] },
-      },
-    });
-
-    if (collision) {
-      return NextResponse.json(
-        { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
-        { status: 409 }
-      );
-    }
-
-    // Persist directly to Supabase PostgreSQL database
-    const newBooking = await prisma.booking.create({
-      data: {
-        bookingCode,
-        packageId: pkg.id,
-        clientName: clientName.trim(),
-        clientEmail: (clientEmail || '').trim(),
-        clientPhone: clientPhone.trim(),
-        date,
-        startTime,
-        endTime,
-        status: 'PENDING',
-        totalPrice,
-        notes: notes ? notes.trim() : null,
-        addOns: {
-          create: addOnRecords.map((ad) => ({
-            addOnId: ad.id,
-            priceAtBooking: ad.price,
-          })),
+    // Prevent double booking collision atomically using Prisma transaction
+    const newBooking = await prisma.$transaction(async (tx) => {
+      const collision = await tx.booking.findFirst({
+        where: {
+          date,
+          startTime,
+          status: { in: ['PENDING', 'CONFIRMED'] },
         },
-      },
-      include: {
-        package: true,
-        addOns: { include: { addOn: true } },
-      },
+      });
+
+      if (collision) {
+        throw new Error('SLOT_COLLISION');
+      }
+
+      return await tx.booking.create({
+        data: {
+          bookingCode,
+          packageId: pkg.id,
+          clientName: clientName.trim(),
+          clientEmail: (clientEmail || '').trim(),
+          clientPhone: clientPhone.trim(),
+          date,
+          startTime,
+          endTime,
+          status: 'PENDING',
+          totalPrice,
+          notes: notes ? notes.trim() : null,
+          addOns: {
+            create: addOnRecords.map((ad) => ({
+              addOnId: ad.id,
+              priceAtBooking: ad.price,
+            })),
+          },
+        },
+        include: {
+          package: true,
+          addOns: { include: { addOn: true } },
+        },
+      });
     });
 
     // Studio WhatsApp
@@ -181,6 +179,12 @@ export async function POST(request: Request) {
       whatsappUrl,
     });
   } catch (error: any) {
+    if (error?.message === 'SLOT_COLLISION') {
+      return NextResponse.json(
+        { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
+        { status: 409 }
+      );
+    }
     console.error('Error creating booking:', error);
     return NextResponse.json(
       { error: error?.message || 'Gagal memproses reservasi. Silakan periksa kembali data Anda.' },
