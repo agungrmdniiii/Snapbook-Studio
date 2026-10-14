@@ -182,81 +182,81 @@ export const HeroSection: React.FC = () => {
             onClick={() => setShowHeroDetail(false)}
           />
 
-          {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-4xl bg-[#101013] border border-neutral-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[92vh] sm:max-h-[88vh] my-auto">
+          {/* Modal Container: Side-by-side flex-row layout */}
+          <div className="relative z-10 w-full max-w-4xl bg-[#101013] border border-neutral-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-row max-h-[88vh]">
             {/* Close Button */}
             <button
               onClick={() => setShowHeroDetail(false)}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 rounded-full bg-black/75 text-neutral-300 hover:text-white border border-neutral-700 backdrop-blur-md transition-colors cursor-pointer shadow-lg"
+              className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-20 p-1.5 sm:p-2 rounded-full bg-black/75 text-neutral-300 hover:text-white border border-neutral-700 backdrop-blur-md transition-colors cursor-pointer shadow-lg"
               aria-label="Tutup pratinjau"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            {/* Photo Column with active mood styling */}
-            <div className="w-full md:w-3/5 bg-black/95 flex items-center justify-center p-3 sm:p-6 relative shrink-0 max-h-[38vh] sm:max-h-[46vh] md:max-h-none md:h-auto overflow-hidden">
+            {/* Photo Column with active mood styling (Left Side) */}
+            <div className="w-1/2 sm:w-3/5 bg-black/95 flex items-center justify-center p-2 sm:p-6 relative shrink-0 overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=85"
                 alt="Portrait Photography Snapbook Studio"
-                className={`max-h-[36vh] sm:max-h-[42vh] md:max-h-[75vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-md transition-all duration-500 ${moodStyles[activeMood]}`}
+                className={`max-h-[75vh] w-auto h-auto max-w-full object-contain rounded-lg sm:rounded-xl shadow-md transition-all duration-500 ${moodStyles[activeMood]}`}
               />
             </div>
 
-            {/* Curated Details Column */}
-            <div className="w-full md:w-2/5 p-5 sm:p-6 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-neutral-800 overflow-y-auto">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] uppercase tracking-[0.2em] text-[#c5a880]">
-                  <Sparkles className="w-3 h-3" />
+            {/* Curated Details Column (Right Side - Di Samping Foto) */}
+            <div className="w-1/2 sm:w-2/5 p-3.5 sm:p-6 md:p-8 flex flex-col justify-between border-l border-neutral-800 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-neutral-900 border border-neutral-800 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-[#c5a880]">
+                  <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   <span>Editorial Cover Portrait</span>
                 </div>
 
                 <div>
-                  <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-normal text-white">
+                  <h3 className="font-serif text-base sm:text-2xl md:text-3xl font-normal text-white leading-tight">
                     Signature Editorial Portrait
                   </h3>
-                  <p className="text-xs text-neutral-400 font-light leading-relaxed mt-2">
+                  <p className="text-[10px] sm:text-xs text-neutral-400 font-light leading-relaxed mt-1 sm:mt-2 line-clamp-3 sm:line-clamp-none">
                     Potret profil editorial dengan pencahayaan Rembrandt klasik dan lensa 85mm f/1.4 untuk pemisahan subjek berkarakter natural.
                   </p>
                 </div>
 
-                <div className="space-y-2 pt-3 border-t border-neutral-800 text-xs">
+                <div className="space-y-1.5 sm:space-y-2 pt-2 sm:pt-3 border-t border-neutral-800 text-[10px] sm:text-xs">
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Tone Warna:</span>
                     <span className="text-[#c5a880] font-medium">{moodNames[activeMood]}</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Kamera & Sensor:</span>
-                    <span className="text-white font-medium">Medium Format • 85mm f/1.4</span>
+                    <span className="text-white font-medium">Medium Format 85mm</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Tata Cahaya:</span>
-                    <span className="text-white font-medium">3-Point Profoto Softbox</span>
+                    <span className="text-white font-medium">3-Point Profoto</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Lokasi:</span>
-                    <span className="text-white font-medium">Snapbook Private Atelier</span>
+                    <span className="text-white font-medium">Snapbook Atelier</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Output File:</span>
-                    <span className="text-white font-medium">Resolusi Penuh + Google Drive</span>
+                    <span className="text-white font-medium">Drive Full Res</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-5 mt-4 border-t border-neutral-800 space-y-2.5">
+              <div className="pt-3 sm:pt-5 mt-2 sm:mt-4 border-t border-neutral-800 space-y-1.5 sm:space-y-2.5">
                 <Link href="/book" onClick={() => setShowHeroDetail(false)} className="block w-full">
-                  <Button variant="primary" size="md" className="w-full">
-                    <span>Pesan Sesi Foto Ini</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                  <Button variant="primary" size="md" className="w-full text-xs sm:text-sm py-2 sm:py-2.5">
+                    <span>Pesan Sesi Ini</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   size="md"
-                  className="w-full"
+                  className="w-full text-xs sm:text-sm py-2 sm:py-2.5"
                   onClick={() => setShowHeroDetail(false)}
                 >
-                  Tutup Tampilan
+                  Tutup
                 </Button>
               </div>
             </div>
