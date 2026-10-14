@@ -18,10 +18,26 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(booking.bookingCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyCode = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(booking.bookingCode);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = booking.bookingCode;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -93,7 +109,7 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
             <div className="flex items-start justify-between py-1">
               <span className="text-neutral-400">Layanan Tambahan</span>
               <span className="font-light text-neutral-300 text-right max-w-[220px]">
-                {booking.addOns.map((a) => a.addOn.name).join(', ')}
+                {booking.addOns.map((a: any) => a.addOn?.name || a.name || 'Layanan Tambahan').join(', ')}
               </span>
             </div>
           )}
@@ -109,25 +125,18 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full"
+            className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 shadow-lg transition-all duration-150 cursor-pointer active:scale-[0.98] motion-reduce:active:scale-100 select-none"
           >
-            <button
-              type="button"
-              className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 shadow-lg transition-all duration-150 cursor-pointer active:scale-[0.98] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
-            >
-              <MessageCircle className="w-4 h-4 fill-white" />
-              <span>Konfirmasi via WhatsApp Studio</span>
-            </button>
+            <MessageCircle className="w-4 h-4 fill-white" />
+            <span>Konfirmasi via WhatsApp Studio</span>
           </a>
 
           <Link
             href={`/cek-booking?query=${booking.bookingCode}`}
-            className="block w-full"
+            className="w-full py-3 rounded-full border border-neutral-700 hover:border-neutral-400 text-neutral-300 hover:text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer select-none"
           >
-            <Button variant="outline" size="md" className="w-full">
-              <span>Cek Status Booking Mandiri</span>
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
+            <span>Cek Status Booking Mandiri</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>

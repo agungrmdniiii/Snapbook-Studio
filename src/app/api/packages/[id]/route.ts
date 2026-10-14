@@ -72,8 +72,31 @@ export async function DELETE(
     const isAddon = searchParams.get('type') === 'addon';
 
     if (isAddon) {
+      const relatedCount = await prisma.bookingAddOn.count({ where: { addOnId: id } });
+      if (relatedCount > 0) {
+        await prisma.addOn.update({
+          where: { id },
+          data: { isActive: false },
+        });
+        return NextResponse.json({
+          success: true,
+          message: 'Add-on berhasil diarsipkan karena memiliki riwayat pemesanan.',
+        });
+      }
       await prisma.addOn.delete({ where: { id } });
       return NextResponse.json({ success: true, message: 'Add-on berhasil dihapus' });
+    }
+
+    const bookingCount = await prisma.booking.count({ where: { packageId: id } });
+    if (bookingCount > 0) {
+      await prisma.package.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'Paket berhasil diarsipkan karena memiliki riwayat pemesanan pelanggan.',
+      });
     }
 
     await prisma.package.delete({ where: { id } });

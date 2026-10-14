@@ -7,12 +7,14 @@ interface StepPackageProps {
   packages: PackageItem[];
   selectedPackage: PackageItem | null;
   onSelect: (pkg: PackageItem) => void;
+  onSelectAndNext?: (pkg: PackageItem) => void;
 }
 
 export const StepPackage: React.FC<StepPackageProps> = ({
   packages,
   selectedPackage,
   onSelect,
+  onSelectAndNext,
 }) => {
   return (
     <div className="space-y-8">
@@ -89,16 +91,23 @@ export const StepPackage: React.FC<StepPackageProps> = ({
               </div>
 
               <div className="mt-8 pt-4 border-t border-neutral-800">
-                <button
-                  type="button"
-                  className={`w-full py-2.5 rounded-full text-xs font-medium tracking-[0.16em] uppercase transition-all cursor-pointer ${
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectAndNext) {
+                      onSelectAndNext(pkg);
+                    } else {
+                      onSelect(pkg);
+                    }
+                  }}
+                  className={`w-full py-2.5 rounded-full text-xs font-medium tracking-[0.16em] uppercase transition-all text-center select-none cursor-pointer ${
                     isSelected
                       ? 'bg-white text-black font-semibold'
-                      : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800 border border-neutral-800'
+                      : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800 hover:text-white border border-neutral-800'
                   }`}
                 >
-                  {isSelected ? '✓ Paket Terpilih' : 'Pilih Paket Ini'}
-                </button>
+                  {isSelected ? '✓ Lanjut Pilih Jam' : 'Pilih Paket Ini'}
+                </div>
               </div>
             </div>
           );

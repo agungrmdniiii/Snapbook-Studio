@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { verifySessionToken, SESSION_COOKIE_NAME, hashPassword } from '@/lib/auth';
 
-import { DEFAULT_CONFIG } from '@/lib/constants';
+import { DEFAULT_CONFIG, invalidateStudioConfigCache } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +55,8 @@ export async function PUT(request: Request) {
         aboutText: data.aboutText || '',
       },
     });
+
+    invalidateStudioConfigCache();
 
     // Optional admin password update
     if (data.newPassword && data.newPassword.trim().length >= 6) {

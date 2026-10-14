@@ -21,10 +21,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   addOns,
   initialPackageId,
 }) => {
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(() => {
-    return packages.find((p) => p.id === initialPackageId) || null;
-  });
+  const initialPkg = packages.find((p) => p.id === initialPackageId) || null;
+  const [currentStep, setCurrentStep] = useState<number>(initialPkg ? 2 : 1);
+  const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(initialPkg);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
@@ -212,6 +211,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
             onSelect={(pkg) => {
               setSelectedPackage(pkg);
               setErrorMessage(null);
+            }}
+            onSelectAndNext={(pkg) => {
+              setSelectedPackage(pkg);
+              setErrorMessage(null);
+              setCurrentStep(2);
             }}
           />
         )}

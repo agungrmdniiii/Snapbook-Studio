@@ -159,3 +159,31 @@ export const DEFAULT_GALLERY = [
     sortOrder: 6,
   },
 ];
+
+// In-memory cache for studio configuration to cut redundant DB round-trips
+let cachedStudioConfig: any = null;
+let lastStudioConfigFetch = 0;
+const STUDIO_CONFIG_TTL = 60 * 1000; // 60 seconds
+
+export async function getCachedStudioConfig(prismaClient: any) {
+  const now = Date.now();
+  if (cachedStudioConfig && now - lastStudioConfigFetch < STUDIO_CONFIG_TTL) {
+    return cachedStudioConfig;
+  }
+  try {
+    const config = await prismaClient.studioConfig.findUnique({ where: { id: 'default' } });
+    if (config) {
+      cachedStudioConfig = config;
+      lastStudioConfigFetch = now;
+      return config;
+    }
+  } catch (err) {
+    console.warn('Fallback reading studioConfig from cache/default:', err);
+  }
+  return cachedStudioConfig || DEFAULT_CONFIG;
+}
+
+export function invalidateStudioConfigCache() {
+  cachedStudioConfig = null;
+  lastStudioConfigFetch = 0;
+}

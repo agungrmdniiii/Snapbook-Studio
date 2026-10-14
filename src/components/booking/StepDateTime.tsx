@@ -26,8 +26,26 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Today in YYYY-MM-DD
-  const today = new Date().toISOString().split('T')[0];
+  // Format helper YYYY-MM-DD
+  const getLocalDate = (offsetDays = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const today = getLocalDate(0);
+  const tomorrow = getLocalDate(1);
+  const dayAfter = getLocalDate(2);
+
+  // Auto-initialize selectedDate to tomorrow if empty so slots immediately appear
+  useEffect(() => {
+    if (!selectedDate) {
+      onSelectDate(tomorrow);
+    }
+  }, [selectedDate, tomorrow, onSelectDate]);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -63,6 +81,12 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
     };
   }, [selectedDate]);
 
+  const quickDates = [
+    { label: 'Hari Ini', date: today },
+    { label: 'Besok', date: tomorrow },
+    { label: 'Lusa', date: dayAfter },
+  ];
+
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="text-center space-y-2">
@@ -74,24 +98,52 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
         </p>
       </div>
 
-      {/* Date Picker Input */}
-      <div className="bg-[#101013] border border-neutral-800 rounded-2xl p-6 sm:p-7 space-y-3.5">
-        <label className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
-          <Calendar className="w-4 h-4 text-neutral-400" />
-          <span>Tanggal Kedatangan</span>
-        </label>
+      {/* Date Picker Section */}
+      <div className="bg-[#101013] border border-neutral-800 rounded-2xl p-6 sm:p-7 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <label className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
+            <Calendar className="w-4 h-4 text-neutral-400" />
+            <span>Pilih Tanggal Reservasi</span>
+          </label>
+
+          {/* Quick Date Pills */}
+          <div className="flex items-center gap-1.5">
+            {quickDates.map((q) => {
+              const isQSelected = selectedDate === q.date;
+              return (
+                <button
+                  key={q.date}
+                  type="button"
+                  onClick={() => {
+                    onSelectDate(q.date);
+                    onSelectTime('');
+                  }}
+                  className={`px-3 py-1 rounded-full text-[11px] tracking-wider uppercase font-medium transition-all cursor-pointer ${
+                    isQSelected
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800 hover:border-neutral-600'
+                  }`}
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <input
           type="date"
           min={today}
           value={selectedDate}
           onChange={(e) => {
             onSelectDate(e.target.value);
-            onSelectTime(''); // reset time slot on date change
+            onSelectTime('');
           }}
           className="w-full px-4 py-3 bg-[#0a0a0c] border border-neutral-800 rounded-xl text-white font-medium text-sm focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors cursor-pointer"
         />
+
         {selectedDate && (
-          <p className="text-xs text-neutral-400 font-light pt-1">
+          <p className="text-xs text-neutral-400 font-light">
             Tanggal dipilih:{' '}
             <span className="font-medium text-white">
               {formatDateIndonesian(selectedDate)}

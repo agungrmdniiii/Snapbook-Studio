@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
 import { calculateEndTime, formatIDR } from '@/lib/utils';
 import { generateBookingWhatsAppUrl } from '@/lib/whatsapp';
-import { DEFAULT_CONFIG, DEFAULT_PACKAGES, DEFAULT_ADDONS } from '@/lib/constants';
+import { DEFAULT_CONFIG, DEFAULT_PACKAGES, DEFAULT_ADDONS, getCachedStudioConfig } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,10 +30,10 @@ export async function GET(request: Request) {
 
     if (search) {
       where.OR = [
-        { bookingCode: { contains: search } },
-        { clientName: { contains: search } },
-        { clientPhone: { contains: search } },
-        { clientEmail: { contains: search } },
+        { bookingCode: { contains: search, mode: 'insensitive' } },
+        { clientName: { contains: search, mode: 'insensitive' } },
+        { clientPhone: { contains: search, mode: 'insensitive' } },
+        { clientEmail: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -46,7 +46,9 @@ export async function GET(request: Request) {
       orderBy: [{ date: 'desc' }, { startTime: 'asc' }],
     });
 
-    return NextResponse.json(bookings);
+    return NextResponse.json(bookings, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   } catch (error) {
     console.error('Error fetching bookings:', error);
     return NextResponse.json([], { status: 200 });
@@ -101,60 +103,25 @@ export async function POST(request: Request) {
     const dateCode = date.replace(/-/g, '');
     const bookingCode = `SB-${dateCode}-${randomSuffix}`;
 
-    let newBooking: any = null;
+    // Prevent double booking collision
+    const collision = await prisma.booking.findFirst({
+      where: {
+        date,
+        startTime,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+    });
 
-    try {
-      // Atomic transaction to prevent double booking in database
-      newBooking = await prisma.$transaction(async (tx) => {
-        const collision = await tx.booking.findFirst({
-          where: {
-            date,
-            startTime,
-            status: { in: ['PENDING', 'CONFIRMED'] },
-          },
-        });
+    if (collision) {
+      return NextResponse.json(
+        { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
+        { status: 409 }
+      );
+    }
 
-        if (collision) {
-          throw new Error('SLOT_TAKEN');
-        }
-
-        return await tx.booking.create({
-          data: {
-            bookingCode,
-            packageId: pkg.id,
-            clientName: clientName.trim(),
-            clientEmail: (clientEmail || '').trim(),
-            clientPhone: clientPhone.trim(),
-            date,
-            startTime,
-            endTime,
-            status: 'PENDING',
-            totalPrice,
-            notes: notes ? notes.trim() : null,
-            addOns: {
-              create: addOnRecords.map((ad) => ({
-                addOnId: ad.id,
-                priceAtBooking: ad.price,
-              })),
-            },
-          },
-          include: {
-            package: true,
-            addOns: { include: { addOn: true } },
-          },
-        });
-      });
-    } catch (dbError: any) {
-      if (dbError.message === 'SLOT_TAKEN') {
-        return NextResponse.json(
-          { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
-          { status: 409 }
-        );
-      }
-      console.warn('Database booking save fallback:', dbError);
-      // Resilient fallback booking object so customer is never blocked
-      newBooking = {
-        id: `fb-${bookingCode}`,
+    // Persist directly to Supabase PostgreSQL database
+    const newBooking = await prisma.booking.create({
+      data: {
         bookingCode,
         packageId: pkg.id,
         clientName: clientName.trim(),
@@ -166,18 +133,23 @@ export async function POST(request: Request) {
         status: 'PENDING',
         totalPrice,
         notes: notes ? notes.trim() : null,
-        package: pkg,
-        addOns: addOnRecords.map((ad) => ({
-          addOn: ad,
-          priceAtBooking: ad.price,
-        })),
-      };
-    }
+        addOns: {
+          create: addOnRecords.map((ad) => ({
+            addOnId: ad.id,
+            priceAtBooking: ad.price,
+          })),
+        },
+      },
+      include: {
+        package: true,
+        addOns: { include: { addOn: true } },
+      },
+    });
 
     // Studio WhatsApp
     let studioPhone = DEFAULT_CONFIG.whatsappNumber;
     try {
-      const studioConfig = await prisma.studioConfig.findUnique({ where: { id: 'default' } });
+      const studioConfig = await getCachedStudioConfig(prisma);
       if (studioConfig?.whatsappNumber) {
         studioPhone = studioConfig.whatsappNumber;
       }
@@ -188,12 +160,12 @@ export async function POST(request: Request) {
     const whatsappUrl = generateBookingWhatsAppUrl(studioPhone, {
       bookingCode: newBooking.bookingCode,
       clientName: newBooking.clientName,
-      packageName: newBooking.package.name,
-      packagePrice: newBooking.package.price,
+      packageName: newBooking.package?.name || pkg.name,
+      packagePrice: newBooking.package?.price || pkg.price,
       date: newBooking.date,
       startTime: newBooking.startTime,
       endTime: newBooking.endTime,
-      addOns: (newBooking.addOns || []).map((a: any) => `${a.addOn?.name || 'Addon'} (${formatIDR(a.priceAtBooking)})`),
+      addOns: (newBooking.addOns || []).map((a: any) => `${a.addOn?.name || a.name || 'Addon'} (${formatIDR(a.priceAtBooking || 0)})`),
       totalPrice: newBooking.totalPrice,
       notes: newBooking.notes || undefined,
     });

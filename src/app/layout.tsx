@@ -1,5 +1,18 @@
 import type { Metadata } from 'next';
+import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Snapbook Studio - Modern Photo Studio & Booking',
@@ -12,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
-      <body className="min-h-screen bg-[#0c0d0e] text-zinc-100 antialiased selection:bg-amber-500 selection:text-zinc-950">
+    <html lang="id" className={`${playfair.variable} ${plusJakarta.variable}`}>
+      <body className="min-h-screen bg-[#09090b] text-neutral-100 antialiased selection:bg-neutral-800 selection:text-white">
         {children}
       </body>
     </html>

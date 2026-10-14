@@ -25,7 +25,9 @@ function BookingsContent() {
       if (statusFilter && statusFilter !== 'ALL') params.append('status', statusFilter);
       if (searchTerm.trim()) params.append('search', searchTerm.trim());
 
-      const res = await fetch(`/api/bookings?${params.toString()}`);
+      const res = await fetch(`/api/bookings?${params.toString()}`, {
+        cache: 'no-store',
+      });
       if (!res.ok) throw new Error('Gagal mengambil data booking');
       const data = await res.json();
       setBookings(data);

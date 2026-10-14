@@ -72,6 +72,9 @@ model Booking {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   addOns      BookingAddOn[]
+
+  @@index([date, status])
+  @@index([status])
 }
 
 model BookingAddOn {

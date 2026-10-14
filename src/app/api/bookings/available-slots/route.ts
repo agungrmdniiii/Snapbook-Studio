@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateTimeSlots } from '@/lib/utils';
-import { DEFAULT_CONFIG } from '@/lib/constants';
+import { DEFAULT_CONFIG, getCachedStudioConfig } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,20 +20,22 @@ export async function GET(request: Request) {
     let bookedSlotTimes = new Set<string>();
 
     try {
-      const config = await prisma.studioConfig.findUnique({ where: { id: 'default' } });
+      const [config, activeBookings] = await Promise.all([
+        getCachedStudioConfig(prisma),
+        prisma.booking.findMany({
+          where: {
+            date,
+            status: { in: ['PENDING', 'CONFIRMED'] },
+          },
+          select: { startTime: true },
+        }),
+      ]);
+
       if (config) {
         openingTime = config.openingTime || DEFAULT_CONFIG.openingTime;
         closingTime = config.closingTime || DEFAULT_CONFIG.closingTime;
         slotDuration = config.slotDuration || DEFAULT_CONFIG.slotDuration;
       }
-
-      const activeBookings = await prisma.booking.findMany({
-        where: {
-          date,
-          status: { in: ['PENDING', 'CONFIRMED'] },
-        },
-        select: { startTime: true },
-      });
 
       bookedSlotTimes = new Set(activeBookings.map((b) => b.startTime));
     } catch (dbError) {
