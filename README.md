@@ -14,40 +14,11 @@
 
 ---
 
-## 📸 Pratinjau Tampilan Sistem
+## Video Promosi Snapbook Studio
 
-### 1. Landing Page & Editorial Atelier
-Tampilan beranda bergaya rumah mode mewah (*high-fashion atelier*) dengan tipografi Playfair Display & Plus Jakarta Sans, pita marquee berjalan kontinu, dan pengubah tone pencahayaan interaktif (*interactive tone switcher*).
+https://github.com/user-attachments/assets/ef501ecc-4964-4496-8ee4-045a8d4ad307
 
-![Snapbook Studio Landing Page](docs/images/preview-home.png)
-
----
-
-### 2. Galeri Karya & Katalog Tarif Transparan
-Galeri pameran kurasi dengan filter kategori dinamis, *interactive exhibition lightbox*, dan kartu paket foto transparan berformat Rupiah tanpa biaya tersembunyi.
-
-![Galeri Karya & Paket Foto](docs/images/preview-gallery.png)
-
----
-
-### 3. Alur Booking 5-Langkah (Anti-Collision Engine)
-Wizard reservasi mandiri interaktif dengan pemilihan tanggal kalender dan pengecekan ketersediaan slot waktu secara *real-time*. Jam yang telah terisi otomatis terkunci (*disabled*) demi kenyamanan klien.
-
-![Alur Booking Interaktif](docs/images/preview-booking.png)
-
----
-
-### 4. Pelacakan Mandiri & E-Receipt Klien (`/cek-booking`)
-Halaman pelacakan status jadwal (*Pending*, *Terkonfirmasi*, *Selesai*) dengan kode booking dan nomor WhatsApp pemesan, dilengkapi rincian biaya, alamat studio, dan panduan kedatangan.
-
-![Pelacakan Booking Mandiri](docs/images/preview-cek-booking.png)
-
----
-
-### 5. Portal Manajemen Admin (`/admin`)
-Pusat kontrol operasional studio terproteksi cookie sesi HTTP-only dan enkripsi password `bcrypt` untuk mengelola seluruh data booking, ketersediaan slot, upload galeri, dan konfigurasi studio.
-
-![Portal Admin Snapbook](docs/images/preview-admin.png)
+[Tonton atau unduh video MP4](docs/videos/snapbook-promo.mp4)
 
 ---
 
