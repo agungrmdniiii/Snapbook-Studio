@@ -1,6 +1,7 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -12,6 +13,7 @@ import { validDate } from '@/lib/scheduling';
 type Block={id:string;date:string;startTime:string;endTime:string;reason:string};
 type Data={bookings:CalendarBooking[];blocks:Block[];config:{bufferMinutes:number}};
 export function OperationalCalendar({initialDate,initialBookingId}:{initialDate?:string;initialBookingId?:string}){
+ const notify = useToast();
  const [date,setDate]=useState(()=>initialDate&&validDate(initialDate)?initialDate:studioToday()),[view,setView]=useState<'day'|'week'>('week'),[data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(false),[error,setError]=useState(''),[selected,setSelected]=useState<CalendarBooking|null>(null),[showBlock,setShowBlock]=useState(false),[saving,setSaving]=useState(false);
  const openedInitial=useRef(false);
  const [blockDate,setBlockDate]=useState(studioToday),[start,setStart]=useState('09:00'),[end,setEnd]=useState('10:00'),[allDay,setAllDay]=useState(false),[reason,setReason]=useState(''),[formError,setFormError]=useState('');
@@ -29,7 +31,7 @@ export function OperationalCalendar({initialDate,initialBookingId}:{initialDate?
  useVisibleRefresh(()=>load(true));
  useEffect(()=>{if(data&&initialBookingId&&!openedInitial.current){const b=data.bookings.find(b=>b.id===initialBookingId);if(b){setSelected(b);openedInitial.current=true;}}},[data,initialBookingId]);
  const conflicts=data?.bookings.filter(b=>b.hasConflict).length??0;
- async function removeBlock(block:Block){if(saving||!confirm(`Buka kembali waktu ${block.startTime}–${block.endTime} pada ${formatDateIndonesian(block.date)}?`))return;setSaving(true);try{await fetch(`/api/admin/blocks/${block.id}`,{method:'DELETE'}).then(readResponse);await load(true);}catch(e){setError(e instanceof Error?e.message:'Gagal membuka blok.');}finally{setSaving(false);}}
+ async function removeBlock(block:Block){if(saving||!confirm(`Buka kembali waktu ${block.startTime}–${block.endTime} pada ${formatDateIndonesian(block.date)}?`))return;setSaving(true);try{await fetch(`/api/admin/blocks/${block.id}`,{method:'DELETE'}).then(readResponse);notify('Blok waktu berhasil dibuka kembali.');await load(true);}catch(e){setError(e instanceof Error?e.message:'Gagal membuka blok.');}finally{setSaving(false);}}
  return <div className="space-y-6 max-w-7xl min-w-0">
   <header className="flex flex-wrap gap-3 justify-between"><div><h1 className="font-serif text-3xl text-white">Kalender Studio</h1><p className="text-sm text-neutral-400 mt-2">Atur agenda, pindah jadwal, dan catat DP. Semua jam mengikuti WIB.</p></div><Link href="/admin/bookings" className="text-sm text-neutral-300 underline self-center">Lihat daftar reservasi</Link></header>
   <div className="flex flex-wrap gap-2 items-center"><Button variant="outline" size="sm" onClick={()=>setDate(shiftCalendarDate(date,view==='week'?-7:-1))}>Sebelumnya</Button><Button variant="outline" size="sm" onClick={()=>setDate(studioToday())}>Hari ini</Button><Button variant="outline" size="sm" onClick={()=>setDate(shiftCalendarDate(date,view==='week'?7:1))}>Berikutnya</Button><input aria-label="Tanggal kalender" type="date" value={date} onChange={e=>{if(e.target.value)setDate(e.target.value);}} className="min-w-0 bg-neutral-900 border border-neutral-700 rounded-xl px-3 py-2 text-white text-sm"/><Button size="sm" variant={view==='day'?'primary':'outline'} onClick={()=>setView('day')}>Harian</Button><Button size="sm" variant={view==='week'?'primary':'outline'} onClick={()=>setView('week')}>Mingguan</Button><Button size="sm" variant="outline" onClick={()=>load()} disabled={loading}>Muat ulang</Button><Button size="sm" onClick={()=>{setBlockDate(date);setFormError('');setShowBlock(true);}}>Blok waktu / libur</Button></div>
@@ -42,10 +44,10 @@ export function OperationalCalendar({initialDate,initialBookingId}:{initialDate?
    {!data?.bookings.some(b=>b.date===day)&&!data?.blocks.some(b=>b.date===day)&&<p className="text-xs text-neutral-500 py-10">Belum ada agenda.</p>}
   </section>)}</div></div>}
   {selected&&<BookingOperations key={selected.id} booking={selected} onClose={()=>setSelected(null)} onChanged={updated=>{if(updated)setSelected({...selected,...updated});load(true);}}/>}
-  <Modal isOpen={showBlock} onClose={()=>{if(!saving)setShowBlock(false);}} title="Blok waktu atau hari libur" maxWidth="md"><form className="space-y-4" onSubmit={async e=>{e.preventDefault();if(saving)return;setSaving(true);setFormError('');try{await fetch('/api/admin/blocks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:blockDate,startTime:allDay?'00:00':start,endTime:allDay?'23:59':end,reason})}).then(readResponse);setShowBlock(false);setReason('');await load(true);}catch(e){setFormError(e instanceof Error?e.message:'Blok belum dapat disimpan.');}finally{setSaving(false);}}}>
+  <Modal isOpen={showBlock} onClose={()=>{if(!saving)setShowBlock(false);}} title="Blok waktu atau hari libur" maxWidth="md"><form className="space-y-4" onSubmit={async e=>{e.preventDefault();if(saving)return;setSaving(true);setFormError('');try{await fetch('/api/admin/blocks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:blockDate,startTime:allDay?'00:00':start,endTime:allDay?'23:59':end,reason})}).then(readResponse);setShowBlock(false);setReason('');notify('Blok waktu berhasil disimpan.');await load(true);}catch(e){setFormError(e instanceof Error?e.message:'Blok belum dapat disimpan.');}finally{setSaving(false);}}}>
    <Input label="Tanggal blok" type="date" value={blockDate} onChange={e=>setBlockDate(e.target.value)} required disabled={saving}/><label className="flex gap-2 text-sm text-neutral-300"><input type="checkbox" checked={allDay} onChange={e=>setAllDay(e.target.checked)} disabled={saving}/>Tutup sepanjang hari</label>
    {!allDay&&<div className="grid grid-cols-2 gap-3"><Input label="Mulai (WIB)" type="time" value={start} onChange={e=>setStart(e.target.value)} required disabled={saving}/><Input label="Sampai (WIB)" type="time" value={end} onChange={e=>setEnd(e.target.value)} required disabled={saving}/></div>}
-   <Input label="Alasan penutupan" value={reason} onChange={e=>setReason(e.target.value)} maxLength={200} required disabled={saving}/><p className="text-xs text-neutral-400">Waktu yang sudah memiliki reservasi aktif tidak dapat ditutup. Pindahkan reservasi tersebut terlebih dahulu.</p>{formError&&<p role="alert" className="text-sm text-rose-300">{formError}</p>}<Button type="submit" disabled={saving}>Simpan blok waktu</Button>
+   <Input label="Alasan penutupan" value={reason} onChange={e=>setReason(e.target.value)} maxLength={200} required disabled={saving}/><p className="text-xs text-neutral-400">Waktu yang sudah memiliki reservasi aktif tidak dapat ditutup. Pindahkan reservasi tersebut terlebih dahulu.</p>{formError&&<p role="alert" className="text-sm text-rose-300">{formError}</p>}<Button type="submit" isLoading={saving} loadingLabel="Menyimpan…">Simpan blok waktu</Button>
   </form></Modal>
  </div>;
 }

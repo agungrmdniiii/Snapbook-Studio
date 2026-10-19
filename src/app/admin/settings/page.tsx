@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Save, Check, AlertCircle, Lock } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function AdminSettingsPage() {
+  const notify = useToast();
   const [studioName, setStudioName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
@@ -20,7 +22,6 @@ export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,12 +54,12 @@ export default function AdminSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     if (!settingsLoaded) {
       setErrorMsg('Pengaturan belum berhasil dimuat. Muat ulang halaman sebelum menyimpan.');
       return;
     }
     setIsSaving(true);
-    setSuccessMsg(null);
     setErrorMsg(null);
 
     try {
@@ -90,11 +91,11 @@ export default function AdminSettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyimpan.');
       if (data.requiresLogin) {
-        window.location.assign('/admin/login');
+        window.location.assign('/admin/login?passwordChanged=1');
         return;
       }
 
-      setSuccessMsg('Pengaturan studio berhasil diperbarui!');
+      notify('Pengaturan studio berhasil diperbarui.');
       setNewPassword('');
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan');
@@ -112,15 +113,8 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
-      {successMsg && (
-        <div className="p-4 bg-emerald-950/40 border border-emerald-900/60 text-emerald-300 text-xs rounded-2xl flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-400" />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
       {errorMsg && (
-        <div className="p-4 bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs rounded-2xl flex items-center gap-2">
+        <div role="alert" className="p-4 bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs rounded-2xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-400" />
           <span>{errorMsg}</span>
         </div>
@@ -232,7 +226,7 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="primary" size="lg" isLoading={isSaving} disabled={!settingsLoaded || isLoading}>
+          <Button type="submit" variant="primary" size="lg" isLoading={isSaving} loadingLabel="Menyimpan…" disabled={!settingsLoaded || isLoading}>
             <Save className="w-4 h-4 mr-1.5" />
             <span>Simpan Semua Pengaturan</span>
           </Button>

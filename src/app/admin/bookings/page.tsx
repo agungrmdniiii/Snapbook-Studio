@@ -7,6 +7,7 @@ import { useVisibleRefresh } from '@/components/admin/useVisibleRefresh';
 import { BookingTable } from '@/components/admin/BookingTable';
 import { BookingData, BookingStatus } from '@/types';
 import { Search, RefreshCw, Calendar, CheckCircle2, Clock, Check, X, DollarSign, CalendarDays } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { StudioCalendar } from '@/components/ui/StudioCalendar';
 import { formatIDR, formatDateIndonesian } from '@/lib/utils';
@@ -31,7 +32,7 @@ function BookingsContent() {
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studioName, setStudioName] = useState('Snapbook Studio');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = useToast();
 
   // Helper date YYYY-MM-DD
   const getLocalDate = (offsetDays = 0) => {
@@ -44,10 +45,7 @@ function BookingsContent() {
   const today = getLocalDate(0);
   const tomorrow = getLocalDate(1);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
-  };
+
 
   const fetchBookings = async (quiet = false) => {
     if(quiet&&activeRequest.current&&!activeRequest.current.signal.aborted)return;
@@ -86,7 +84,7 @@ function BookingsContent() {
       if (page > lastPage) setPage(lastPage);
     } catch (e: any) {
       if (id !== requestId.current || controller.signal.aborted) return;
-      showToast(e.message || 'Gagal memuat reservasi');
+      showToast(e.message || 'Gagal memuat reservasi', 'error');
     } finally {
       if (id === requestId.current && !controller.signal.aborted) { setIsLoading(false);activeRequest.current=null; }
     }
@@ -125,9 +123,11 @@ function BookingsContent() {
       }
 
       await fetchBookings();
-      showToast(`Status reservasi berhasil diubah ke: ${newStatus}`);
+      showToast(`Status reservasi berhasil diubah menjadi ${({PENDING:'Menunggu DP',CONFIRMED:'Terkonfirmasi',COMPLETED:'Selesai',CANCELLED:'Dibatalkan'})[newStatus]}.`);
+      return true;
     } catch (err: any) {
-      showToast(err.message || 'Gagal mengubah status');
+      showToast(err.message || 'Gagal mengubah status', 'error');
+      return false;
     }
   };
 
@@ -143,9 +143,11 @@ function BookingsContent() {
       }
 
       await fetchBookings();
-      showToast('Data reservasi berhasil dihapus.');
+      showToast('Reservasi berhasil diarsipkan. Riwayat tetap tersimpan.');
+      return true;
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghapus reservasi');
+      showToast(err.message || 'Gagal menghapus reservasi', 'error');
+      return false;
     }
   };
 
@@ -159,20 +161,6 @@ function BookingsContent() {
 
   return (
     <div className="space-y-6 max-w-7xl animate-studio-fade">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-neutral-900 border border-neutral-700 text-white text-xs sm:text-sm shadow-2xl flex items-center gap-3 animate-studio-fade">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="text-neutral-500 hover:text-white ml-2 text-xs"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Package, Plus, Edit2, Trash2, Clock, Check } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PackageModal } from '@/components/admin/PackageModal';
@@ -9,6 +10,9 @@ import { PackageItem, AddOnItem } from '@/types';
 import { formatIDR } from '@/lib/utils';
 
 export default function AdminPackagesPage() {
+  const notify = useToast();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const deletePending = useRef(false);
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [addOns, setAddOns] = useState<AddOnItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +31,7 @@ export default function AdminPackagesPage() {
       setPackages(data.packages || []);
       setAddOns(data.addOns || []);
     } catch (e) {
-      console.error(e);
+      notify(e instanceof Error ? e.message : 'Gagal memuat katalog. Muat ulang halaman.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -38,15 +42,22 @@ export default function AdminPackagesPage() {
   }, []);
 
   const handleDelete = async (id: string, isAddon: boolean = false) => {
+    if (deletePending.current) return;
     if (!confirm(`Hapus ${isAddon ? 'add-on' : 'paket'} ini secara permanen?`)) return;
 
+    deletePending.current = true;
+    setDeletingId(id);
     try {
       const url = isAddon ? `/api/packages/${id}?type=addon` : `/api/packages/${id}`;
       const res = await fetch(url, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Gagal menghapus');
+      if (!res.ok) { const data = await res.json(); throw new Error(data.error || 'Data gagal dihapus. Coba kembali.'); }
+      notify(`${isAddon ? 'Add-on' : 'Paket foto'} berhasil dihapus.`);
       fetchData();
     } catch (err: any) {
-      alert(err.message || 'Gagal menghapus');
+      notify(err.message || 'Data gagal dihapus. Coba kembali.', 'error');
+    } finally {
+      deletePending.current = false;
+      setDeletingId(null);
     }
   };
 
@@ -150,7 +161,7 @@ export default function AdminPackagesPage() {
                     <Edit2 className="w-3 h-3 mr-1" />
                     <span>Edit</span>
                   </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(pkg.id)}>
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(pkg.id)} disabled={deletingId !== null} isLoading={deletingId === pkg.id} loadingLabel="Menghapus…">
                     <Trash2 className="w-3 h-3 mr-1" />
                     <span>Hapus</span>
                   </Button>
@@ -181,12 +192,16 @@ export default function AdminPackagesPage() {
 
               <div className="flex items-center gap-1.5 shrink-0 ml-3">
                 <button
+                  aria-label={`Edit add-on ${ad.name}`}
                   onClick={() => openEdit(ad, 'addon')}
                   className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
+                  aria-label={`Hapus add-on ${ad.name}`}
+                  aria-busy={deletingId === ad.id}
+                  disabled={deletingId !== null}
                   onClick={() => handleDelete(ad.id, true)}
                   className="p-2 text-neutral-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                 >

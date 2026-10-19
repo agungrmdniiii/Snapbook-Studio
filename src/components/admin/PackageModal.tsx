@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   initialData,
   onSuccess,
 }) => {
+  const notify = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -62,6 +64,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     if (!name.trim() || !price) {
       setError('Nama dan harga wajib diisi.');
       return;
@@ -101,6 +104,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyimpan data.');
 
+      notify(`${type === 'package' ? 'Paket foto' : 'Add-on'} berhasil ${initialData ? 'diubah' : 'ditambahkan'}.`);
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -115,10 +119,10 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     : `Tambah ${type === 'package' ? 'Paket Foto Baru' : 'Add-on Baru'}`;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="lg">
+    <Modal isOpen={isOpen} onClose={() => { if (!isLoading) onClose(); }} title={title} maxWidth="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
+          <div role="alert" className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
             {error}
           </div>
         )}
@@ -214,10 +218,10 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         </div>
 
         <div className="pt-4 flex items-center justify-end gap-2 border-t border-neutral-800">
-          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+          <Button type="button" variant="outline" size="sm" disabled={isLoading} onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" variant="primary" size="sm" isLoading={isLoading}>
+          <Button type="submit" variant="primary" size="sm" isLoading={isLoading} loadingLabel="Menyimpan…">
             Simpan Data
           </Button>
         </div>

@@ -1,13 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const notify = useToast();
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('passwordChanged') === '1') {
+      notify('Password berhasil diubah. Silakan masuk kembali.');
+      url.searchParams.delete('passwordChanged');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  }, [notify]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +95,7 @@ export default function AdminLoginPage() {
               required
             />
 
-            <Button type="submit" variant="primary" size="lg" className="w-full mt-2" isLoading={isLoading}>
+            <Button type="submit" variant="primary" size="lg" className="w-full mt-2" isLoading={isLoading} loadingLabel="Memeriksa akun…">
               <span>Masuk ke Dashboard</span>
               <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>

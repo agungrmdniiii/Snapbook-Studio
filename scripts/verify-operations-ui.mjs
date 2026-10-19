@@ -6,7 +6,7 @@ import path from 'node:path';
 import http from 'node:http';
 import assert from 'node:assert/strict';
 const folder='docs/audits/2026-10-19/operations-browser';fs.mkdirSync(folder,{recursive:true});fs.mkdirSync('.tmp',{recursive:true});
-fs.writeFileSync('.tmp/calendar-harness.tsx','import React from "react";import {createRoot} from "react-dom/client";import {OperationalCalendar} from "../src/components/admin/OperationalCalendar";createRoot(document.getElementById("root")!).render(<div style={{padding:16,minHeight:"100vh",background:"#09090b"}}><OperationalCalendar initialDate="2099-01-02"/></div>);');
+fs.writeFileSync('.tmp/calendar-harness.tsx','import React from "react";import {createRoot} from "react-dom/client";import {ToastProvider} from "../src/components/ui/Toast";import {OperationalCalendar} from "../src/components/admin/OperationalCalendar";createRoot(document.getElementById("root")!).render(<ToastProvider><div style={{padding:16,minHeight:"100vh",background:"#09090b"}}><OperationalCalendar initialDate="2099-01-02"/></div></ToastProvider>);');
 await build({entryPoints:['.tmp/calendar-harness.tsx'],bundle:true,platform:'browser',format:'iife',outfile:'.tmp/calendar-harness.js',define:{'process.env.NODE_ENV':'"production"','process.env':'{}'},tsconfig:'tsconfig.json'});
 const cssDir='.next/static/css';const css=fs.readdirSync(cssDir).filter(n=>n.endsWith('.css')).map(n=>fs.readFileSync(path.join(cssDir,n),'utf8')).join('\n');
 const server=http.createServer((req,res)=>{

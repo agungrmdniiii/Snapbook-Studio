@@ -11,8 +11,8 @@ import { generateReminderWhatsAppUrl, sanitizeWhatsAppNumber } from '@/lib/whats
 
 interface BookingTableProps {
   bookings: BookingData[];
-  onUpdateStatus: (bookingId: string, status: BookingStatus) => Promise<void>;
-  onDeleteBooking?: (bookingId: string) => Promise<void>;
+  onUpdateStatus: (bookingId: string, status: BookingStatus) => Promise<boolean>;
+  onDeleteBooking?: (bookingId: string) => Promise<boolean>;
   studioName?: string;
 }
 
@@ -27,9 +27,10 @@ export const BookingTable: React.FC<BookingTableProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleStatusChange = async (id: string, status: BookingStatus) => {
+    if (updatingId || isDeleting) return;
     setUpdatingId(id);
     try {
-      await onUpdateStatus(id, status);
+      if (!await onUpdateStatus(id, status)) return;
       if (selectedBooking && selectedBooking.id === id) {
         setSelectedBooking((prev) => (prev ? { ...prev, status } : null));
       }
@@ -39,11 +40,11 @@ export const BookingTable: React.FC<BookingTableProps> = ({
   };
 
   const handleDelete = async (id: string) => {
-    if (!onDeleteBooking) return;
+    if (!onDeleteBooking || isDeleting || updatingId) return;
     if (!confirm('Arsipkan reservasi ini? Riwayat tetap disimpan.')) return;
     setIsDeleting(true);
     try {
-      await onDeleteBooking(id);
+      if (!await onDeleteBooking(id)) return;
       setSelectedBooking(null);
     } finally {
       setIsDeleting(false);
@@ -423,6 +424,9 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                     key={st.key}
                     type="button"
                     onClick={() => handleStatusChange(selectedBooking.id, st.key as BookingStatus)}
+                    disabled={updatingId !== null || isDeleting}
+                    aria-busy={updatingId === selectedBooking.id}
+                    aria-pressed={selectedBooking.status === st.key}
                     className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                       selectedBooking.status === st.key
                         ? 'bg-white text-black font-semibold border-white shadow-md'
@@ -443,7 +447,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                   variant="danger"
                   size="sm"
                   onClick={() => handleDelete(selectedBooking.id)}
-                  isLoading={isDeleting}
+                  isLoading={isDeleting} loadingLabel="Mengarsipkan…"
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1" />
                   <span>Arsipkan Reservasi</span>

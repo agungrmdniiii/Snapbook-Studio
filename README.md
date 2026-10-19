@@ -248,3 +248,8 @@ Pembayaran adalah pencatatan manual, bukan payment gateway. Nominal tidak boleh 
 Database baru: buat skema dasar lalu terapkan `prisma/hardening.sql` dan `prisma/operations.sql` satu kali berurutan. Produksi sudah dimigrasikan; jangan mengulang SQL. `prisma db push` tidak memasang trigger/RLS. Penulisan jadwal/pembayaran wajib memakai isolation READ COMMITTED.
 
 Verifikasi: `npm test`, `npm run lint`, `npm run build`. `node --import tsx scripts/verify-operations-db.mts` membuat/membersihkan skema fixture terpisah, memerlukan izin membuat skema. `node scripts/verify-operations-ui.mjs` menguji komponen admin melalui API dummy setelah build menyediakan CSS/font. Bukti dan batas pemeriksaan: `docs/audits/2026-10-19/OPERATIONS.md`.
+
+
+## Notifikasi tindakan admin
+
+Tambah/edit/hapus data kini memberi notifikasi hasil yang konsisten. Pesan sukses hilang setelah 5 detik (berhenti sementara saat diarahkan kursor/fokus); pesan gagal tetap terlihat sampai ditutup. Tombol menampilkan proses menyimpan/mengunggah/mengarsipkan dan mencegah pengiriman berulang saat sibuk. Status reservasi tidak berubah di dialog apabila server menolak perubahan. Komponen bersama: `src/components/ui/Toast.tsx`; verifikasi UI dummy: `scripts/verify-action-feedback.mjs`.

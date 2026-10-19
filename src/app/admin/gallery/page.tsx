@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Upload, Link as LinkIcon, Image as ImageIcon, CheckCircle2, X } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -22,15 +23,14 @@ export default function AdminGalleryPage() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Portrait');
   const [aspectRatio, setAspectRatio] = useState('portrait');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const deletePending = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+
 
   const fetchGallery = async () => {
     setIsLoading(true);
@@ -41,7 +41,7 @@ export default function AdminGalleryPage() {
       setImages(data);
     } catch (e: any) {
       console.error(e);
-      showToast(e.message || 'Gagal memuat foto');
+      showToast(e.message || 'Gagal memuat foto', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -69,6 +69,7 @@ export default function AdminGalleryPage() {
   };
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (inputMode === 'upload' ? !selectedFile : !url.trim()) {
       setError('Silakan upload file foto atau masukkan link URL foto terlebih dahulu.');
       return;
@@ -117,14 +118,20 @@ export default function AdminGalleryPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (deletePending.current) return;
     if (!confirm('Hapus foto portofolio ini dari galeri?')) return;
+    deletePending.current = true;
+    setDeletingId(id);
     try {
       const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Gagal menghapus');
       showToast('Foto berhasil dihapus.');
       fetchGallery();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghapus foto');
+      showToast(err.message || 'Gagal menghapus foto', 'error');
+    } finally {
+      deletePending.current = false;
+      setDeletingId(null);
     }
   };
 
@@ -139,20 +146,6 @@ export default function AdminGalleryPage() {
 
   return (
     <div className="space-y-8 max-w-6xl animate-studio-fade">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-neutral-900 border border-neutral-700 text-white text-xs sm:text-sm shadow-2xl flex items-center gap-3 animate-studio-fade">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="text-neutral-500 hover:text-white ml-2 text-xs"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -203,6 +196,9 @@ export default function AdminGalleryPage() {
                 <div className="flex justify-end">
                   <button
                     onClick={() => handleDelete(img.id)}
+                    disabled={deletingId !== null}
+                    aria-busy={deletingId === img.id}
+                    aria-label={deletingId === img.id ? 'Menghapus foto…' : 'Hapus foto'}
                     title="Hapus Foto"
                     className="p-1.5 rounded-lg bg-black/70 text-neutral-300 hover:text-rose-400 hover:bg-rose-950/80 border border-neutral-700 backdrop-blur-sm transition-colors cursor-pointer"
                   >
@@ -227,13 +223,13 @@ export default function AdminGalleryPage() {
       {/* Modal Add / Upload Photo */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => { if (!isSubmitting) setIsModalOpen(false); }}
         title="Upload Foto ke Galeri Studio"
         maxWidth="lg"
       >
         <form onSubmit={handleAddImage} className="space-y-5">
           {error && (
-            <div className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
+            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-900/60 text-rose-300 text-xs rounded-xl">
               {error}
             </div>
           )}
@@ -380,14 +376,14 @@ export default function AdminGalleryPage() {
           </div>
 
           <div className="pt-4 flex items-center justify-end gap-2 border-t border-neutral-800">
-            <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={() => setIsModalOpen(false)}>
               Batal
             </Button>
             <Button
               type="submit"
               variant="primary"
               size="sm"
-              isLoading={isSubmitting}
+              isLoading={isSubmitting} loadingLabel={inputMode === 'upload' ? 'Mengunggah…' : 'Menyimpan…'}
             >
               {inputMode === 'upload' ? 'Upload & Publikasikan' : 'Tambahkan Foto'}
             </Button>
