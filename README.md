@@ -253,3 +253,8 @@ Verifikasi: `npm test`, `npm run lint`, `npm run build`. `node --import tsx scri
 ## Notifikasi tindakan admin
 
 Tambah/edit/hapus data kini memberi notifikasi hasil yang konsisten. Pesan sukses hilang setelah 5 detik (berhenti sementara saat diarahkan kursor/fokus); pesan gagal tetap terlihat sampai ditutup. Tombol menampilkan proses menyimpan/mengunggah/mengarsipkan dan mencegah pengiriman berulang saat sibuk. Status reservasi tidak berubah di dialog apabila server menolak perubahan. Komponen bersama: `src/components/ui/Toast.tsx`; verifikasi UI dummy: `scripts/verify-action-feedback.mjs`.
+
+
+## Verifikasi operasi database
+
+Perbaikan edit paket mempertahankan kolom yang tidak dikirim formulir, termasuk urutan dan gambar. Katalog/pengaturan memvalidasi input sebelum menulis database; harga nol tetap bisa diedit. Jalankan `npm run build`, lalu `node --import tsx scripts/verify-database-flows.mts` untuk uji aplikasi dan database nyata dengan data dummy di skema terpisah (memerlukan izin membuat skema, fixture dibersihkan sesudah selesai). Hasil dan batas pemeriksaan: `docs/audits/2026-10-19/database-mutations/README.md`.

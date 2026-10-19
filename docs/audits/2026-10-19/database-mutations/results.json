@@ -1,0 +1,18 @@
+{
+  "scope": "private random fixture schema; no public customer writes",
+  "results": [
+    "real login and fixture database isolation",
+    "real package edit persists, omitted sortOrder/image preserved",
+    "real zero-price addon edit",
+    "package/addon create and unreferenced delete",
+    "invalid edit rejected without persistence, missing404",
+    "real settings form persists and audits",
+    "customer booking writes, prices snapshotted, availability/buffer collision",
+    "reschedule persisted and stale update409",
+    "real payment/refund ledger and idempotent retry",
+    "time blocks persisted, availability updates, reopening",
+    "status/archive preserve booking and payment history",
+    "referenced catalog entries archived, relations preserved",
+    "gallery create/delete and missing404"
+  ]
+}

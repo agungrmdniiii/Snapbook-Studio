@@ -16,7 +16,8 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { status } = await request.json();
+    const body = await request.json();
+    const status = body?.status;
 
     const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
     if (!validStatuses.includes(status)) {

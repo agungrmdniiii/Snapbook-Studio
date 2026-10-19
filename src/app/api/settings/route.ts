@@ -5,6 +5,7 @@ import { getAdminSession } from '@/lib/admin-session';
 
 import { invalidateStudioConfigCache } from '@/lib/constants';
 import { revalidateTag } from 'next/cache';
+import { readMutationBody, MutationInputError, mutationFailure } from '@/lib/api-mutation';
 import { audit } from '@/lib/studio-operations';
 
 export const dynamic = 'force-dynamic';
@@ -29,16 +30,24 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
     }
 
-    const data = await request.json();
+    const data: any = await readMutationBody(request);
     const password = typeof data?.newPassword === 'string' ? data.newPassword.trim() : '';
     if (!data || typeof data !== 'object' || Array.isArray(data) ||
+        typeof data.openingTime !== 'string' || typeof data.closingTime !== 'string' ||
         !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.openingTime) ||
         !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.closingTime) || data.openingTime >= data.closingTime ||
-        !Number.isInteger(Number(data.slotDuration)) || Number(data.slotDuration) < 5 || Number(data.slotDuration) > 720 ||
+        !['number','string'].includes(typeof data.slotDuration) || !Number.isInteger(Number(data.slotDuration)) || Number(data.slotDuration) < 5 || Number(data.slotDuration) > 720 ||
         (data.bufferMinutes!==undefined&&(!Number.isInteger(data.bufferMinutes)||data.bufferMinutes<0||data.bufferMinutes>180)) ||
         (data.newPassword !== undefined && data.newPassword !== '' && (typeof data.newPassword !== 'string' || password.length < 12 || password.length > 128))) {
       return NextResponse.json({ error: 'Jam operasional/interval tidak valid. Password baru minimal 12 karakter.' }, { status: 400 });
     }
+
+    const textLimits = { studioName: 200, whatsappNumber: 30, instagramHandle: 100, address: 1000, aboutText: 4000 };
+    for (const [key, max] of Object.entries(textLimits)) {
+      if (data[key] !== undefined && (typeof data[key] !== 'string' || data[key].trim().length > max)) throw new MutationInputError('Profil studio berisi teks yang tidak valid.');
+    }
+    if (data.studioName !== undefined && !data.studioName.trim()) throw new MutationInputError('Nama studio wajib diisi.');
+    if (data.whatsappNumber !== undefined && !/^\+?[0-9][0-9 ()-]{6,28}[0-9]$/.test(data.whatsappNumber)) throw new MutationInputError('Nomor WhatsApp studio tidak valid.');
 
     const passwordHash = password ? await hashPassword(password) : null;
     const updated = await prisma.$transaction(async (tx) => {
@@ -82,7 +91,7 @@ export async function PUT(request: Request) {
     revalidateTag('studio-catalog');
 
     return NextResponse.json({ success: true, config: updated, requiresLogin: Boolean(passwordHash) });
-  } catch {
-    return NextResponse.json({ error: 'Gagal memperbarui pengaturan' }, { status: 500 });
+  } catch (error) {
+    return mutationFailure(error, 'Pengaturan studio');
   }
 }

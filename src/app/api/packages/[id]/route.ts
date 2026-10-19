@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { CATALOG_CACHE_TAG } from '@/lib/catalog';
-import { isPublicImageUrl } from '@/lib/media-storage';
+import { catalogInput } from '@/lib/catalog-input';
+import { readMutationBody, mutationFailure } from '@/lib/api-mutation';
 import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/admin-session';
 
@@ -17,14 +18,14 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const data = await request.json();
+    const { type, data } = catalogInput(await readMutationBody(request), false);
 
-    if (data.type === 'addon') {
+    if (type === 'addon') {
       const addon = await prisma.addOn.update({
         where: { id },
         data: {
           name: data.name,
-          price: Number(data.price),
+          price: data.price,
           description: data.description,
           isActive: data.isActive,
         },
@@ -33,29 +34,14 @@ export async function PUT(
       return NextResponse.json({ success: true, addon });
     }
 
-    if (data.imageUrl && !isPublicImageUrl(data.imageUrl, false)) return NextResponse.json({ error: 'URL foto harus berupa URL HTTPS yang valid' }, { status: 400 });
-
-    const pkg = await prisma.package.update({
-      where: { id },
-      data: {
-        name: data.name,
-        description: data.description,
-        price: Number(data.price),
-        duration: Number(data.duration),
-        category: data.category,
-        imageUrl: data.imageUrl,
-        features: typeof data.features === 'string' ? data.features : JSON.stringify(data.features || []),
-        isActive: data.isActive,
-        sortOrder: Number(data.sortOrder),
-      },
-    });
+    // Omitted fields remain undefined instead of becoming NaN or overwriting stored values.
+    const pkg = await prisma.package.update({ where: { id }, data });
 
     revalidateTag(CATALOG_CACHE_TAG);
 
     return NextResponse.json({ success: true, package: pkg });
   } catch (error) {
-    console.error('Error updating package:', error);
-    return NextResponse.json({ error: 'Gagal mengupdate paket' }, { status: 500 });
+    return mutationFailure(error, 'Paket atau add-on');
   }
 }
 
@@ -107,7 +93,6 @@ export async function DELETE(
     revalidateTag(CATALOG_CACHE_TAG);
     return NextResponse.json({ success: true, message: 'Paket berhasil dihapus' });
   } catch (error) {
-    console.error('Error deleting package:', error);
-    return NextResponse.json({ error: 'Gagal menghapus paket' }, { status: 500 });
+    return mutationFailure(error, 'Paket atau add-on');
   }
 }

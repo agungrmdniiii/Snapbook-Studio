@@ -121,6 +121,7 @@ export default function AdminSettingsPage() {
       )}
 
       <form onSubmit={handleSave} className="space-y-8">
+        <fieldset disabled={isLoading || !settingsLoaded || isSaving} className="min-w-0 space-y-8">
         {/* Card 1: Studio Profile */}
         <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <h2 className="font-serif text-lg font-normal text-white pb-3 border-b border-neutral-800">
@@ -231,6 +232,7 @@ export default function AdminSettingsPage() {
             <span>Simpan Semua Pengaturan</span>
           </Button>
         </div>
+        </fieldset>
       </form>
     </div>
   );

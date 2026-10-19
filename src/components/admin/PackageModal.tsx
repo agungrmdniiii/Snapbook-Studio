@@ -36,7 +36,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     if (initialData) {
       setName(initialData.name || '');
       setDescription(initialData.description || '');
-      setPrice(String(initialData.price || ''));
+      setPrice(String(initialData.price ?? ''));
       setDuration(String(initialData.duration || '60'));
       setCategory(initialData.category || 'General');
       setIsActive(initialData.isActive ?? true);
@@ -83,7 +83,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       };
 
       if (type === 'package') {
-        payload.duration = Number(duration) || 60;
+        payload.duration = Number(duration);
         payload.category = category.trim();
         const featureArray = features
           .split('\n')
@@ -138,7 +138,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         <div className="grid grid-cols-2 gap-3">
           <Input
             label="HARGA (RP) *"
-            type="number"
+            type="number" min={0} max={2147483647} step={1}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Contoh: 450000"
@@ -148,7 +148,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
           {type === 'package' ? (
             <Input
               label="DURASI (MENIT)"
-              type="number"
+              type="number" min={1} max={1440} step={1} required
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="Contoh: 60"

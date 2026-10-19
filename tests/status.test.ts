@@ -13,7 +13,7 @@ import { DELETE } from '../src/app/api/bookings/[id]/route';
 function request(handler: (request: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>, method: string, body?: unknown, authenticated = true) {
   process.env.SESSION_SECRET = 'test-only-status-secret-longer-than-32-bytes';
   const token = createSessionToken({ id: 'admin1', username: 'admin' });
-  const req = new NextRequest('http://localhost/api/bookings/booking1/status', { method, body: body ? JSON.stringify(body) : undefined, headers: authenticated ? { cookie: `snapbook_admin_session=${token}` } : {} });
+  const req = new NextRequest('http://localhost/api/bookings/booking1/status', { method, body: body !== undefined ? JSON.stringify(body) : undefined, headers: authenticated ? { cookie: `snapbook_admin_session=${token}` } : {} });
   const store = createRequestStoreForAPI(req, new URL(req.url), { tags: [], expirationsByCacheKind: new Map() }, undefined, undefined);
   return workAsyncStorage.run({ route: '/api/bookings/[id]/status', isStaticGeneration: false } as Parameters<typeof workAsyncStorage.run>[0], () => workUnitAsyncStorage.run(store, () => handler(req, { params: Promise.resolve({ id: 'booking1' }) })));
 }
@@ -61,4 +61,5 @@ test('mutations reject unauthenticated requests and invalid statuses', async t =
   assert.equal((await request(PATCH, 'PATCH', { status: 'CONFIRMED' }, false)).status, 401);
   assert.equal((await request(DELETE, 'DELETE', undefined, false)).status, 401);
   assert.equal((await request(PATCH, 'PATCH', { status: 'INVALID' })).status, 400);
+  assert.equal((await request(PATCH, 'PATCH', null)).status, 400);
 });

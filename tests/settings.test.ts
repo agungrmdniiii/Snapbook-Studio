@@ -77,3 +77,9 @@ test('settings source failures return unavailable instead of fabricated defaults
   assert.equal(response.status, 503);
   assert.equal((await response.json()).studioName, undefined);
 });
+
+test('settings rejects invalid field types and numeric coercion before writing',async t=>{
+ const stored=database(t);
+ for(const data of [{...configInput,studioName:[]},{...configInput,whatsappNumber:'abc'},{...configInput,openingTime:['09:00']},{...configInput,slotDuration:[60]},null])assert.equal((await save(data)).status,400);
+ assert.equal(stored().studioName,'Original studio');
+});

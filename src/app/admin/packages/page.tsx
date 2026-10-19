@@ -43,15 +43,16 @@ export default function AdminPackagesPage() {
 
   const handleDelete = async (id: string, isAddon: boolean = false) => {
     if (deletePending.current) return;
-    if (!confirm(`Hapus ${isAddon ? 'add-on' : 'paket'} ini secara permanen?`)) return;
+    if (!confirm(`Hapus ${isAddon ? 'add-on' : 'paket'} ini? Jika pernah dipesan, item akan diarsipkan agar riwayat tetap tersimpan.`)) return;
 
     deletePending.current = true;
     setDeletingId(id);
     try {
       const url = isAddon ? `/api/packages/${id}?type=addon` : `/api/packages/${id}`;
       const res = await fetch(url, { method: 'DELETE' });
-      if (!res.ok) { const data = await res.json(); throw new Error(data.error || 'Data gagal dihapus. Coba kembali.'); }
-      notify(`${isAddon ? 'Add-on' : 'Paket foto'} berhasil dihapus.`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Data gagal dihapus. Coba kembali.');
+      notify(data.message || `${isAddon ? 'Add-on' : 'Paket foto'} berhasil dihapus.`);
       fetchData();
     } catch (err: any) {
       notify(err.message || 'Data gagal dihapus. Coba kembali.', 'error');

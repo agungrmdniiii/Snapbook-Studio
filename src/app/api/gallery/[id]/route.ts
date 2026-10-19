@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { CATALOG_CACHE_TAG } from '@/lib/catalog';
 import { prisma } from '@/lib/prisma';
+import { mutationFailure } from '@/lib/api-mutation';
 import { getAdminSession } from '@/lib/admin-session';
 
 export async function DELETE(
@@ -21,7 +22,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Foto berhasil dihapus' });
   } catch (error) {
-    console.error('Error deleting gallery image:', error);
-    return NextResponse.json({ error: 'Gagal menghapus foto' }, { status: 500 });
+    return mutationFailure(error, 'Foto');
   }
 }

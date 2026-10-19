@@ -3,6 +3,8 @@ import { revalidateTag } from 'next/cache';
 import { CATALOG_CACHE_TAG, getStudioCatalog } from '@/lib/catalog';
 import { isPublicImageUrl } from '@/lib/media-storage';
 import { prisma } from '@/lib/prisma';
+import { catalogInput } from '@/lib/catalog-input';
+import { readMutationBody, mutationFailure } from '@/lib/api-mutation';
 import { getAdminSession } from '@/lib/admin-session';
 
 export async function GET(request: Request) {
@@ -30,13 +32,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
     }
 
-    const data = await request.json();
+    const { type, data } = catalogInput(await readMutationBody(request), true);
 
-    if (data.type === 'addon') {
+    if (type === 'addon') {
       const addon = await prisma.addOn.create({
         data: {
-          name: data.name,
-          price: Number(data.price),
+          name: data.name!,
+          price: data.price!,
           description: data.description || '',
           isActive: data.isActive ?? true,
         },
@@ -45,27 +47,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, addon });
     }
 
-    if (data.imageUrl && !isPublicImageUrl(data.imageUrl, false)) return NextResponse.json({ error: 'URL foto harus berupa URL HTTPS yang valid' }, { status: 400 });
-
     // Default: Package
     const pkg = await prisma.package.create({
       data: {
-        name: data.name,
+        name: data.name!,
         description: data.description || '',
-        price: Number(data.price),
-        duration: Number(data.duration) || 60,
+        price: data.price!,
+        duration: data.duration ?? 60,
         category: data.category || 'General',
         imageUrl: data.imageUrl || null,
         features: typeof data.features === 'string' ? data.features : JSON.stringify(data.features || []),
         isActive: data.isActive ?? true,
-        sortOrder: Number(data.sortOrder) || 0,
+        sortOrder: data.sortOrder ?? 0,
       },
     });
 
     revalidateTag(CATALOG_CACHE_TAG);
     return NextResponse.json({ success: true, package: pkg });
   } catch (error) {
-    console.error('Error creating package:', error);
-    return NextResponse.json({ error: 'Gagal membuat paket' }, { status: 500 });
+    return mutationFailure(error, 'Paket atau add-on');
   }
 }
