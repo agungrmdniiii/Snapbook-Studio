@@ -1,27 +1,28 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sanitizeWhatsAppNumber } from '@/lib/whatsapp';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  const limited = await enforceRateLimit(request, 'booking-track', 20, 900);
+  if (limited) return limited;
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('query')?.trim();
+    const phone = searchParams.get('phone')?.trim();
 
-    if (!query) {
-      return NextResponse.json({ error: 'Harap masukkan Kode Booking atau Nomor WhatsApp' }, { status: 400 });
+    if (!query || !phone || query.length > 64 || phone.length > 30 || !/^SB-[A-Z0-9-]+$/i.test(query) || !/^[\d\s()+-]{8,30}$/.test(phone)) {
+      return NextResponse.json({ error: 'Masukkan kode booking dan nomor WhatsApp yang digunakan saat memesan.' }, { status: 400 });
     }
 
-    const sanitizedPhone = sanitizeWhatsAppNumber(query);
+    const sanitizedPhone = sanitizeWhatsAppNumber(phone);
 
     const booking = await prisma.booking.findFirst({
       where: {
-        OR: [
-          { bookingCode: { equals: query } },
-          { clientPhone: { equals: query } },
-          { clientPhone: { equals: sanitizedPhone } },
-        ],
+        bookingCode: query.toUpperCase(),
+        archivedAt: null,
       },
       include: {
         package: true,
@@ -30,8 +31,8 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (!booking) {
-      return NextResponse.json({ error: 'Reservasi tidak ditemukan. Pastikan kode booking atau nomor WhatsApp sudah benar.' }, { status: 404 });
+    if (!booking || sanitizeWhatsAppNumber(booking.clientPhone) !== sanitizedPhone) {
+      return NextResponse.json({ error: 'Reservasi tidak ditemukan. Periksa kode booking dan nomor WhatsApp.' }, { status: 404 });
     }
 
     const studioConfig = await prisma.studioConfig.findUnique({ where: { id: 'default' } });
@@ -40,8 +41,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       bookingCode: booking.bookingCode,
       clientName: booking.clientName,
-      packageName: booking.package.name,
-      packageDuration: booking.package.duration,
+      packageName: booking.packageNameAtBooking ?? booking.package.name,
+      packageDuration: booking.packageDurationAtBooking ?? booking.package.duration,
       date: booking.date,
       startTime: booking.startTime,
       endTime: booking.endTime,
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
         whatsappNumber: studioConfig?.whatsappNumber || '6281234567890',
         instagramHandle: studioConfig?.instagramHandle || '',
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('Error tracking booking:', error);
     return NextResponse.json({ error: 'Gagal melacak data booking' }, { status: 500 });

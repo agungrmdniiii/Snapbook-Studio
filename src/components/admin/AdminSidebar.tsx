@@ -16,14 +16,20 @@ import {
 export const AdminSidebar: React.FC<{ username?: string }> = ({ username = 'admin' }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const [logoutError, setLogoutError] = React.useState<string | null>(null);
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      setLogoutError(null);
+      const response = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Sesi gagal dicabut. Coba logout kembali.');
+      }
       router.push('/admin/login');
       router.refresh();
     } catch (e) {
-      console.error('Logout error:', e);
+      setLogoutError(e instanceof Error ? e.message : 'Logout gagal. Silakan coba kembali.');
     }
   };
 
@@ -73,6 +79,7 @@ export const AdminSidebar: React.FC<{ username?: string }> = ({ username = 'admi
 
       {/* Footer User & Actions */}
       <div className="pt-6 border-t border-neutral-800 space-y-3">
+        {logoutError && <p role="alert" className="text-xs text-rose-300">{logoutError}</p>}
         <Link
           href="/"
           target="_blank"

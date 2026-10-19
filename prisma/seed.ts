@@ -4,6 +4,11 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  const adminUsername = process.env.ADMIN_USERNAME?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminUsername || !adminPassword || adminPassword.length < 12 || adminPassword === 'adminpassword123') {
+    throw new Error('Set ADMIN_USERNAME dan ADMIN_PASSWORD unik minimal 12 karakter sebelum seed.');
+  }
   console.log('🌱 Starting database seeding...');
 
   // 1. Studio Config
@@ -25,17 +30,17 @@ async function main() {
   });
   console.log('✅ Studio config seeded.');
 
-  // 2. Admin User (username: admin, password: adminpassword123)
-  const passwordHash = await bcrypt.hash('adminpassword123', 10);
+  // 2. Admin User (configurable via environment variables)
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
   await prisma.adminUser.upsert({
-    where: { username: 'admin' },
+    where: { username: adminUsername },
     update: {},
     create: {
-      username: 'admin',
+      username: adminUsername,
       passwordHash,
     },
   });
-  console.log('✅ Admin user seeded (username: admin, password: adminpassword123).');
+  console.log(`✅ Admin user seeded (username: ${adminUsername}).`);
 
   // 3. Packages
   const packagesData = [
@@ -216,6 +221,27 @@ async function main() {
     });
   }
   console.log('✅ Showcase gallery seeded.');
+
+  // 6. Sample Booking for E-Receipt & Admin Preview (Clean Mock Data)
+  await prisma.booking.upsert({
+    where: { bookingCode: 'SB-20261014-001' },
+    update: {},
+    create: {
+      bookingCode: 'SB-20261014-001',
+      packageId: 'pkg-self-portrait',
+      clientName: 'Klien Contoh',
+      clientEmail: 'klien@snapbookstudio.com',
+      clientPhone: '081234567890',
+      date: '2026-10-20',
+      startTime: '10:00',
+      endTime: '10:30',
+      status: 'CONFIRMED',
+      totalPrice: 150000,
+      notes: 'Sesi self-portrait studio untuk portfolio.',
+    },
+  });
+  console.log('✅ Sample booking seeded (Code: SB-20261014-001, Phone: 081234567890).');
+
   console.log('✨ All seeding completed successfully!');
 }
 

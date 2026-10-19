@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { revalidateTag } from 'next/cache';
+import { CATALOG_CACHE_TAG } from '@/lib/catalog';
+import { isPublicImageUrl } from '@/lib/media-storage';
 import { prisma } from '@/lib/prisma';
-import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
+import { getAdminSession } from '@/lib/admin-session';
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
@@ -29,8 +29,11 @@ export async function PUT(
           isActive: data.isActive,
         },
       });
+      revalidateTag(CATALOG_CACHE_TAG);
       return NextResponse.json({ success: true, addon });
     }
+
+    if (data.imageUrl && !isPublicImageUrl(data.imageUrl, false)) return NextResponse.json({ error: 'URL foto harus berupa URL HTTPS yang valid' }, { status: 400 });
 
     const pkg = await prisma.package.update({
       where: { id },
@@ -47,6 +50,8 @@ export async function PUT(
       },
     });
 
+    revalidateTag(CATALOG_CACHE_TAG);
+
     return NextResponse.json({ success: true, package: pkg });
   } catch (error) {
     console.error('Error updating package:', error);
@@ -59,9 +64,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
@@ -78,12 +81,13 @@ export async function DELETE(
           where: { id },
           data: { isActive: false },
         });
-        return NextResponse.json({
-          success: true,
+        revalidateTag(CATALOG_CACHE_TAG);
+        return NextResponse.json({ success: true,
           message: 'Add-on berhasil diarsipkan karena memiliki riwayat pemesanan.',
         });
       }
       await prisma.addOn.delete({ where: { id } });
+      revalidateTag(CATALOG_CACHE_TAG);
       return NextResponse.json({ success: true, message: 'Add-on berhasil dihapus' });
     }
 
@@ -93,13 +97,14 @@ export async function DELETE(
         where: { id },
         data: { isActive: false },
       });
-      return NextResponse.json({
-        success: true,
+      revalidateTag(CATALOG_CACHE_TAG);
+      return NextResponse.json({ success: true,
         message: 'Paket berhasil diarsipkan karena memiliki riwayat pemesanan pelanggan.',
       });
     }
 
     await prisma.package.delete({ where: { id } });
+    revalidateTag(CATALOG_CACHE_TAG);
     return NextResponse.json({ success: true, message: 'Paket berhasil dihapus' });
   } catch (error) {
     console.error('Error deleting package:', error);

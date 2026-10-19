@@ -17,6 +17,7 @@ export default function AdminSettingsPage() {
   const [newPassword, setNewPassword] = useState('');
 
   const [isLoading, setIsLoading] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -37,9 +38,10 @@ export default function AdminSettingsPage() {
           setSlotDuration(String(data.slotDuration || '60'));
           setAddress(data.address || '');
           setAboutText(data.aboutText || '');
+          setSettingsLoaded(true);
         }
       } catch (e) {
-        console.error(e);
+        setErrorMsg(e instanceof Error ? e.message : 'Gagal memuat pengaturan. Muat ulang halaman untuk mencoba kembali.');
       } finally {
         setIsLoading(false);
       }
@@ -49,6 +51,10 @@ export default function AdminSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!settingsLoaded) {
+      setErrorMsg('Pengaturan belum berhasil dimuat. Muat ulang halaman sebelum menyimpan.');
+      return;
+    }
     setIsSaving(true);
     setSuccessMsg(null);
     setErrorMsg(null);
@@ -66,8 +72,8 @@ export default function AdminSettingsPage() {
       };
 
       if (newPassword.trim()) {
-        if (newPassword.trim().length < 6) {
-          throw new Error('Password baru minimal 6 karakter.');
+        if (newPassword.trim().length < 12) {
+          throw new Error('Password baru minimal 12 karakter.');
         }
         payload.newPassword = newPassword.trim();
       }
@@ -80,6 +86,10 @@ export default function AdminSettingsPage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyimpan.');
+      if (data.requiresLogin) {
+        window.location.assign('/admin/login');
+        return;
+      }
 
       setSuccessMsg('Pengaturan studio berhasil diperbarui!');
       setNewPassword('');
@@ -212,12 +222,12 @@ export default function AdminSettingsPage() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Kosongkan jika tidak ingin mengubah password"
-            helperText="Minimal 6 karakter."
+            helperText="Minimal 12 karakter."
           />
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="primary" size="lg" isLoading={isSaving}>
+          <Button type="submit" variant="primary" size="lg" isLoading={isSaving} disabled={!settingsLoaded || isLoading}>
             <Save className="w-4 h-4 mr-1.5" />
             <span>Simpan Semua Pengaturan</span>
           </Button>

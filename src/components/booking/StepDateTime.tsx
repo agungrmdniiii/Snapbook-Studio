@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Calendar, Clock, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
 import { formatDateIndonesian } from '@/lib/utils';
+import { wibNow } from '@/lib/scheduling';
 import { StudioCalendar } from '@/components/ui/StudioCalendar';
 
 interface SlotItem {
@@ -12,6 +13,9 @@ interface SlotItem {
 }
 
 interface StepDateTimeProps {
+  packageId: string;
+  duration: number;
+  onAvailabilityChange: (available: boolean) => void;
   selectedDate: string;
   selectedTime: string;
   onSelectDate: (date: string) => void;
@@ -19,11 +23,15 @@ interface StepDateTimeProps {
 }
 
 export const StepDateTime: React.FC<StepDateTimeProps> = ({
+  packageId,
+  duration,
+  onAvailabilityChange,
   selectedDate,
   selectedTime,
   onSelectDate,
   onSelectTime,
 }) => {
+  const [loadedFor, setLoadedFor] = useState('');
   const [slots, setSlots] = useState<SlotItem[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +41,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
 
   // Helper date YYYY-MM-DD
   const getLocalDate = (offsetDays = 0) => {
-    const d = new Date();
+    const d = new Date(`${wibNow().date}T12:00:00`);
     d.setDate(d.getDate() + offsetDays);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -54,7 +62,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
     ];
 
     for (let i = 0; i < 14; i++) {
-      const d = new Date();
+      const d = new Date(`${wibNow().date}T12:00:00`);
       d.setDate(d.getDate() + i);
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -85,26 +93,27 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
 
   // Fetch slots whenever selectedDate changes
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!selectedDate || !packageId) return;
 
     let isMounted = true;
     async function fetchSlots() {
       setIsLoadingSlots(true);
       setError(null);
+      setSlots([]);
+      setLoadedFor('');
       try {
-        const res = await fetch(`/api/bookings/available-slots?date=${selectedDate}`);
+        const res = await fetch(`/api/bookings/available-slots?date=${encodeURIComponent(selectedDate)}&packageId=${encodeURIComponent(packageId)}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Gagal mengambil slot jadwal');
         const data = await res.json();
         if (isMounted) {
           setSlots(data.slots || []);
+          setLoadedFor(`${packageId}:${selectedDate}`);
         }
       } catch (err: any) {
         if (isMounted) {
-          const fallbackTimes = [
-            '09:00', '10:00', '11:00', '12:00', '13:00',
-            '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
-          ];
-          setSlots(fallbackTimes.map((time) => ({ time, available: true })));
+          setSlots([]);
+          setError('Jadwal belum dapat diperiksa. Pilih ulang tanggal untuk mencoba kembali.');
+          onSelectTime('');
         }
       } finally {
         if (isMounted) setIsLoadingSlots(false);
@@ -115,7 +124,11 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [selectedDate]);
+  }, [selectedDate, packageId, onSelectTime]);
+
+  useEffect(() => {
+    onAvailabilityChange(!isLoadingSlots && !error && loadedFor === `${packageId}:${selectedDate}` && slots.some(slot => slot.time === selectedTime && slot.available));
+  }, [slots, selectedTime, isLoadingSlots, error, loadedFor, packageId, selectedDate, onAvailabilityChange]);
 
   // Filter slots by time of day
   const filteredSlots = useMemo(() => {
@@ -420,7 +433,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                 {formatDateIndonesian(selectedDate)}
               </p>
               <p className="text-xs text-neutral-300 font-mono">
-                Pukul {selectedTime} WIB (Durasi 60 Menit)
+                Pukul {selectedTime} WIB (Durasi {duration} Menit)
               </p>
             </div>
             <div className="px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-medium flex items-center gap-1.5 shrink-0">

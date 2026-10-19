@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { revalidateTag } from 'next/cache';
+import { CATALOG_CACHE_TAG } from '@/lib/catalog';
 import { prisma } from '@/lib/prisma';
-import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
+import { getAdminSession } from '@/lib/admin-session';
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
@@ -18,6 +17,7 @@ export async function DELETE(
 
     const { id } = await params;
     await prisma.showcaseImage.delete({ where: { id } });
+    revalidateTag(CATALOG_CACHE_TAG);
 
     return NextResponse.json({ success: true, message: 'Foto berhasil dihapus' });
   } catch (error) {

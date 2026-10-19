@@ -39,7 +39,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
 
   const handleDelete = async (id: string) => {
     if (!onDeleteBooking) return;
-    if (!confirm('Hapus data reservasi ini secara permanen dari sistem?')) return;
+    if (!confirm('Arsipkan reservasi ini? Riwayat tetap disimpan.')) return;
     setIsDeleting(true);
     try {
       await onDeleteBooking(id);
@@ -302,11 +302,11 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                           <button
                             type="button"
                             onClick={() => handleDelete(item.id)}
-                            title="Hapus Reservasi"
+                            title="Arsipkan Reservasi"
                             className="text-[10px] text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1 font-mono"
                           >
                             <Trash2 className="w-3 h-3" />
-                            <span>Hapus</span>
+                            <span>Arsipkan</span>
                           </button>
                         )}
                       </div>
@@ -444,7 +444,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
                   isLoading={isDeleting}
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1" />
-                  <span>Hapus Reservasi</span>
+                  <span>Arsipkan Reservasi</span>
                 </Button>
               )}
 

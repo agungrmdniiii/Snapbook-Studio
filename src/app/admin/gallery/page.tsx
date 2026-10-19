@@ -8,48 +8,6 @@ import { Modal } from '@/components/ui/Modal';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import { ShowcaseImageData } from '@/types';
 
-// Helper client-side image compression
-function compressImageFile(file: File, maxDimension = 1200, quality = 0.82): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxDimension) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          }
-        } else {
-          if (height > maxDimension) {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(reader.result as string);
-          return;
-        }
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(dataUrl);
-      };
-      img.onerror = () => reject(new Error('Gagal memproses file gambar.'));
-      img.src = e.target?.result as string;
-    };
-    reader.onerror = () => reject(new Error('Gagal membaca file.'));
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function AdminGalleryPage() {
   const [images, setImages] = useState<ShowcaseImageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +17,7 @@ export default function AdminGalleryPage() {
   const [inputMode, setInputMode] = useState<'upload' | 'url'>('upload');
   const [url, setUrl] = useState('');
   const [uploadedPreview, setUploadedPreview] = useState<string | null>(null);
-  const [isCompressing, setIsCompressing] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Portrait');
@@ -77,7 +35,7 @@ export default function AdminGalleryPage() {
   const fetchGallery = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/gallery');
+      const res = await fetch('/api/gallery', { cache: 'no-store' });
       if (!res.ok) throw new Error('Gagal memuat galeri');
       const data = await res.json();
       setImages(data);
@@ -93,33 +51,25 @@ export default function AdminGalleryPage() {
     fetchGallery();
   }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    return () => { if (uploadedPreview) URL.revokeObjectURL(uploadedPreview); };
+  }, [uploadedPreview]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setError('Harap pilih file gambar (JPG, PNG, WEBP).');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 4 * 1024 * 1024) {
+      setError('Pilih foto JPG, PNG, atau WEBP dengan ukuran maksimal 4 MB.');
       return;
     }
-
-    setIsCompressing(true);
     setError(null);
+    setSelectedFile(file);
     setFileName(file.name);
-
-    try {
-      const compressedDataUrl = await compressImageFile(file);
-      setUploadedPreview(compressedDataUrl);
-      setUrl(compressedDataUrl);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memproses file foto.');
-    } finally {
-      setIsCompressing(false);
-    }
+    setUploadedPreview(URL.createObjectURL(file));
   };
-
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url.trim()) {
+    if (inputMode === 'upload' ? !selectedFile : !url.trim()) {
       setError('Silakan upload file foto atau masukkan link URL foto terlebih dahulu.');
       return;
     }
@@ -128,11 +78,20 @@ export default function AdminGalleryPage() {
     setError(null);
 
     try {
+      let imageUrl = url.trim();
+      if (inputMode === 'upload' && selectedFile) {
+        const form = new FormData();
+        form.append('file', selectedFile);
+        const upload = await fetch('/api/gallery/upload', { method: 'POST', body: form });
+        const result = await upload.json();
+        if (!upload.ok) throw new Error(result.error || 'Gagal mengunggah foto.');
+        imageUrl = result.url;
+      }
       const res = await fetch('/api/gallery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url: url.trim(),
+          url: imageUrl,
           title: title.trim(),
           category,
           aspectRatio,
@@ -144,6 +103,7 @@ export default function AdminGalleryPage() {
 
       setUrl('');
       setUploadedPreview(null);
+      setSelectedFile(null);
       setFileName('');
       setTitle('');
       setIsModalOpen(false);
@@ -171,6 +131,7 @@ export default function AdminGalleryPage() {
   const resetForm = () => {
     setUrl('');
     setUploadedPreview(null);
+    setSelectedFile(null);
     setFileName('');
     setTitle('');
     setError(null);
@@ -311,7 +272,7 @@ export default function AdminGalleryPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -338,6 +299,7 @@ export default function AdminGalleryPage() {
                       size="sm"
                       onClick={() => {
                         setUploadedPreview(null);
+      setSelectedFile(null);
                         setUrl('');
                         setFileName('');
                       }}
@@ -361,10 +323,10 @@ export default function AdminGalleryPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-white">
-                      {isCompressing ? 'Mengoptimalkan foto...' : 'Klik untuk memilih file foto'}
+                      Klik untuk memilih file foto
                     </p>
                     <p className="text-[11px] text-neutral-500 font-light">
-                      Mendukung JPG, PNG, WEBP dari komputer atau smartphone
+                      JPG, PNG, atau WEBP, maksimal 4 MB
                     </p>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
@@ -425,7 +387,7 @@ export default function AdminGalleryPage() {
               type="submit"
               variant="primary"
               size="sm"
-              isLoading={isSubmitting || isCompressing}
+              isLoading={isSubmitting}
             >
               {inputMode === 'upload' ? 'Upload & Publikasikan' : 'Tambahkan Foto'}
             </Button>

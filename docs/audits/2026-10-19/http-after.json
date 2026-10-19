@@ -1,0 +1,102 @@
+[
+  {
+    "pass": 1,
+    "pathname": "/",
+    "status": 200,
+    "ttfbMs": 139,
+    "totalMs": 146,
+    "decodedBytes": 136253,
+    "cache": "HIT",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/book",
+    "status": 200,
+    "ttfbMs": 158,
+    "totalMs": 177,
+    "decodedBytes": 44558,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/packages",
+    "status": 200,
+    "ttfbMs": 213,
+    "totalMs": 215,
+    "decodedBytes": 3270,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/gallery",
+    "status": 200,
+    "ttfbMs": 117,
+    "totalMs": 119,
+    "decodedBytes": 1692,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/bookings/available-slots?date=2026-11-21&packageId=pkg-self-portrait",
+    "status": 200,
+    "ttfbMs": 142,
+    "totalMs": 143,
+    "decodedBytes": 600,
+    "cache": "MISS",
+    "cacheControl": "no-store"
+  },
+  {
+    "pass": 2,
+    "pathname": "/",
+    "status": 200,
+    "ttfbMs": 36,
+    "totalMs": 43,
+    "decodedBytes": 136253,
+    "cache": "HIT",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/book",
+    "status": 200,
+    "ttfbMs": 133,
+    "totalMs": 136,
+    "decodedBytes": 44558,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/packages",
+    "status": 200,
+    "ttfbMs": 120,
+    "totalMs": 123,
+    "decodedBytes": 3270,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/gallery",
+    "status": 200,
+    "ttfbMs": 177,
+    "totalMs": 180,
+    "decodedBytes": 1692,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/bookings/available-slots?date=2026-11-21&packageId=pkg-self-portrait",
+    "status": 200,
+    "ttfbMs": 121,
+    "totalMs": 122,
+    "decodedBytes": 600,
+    "cache": "MISS",
+    "cacheControl": "no-store"
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "checkedOn": "2026-10-19",
+  "projectRef": "whiyncjfocmnatbpknam",
+  "status": "ACTIVE_HEALTHY",
+  "region": "ap-south-1",
+  "postgresVersion": "17.11.0.003",
+  "defaultTransactionIsolation": "read committed",
+  "statementStatisticsReset": "2026-10-09T19:36:46.871286+00:00",
+  "security": {
+    "publicTablesWithoutRls": ["AdminUser", "AddOn", "StudioConfig", "Package", "ShowcaseImage", "Booking", "BookingAddOn"],
+    "anonSelectInsertUpdateDeleteOnAllSevenTables": true,
+    "anonSelectAdminPasswordHashColumn": true,
+    "productionDataApiSettingsIndependentlyVerified": false
+  },
+  "performance": {
+    "missingForeignKeyIndexes": ["Booking.packageId", "BookingAddOn.bookingId", "BookingAddOn.addOnId"],
+    "bookingCount": 4,
+    "pendingCount": 2,
+    "pendingOlderThan24Hours": 2,
+    "galleryImageCount": 7,
+    "galleryDataUrlCount": 1,
+    "galleryTotalUrlBytes": 309559,
+    "largestGalleryUrlBytes": 309007,
+    "observedQueries": [
+      {"group":"StudioConfig SELECT","calls":115,"meanExecutionMs":0.159,"maxExecutionMs":2.578},
+      {"group":"Package SELECT","calls":84,"meanExecutionMs":0.125,"maxExecutionMs":1.283},
+      {"group":"Booking SELECT variant","calls":10,"meanExecutionMs":0.797,"maxExecutionMs":4.530},
+      {"group":"Booking INSERT","calls":7,"meanExecutionMs":3.787,"maxExecutionMs":9.086}
+    ],
+    "interpretation":"Database execution only, not network, connection acquisition, cold start, or page rendering. Historical aggregates; not a controlled benchmark."
+  },
+  "constraints": {
+    "bookingUniqueColumns": ["id", "bookingCode"],
+    "activeIntervalExclusionConstraint": false,
+    "uniqueActiveDateAndStartConstraint": false,
+    "bookingIndexes": ["Booking_pkey", "Booking_bookingCode_key", "Booking_date_status_idx", "Booking_status_idx"]
+  },
+  "localConnectionConfiguration": {
+    "databaseUrlMode": "direct endpoint on port 5432; no URL parameters",
+    "directUrlMode": "direct endpoint on port 5432; no URL parameters",
+    "sessionSecretPresentInLocalEnv": false,
+    "productionEnvironmentVerified": false
+  },
+  "access": "Read-only advisors and metadata/aggregate SELECTs. No customer records, password hashes, or database credentials were retrieved."
+}

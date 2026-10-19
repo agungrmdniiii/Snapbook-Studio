@@ -1,194 +1,68 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
-import { calculateEndTime, formatIDR } from '@/lib/utils';
+import { formatIDR } from '@/lib/utils';
 import { generateBookingWhatsAppUrl } from '@/lib/whatsapp';
-import { DEFAULT_CONFIG, DEFAULT_PACKAGES, DEFAULT_ADDONS, getCachedStudioConfig } from '@/lib/constants';
+import { randomBytes } from 'node:crypto';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { BookingValidationError, validateBookingInput, validateSessionTime } from '@/lib/scheduling';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
-
-    if (!session) {
-      return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const search = searchParams.get('search')?.trim();
-    const date = searchParams.get('date')?.trim();
-
-    const where: any = {};
-
-    if (status && status !== 'ALL') {
-      where.status = status;
-    }
-
-    if (date && date !== 'ALL') {
-      where.date = date;
-    }
-
-    if (search) {
-      where.OR = [
-        { bookingCode: { contains: search, mode: 'insensitive' } },
-        { clientName: { contains: search, mode: 'insensitive' } },
-        { clientPhone: { contains: search, mode: 'insensitive' } },
-        { clientEmail: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    const bookings = await prisma.booking.findMany({
-      where,
-      include: {
-        package: true,
-        addOns: { include: { addOn: true } },
-      },
-      orderBy: [{ date: 'desc' }, { startTime: 'asc' }],
-    });
-
-    return NextResponse.json(bookings, {
-      headers: { 'Cache-Control': 'no-store, max-age=0' },
-    });
-  } catch (error) {
-    console.error('Error fetching bookings:', error);
-    return NextResponse.json([], { status: 200 });
-  }
-}
+export { GET } from './list/route';
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, 'booking', 10, 900);
+  if (limited) return limited;
   try {
-    const body = await request.json();
-    const { packageId, clientName, clientEmail, clientPhone, date, startTime, addOnIds, notes } = body;
-
-    if (!packageId || !clientName || !clientPhone || !date || !startTime) {
-      return NextResponse.json(
-        { error: 'Harap lengkapi semua data wajib (paket, nama, no HP, tanggal, dan jam).' },
-        { status: 400 }
-      );
-    }
-
-    // Find package in DB or fallback
-    let pkg: any = null;
-    try {
-      pkg = await prisma.package.findUnique({ where: { id: packageId } });
-    } catch (err) {
-      console.warn('DB lookup failed for package:', err);
-    }
-
-    if (!pkg) {
-      pkg = DEFAULT_PACKAGES.find((p) => p.id === packageId) || DEFAULT_PACKAGES[0];
-    }
-
-    const endTime = calculateEndTime(startTime, pkg.duration);
-
-    // Resolve Add-ons
-    let addOnRecords: any[] = [];
-    if (addOnIds && addOnIds.length > 0) {
-      try {
-        addOnRecords = await prisma.addOn.findMany({ where: { id: { in: addOnIds } } });
-      } catch (err) {
-        addOnRecords = DEFAULT_ADDONS.filter((a) => addOnIds.includes(a.id));
-      }
-      if (addOnRecords.length === 0) {
-        addOnRecords = DEFAULT_ADDONS.filter((a) => addOnIds.includes(a.id));
-      }
-    }
-
-    let totalPrice = pkg.price;
-    for (const addon of addOnRecords) {
-      totalPrice += addon.price;
-    }
-
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const dateCode = date.replace(/-/g, '');
-    const bookingCode = `SB-${dateCode}-${randomSuffix}`;
-
-    // Prevent double booking collision atomically using Prisma transaction
+    let raw: unknown;
+    try { raw = await request.json(); } catch { return NextResponse.json({ error: 'Data reservasi tidak valid.' }, { status: 400 }); }
+    const input = validateBookingInput(raw);
+    const { packageId, clientName, clientEmail, clientPhone, date, startTime, notes, addOnIds } = input;
+    const [pkg, config, addOnRecords] = await Promise.all([
+      prisma.package.findUnique({ where: { id: packageId } }),
+      prisma.studioConfig.findUnique({ where: { id: 'default' } }),
+      prisma.addOn.findMany({ where: { id: { in: addOnIds }, isActive: true } }),
+    ]);
+    if (!pkg?.isActive) return NextResponse.json({ error: 'Paket tidak tersedia. Silakan pilih paket aktif.' }, { status: 400 });
+    if (!config) return NextResponse.json({ error: 'Jadwal studio belum tersedia. Silakan coba kembali.' }, { status: 503 });
+    if (addOnRecords.length !== addOnIds.length) return NextResponse.json({ error: 'Salah satu add-on tidak tersedia.' }, { status: 400 });
+    const endTime = validateSessionTime(config, pkg.duration, date, startTime);
+    const totalPrice = pkg.price + addOnRecords.reduce((sum, addon) => sum + addon.price, 0);
+    if (!Number.isSafeInteger(totalPrice) || totalPrice < 0 || totalPrice > 2147483647) throw new BookingValidationError('Harga paket tidak valid.');
+    const bookingCode = `SB-${date.replace(/-/g, '')}-${randomBytes(8).toString('hex').toUpperCase()}`;
     const newBooking = await prisma.$transaction(async (tx) => {
-      const collision = await tx.booking.findFirst({
-        where: {
-          date,
-          startTime,
-          status: { in: ['PENDING', 'CONFIRMED'] },
-        },
-      });
-
-      if (collision) {
-        throw new Error('SLOT_COLLISION');
-      }
-
-      return await tx.booking.create({
-        data: {
-          bookingCode,
-          packageId: pkg.id,
-          clientName: clientName.trim(),
-          clientEmail: (clientEmail || '').trim(),
-          clientPhone: clientPhone.trim(),
-          date,
-          startTime,
-          endTime,
-          status: 'PENDING',
-          totalPrice,
-          notes: notes ? notes.trim() : null,
-          addOns: {
-            create: addOnRecords.map((ad) => ({
-              addOnId: ad.id,
-              priceAtBooking: ad.price,
-            })),
-          },
-        },
-        include: {
-          package: true,
-          addOns: { include: { addOn: true } },
-        },
-      });
+      // Serialize writes to the same studio day before checking full session intervals.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${date}, 0))`;
+      const collision = await tx.booking.findFirst({ where: {
+        date, archivedAt: null, status: { in: ['PENDING', 'CONFIRMED'] },
+        startTime: { lt: endTime }, endTime: { gt: startTime },
+      } });
+      if (collision) throw new Error('SLOT_COLLISION');
+      // Time may have advanced while waiting for another transaction's lock.
+      validateSessionTime(config, pkg.duration, date, startTime);
+      return tx.booking.create({ data: {
+        bookingCode, packageId: pkg.id, packageNameAtBooking: pkg.name,
+        packagePriceAtBooking: pkg.price, packageDurationAtBooking: pkg.duration,
+        clientName, clientEmail, clientPhone, date, startTime, endTime,
+        status: 'PENDING', totalPrice, notes: notes || null,
+        addOns: { create: addOnRecords.map(ad => ({ addOnId: ad.id, priceAtBooking: ad.price })) },
+      }, include: { package: true, addOns: { include: { addOn: true } } } });
     });
-
-    // Studio WhatsApp
-    let studioPhone = DEFAULT_CONFIG.whatsappNumber;
-    try {
-      const studioConfig = await getCachedStudioConfig(prisma);
-      if (studioConfig?.whatsappNumber) {
-        studioPhone = studioConfig.whatsappNumber;
-      }
-    } catch (err) {
-      // Use fallback phone
+    const whatsappUrl = generateBookingWhatsAppUrl(config.whatsappNumber, {
+      bookingCode: newBooking.bookingCode, clientName: newBooking.clientName,
+      packageName: pkg.name, packagePrice: pkg.price, date: newBooking.date,
+      startTime: newBooking.startTime, endTime: newBooking.endTime,
+      addOns: newBooking.addOns.map(a => `${a.addOn.name} (${formatIDR(a.priceAtBooking)})`),
+      totalPrice: newBooking.totalPrice, notes: newBooking.notes || undefined,
+    });
+    return NextResponse.json({ success: true, booking: newBooking, whatsappUrl }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch (error) {
+    if (error instanceof BookingValidationError) return NextResponse.json({ error: error.message }, { status: 400 });
+    const failure = error as { message?: string; code?: string; meta?: unknown };
+    if (failure.message === 'SLOT_COLLISION' || failure.code === 'P2002' || failure.code === 'P2034' || (failure.code === 'P2004' && JSON.stringify(failure.meta).includes('23P01'))) {
+      return NextResponse.json({ error: 'Slot sesi tersebut baru saja terisi. Silakan pilih jam lain.' }, { status: 409 });
     }
-
-    const whatsappUrl = generateBookingWhatsAppUrl(studioPhone, {
-      bookingCode: newBooking.bookingCode,
-      clientName: newBooking.clientName,
-      packageName: newBooking.package?.name || pkg.name,
-      packagePrice: newBooking.package?.price || pkg.price,
-      date: newBooking.date,
-      startTime: newBooking.startTime,
-      endTime: newBooking.endTime,
-      addOns: (newBooking.addOns || []).map((a: any) => `${a.addOn?.name || a.name || 'Addon'} (${formatIDR(a.priceAtBooking || 0)})`),
-      totalPrice: newBooking.totalPrice,
-      notes: newBooking.notes || undefined,
-    });
-
-    return NextResponse.json({
-      success: true,
-      booking: newBooking,
-      whatsappUrl,
-    });
-  } catch (error: any) {
-    if (error?.message === 'SLOT_COLLISION') {
-      return NextResponse.json(
-        { error: 'Maaf, slot jam tersebut baru saja dipesan oleh orang lain. Silakan pilih jam lain.' },
-        { status: 409 }
-      );
-    }
-    console.error('Error creating booking:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Gagal memproses reservasi. Silakan periksa kembali data Anda.' },
-      { status: 500 }
-    );
+    console.error('Booking creation unavailable', { code: failure.code });
+    return NextResponse.json({ error: 'Reservasi belum dapat diproses. Silakan coba kembali.' }, { status: 503 });
   }
 }

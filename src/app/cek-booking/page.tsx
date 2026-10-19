@@ -34,14 +34,15 @@ function CekBookingContent() {
   const initialQuery = searchParams.get('query') || '';
 
   const [query, setQuery] = useState(initialQuery);
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TrackedBooking | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (searchQuery?: string) => {
     const q = (searchQuery ?? query).trim();
-    if (!q) {
-      setError('Masukkan kode booking (misal: SB-20261009-XXXX) atau nomor WhatsApp.');
+    if (!q || !phone.trim()) {
+      setError('Masukkan kode booking dan nomor WhatsApp yang digunakan saat memesan.');
       return;
     }
 
@@ -50,7 +51,7 @@ function CekBookingContent() {
     setResult(null);
 
     try {
-      const res = await fetch(`/api/bookings/track?query=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/bookings/track?query=${encodeURIComponent(q)}&phone=${encodeURIComponent(phone.trim())}`, { cache: 'no-store' });
       const data = await res.json();
 
       if (!res.ok) {
@@ -64,12 +65,6 @@ function CekBookingContent() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (initialQuery) {
-      handleSearch(initialQuery);
-    }
-  }, [initialQuery]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -152,10 +147,12 @@ function CekBookingContent() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Masukkan Kode Booking (SB-...) atau No. WhatsApp"
+                aria-label="Kode booking"
+                placeholder="Kode booking (SB-...)"
                 className="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0c] border border-neutral-800 rounded-2xl text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-neutral-300 focus:ring-1 focus:ring-neutral-300 transition-colors duration-150 motion-reduce:transition-none font-light"
               />
             </div>
+            <input type="tel" aria-label="Nomor WhatsApp pemesan" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Nomor WhatsApp pemesan" className="min-w-0 px-4 py-3.5 bg-[#0a0a0c] border border-neutral-800 rounded-2xl text-white text-sm focus:outline-none focus:border-neutral-300" />
             <Button type="submit" variant="primary" size="lg" isLoading={isLoading} className="shrink-0">
               <span>Lacak Jadwal</span>
             </Button>

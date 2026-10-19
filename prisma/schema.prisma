@@ -25,6 +25,7 @@ model AdminUser {
   id           String   @id @default(cuid())
   username     String   @unique
   passwordHash String
+  sessionVersion Int @default(0)
   createdAt    DateTime @default(now())
 }
 
@@ -69,12 +70,17 @@ model Booking {
   status      String         @default("PENDING")
   totalPrice  Int
   notes       String?
+  packageNameAtBooking String?
+  packagePriceAtBooking Int?
+  packageDurationAtBooking Int?
+  archivedAt DateTime?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   addOns      BookingAddOn[]
 
   @@index([date, status])
   @@index([status])
+  @@index([packageId])
 }
 
 model BookingAddOn {
@@ -84,6 +90,17 @@ model BookingAddOn {
   addOnId        String
   addOn          AddOn    @relation(fields: [addOnId], references: [id])
   priceAtBooking Int
+
+  @@index([bookingId])
+  @@index([addOnId])
+}
+
+model RequestLimit {
+  key String @id
+  count Int
+  resetAt DateTime
+
+  @@index([resetAt])
 }
 
 model ShowcaseImage {

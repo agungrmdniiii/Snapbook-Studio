@@ -26,6 +26,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(initialPkg);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
+  const [slotAvailable, setSlotAvailable] = useState(false);
   const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
   const [clientInfo, setClientInfo] = useState({
     clientName: '',
@@ -63,7 +64,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       }
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      if (!selectedDate || !selectedTime) {
+      if (!selectedDate || !selectedTime || !slotAvailable) {
         setErrorMessage('Silakan tentukan tanggal dan jam sesi yang tersedia.');
         return;
       }
@@ -116,6 +117,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) { setSelectedTime(''); setSlotAvailable(false); setCurrentStep(2); }
         throw new Error(data.error || 'Gagal membuat reservasi.');
       }
 
@@ -209,10 +211,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
             packages={packages}
             selectedPackage={selectedPackage}
             onSelect={(pkg) => {
+              if (selectedPackage?.id !== pkg.id) { setSelectedTime(''); setSlotAvailable(false); }
               setSelectedPackage(pkg);
               setErrorMessage(null);
             }}
             onSelectAndNext={(pkg) => {
+              if (selectedPackage?.id !== pkg.id) { setSelectedTime(''); setSlotAvailable(false); }
               setSelectedPackage(pkg);
               setErrorMessage(null);
               setCurrentStep(2);
@@ -222,9 +226,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
         {currentStep === 2 && (
           <StepDateTime
+            packageId={selectedPackage?.id || ''}
+            duration={selectedPackage?.duration || 0}
+            onAvailabilityChange={setSlotAvailable}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
-            onSelectDate={setSelectedDate}
+            onSelectDate={(date) => { setSelectedDate(date); setSelectedTime(''); setSlotAvailable(false); }}
             onSelectTime={setSelectedTime}
           />
         )}

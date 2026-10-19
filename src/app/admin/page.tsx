@@ -1,7 +1,6 @@
 import React from 'react';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
+import { getAdminSession } from '@/lib/admin-session';
 import { prisma } from '@/lib/prisma';
 import { StatsCard } from '@/components/admin/StatsCard';
 import { CalendarCheck, Clock, DollarSign, Users, ArrowRight } from 'lucide-react';
@@ -12,15 +11,13 @@ import { Badge } from '@/components/ui/Badge';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  const session = token ? verifySessionToken(token) : null;
+  const session = await getAdminSession();
 
   if (!session) {
     redirect('/admin/login');
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 
   let allBookings = 0;
   let pendingCount = 0;
@@ -29,28 +26,30 @@ export default async function AdminDashboardPage() {
   let recentPending: any[] = [];
 
   try {
-    [allBookings, pendingCount, revenueAgg, todayBookings] = await Promise.all([
-      prisma.booking.count(),
-      prisma.booking.count({ where: { status: 'PENDING' } }),
+    [allBookings, pendingCount, revenueAgg, todayBookings, recentPending] = await Promise.all([
+      prisma.booking.count({ where: { archivedAt: null } }),
+      prisma.booking.count({ where: { archivedAt: null, status: 'PENDING' } }),
       prisma.booking.aggregate({
-        where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
+        where: { archivedAt: null, status: { in: ['CONFIRMED', 'COMPLETED'] } },
         _sum: { totalPrice: true },
       }),
       prisma.booking.findMany({
-        where: { date: today },
+        where: { archivedAt: null, date: today },
         include: { package: true },
         orderBy: { startTime: 'asc' },
       }),
-    ]);
-
-    recentPending = await prisma.booking.findMany({
-      where: { status: 'PENDING' },
+      prisma.booking.findMany({
+      where: { archivedAt: null, status: 'PENDING' },
       include: { package: true },
       orderBy: { createdAt: 'desc' },
       take: 5,
-    });
-  } catch (err) {
-    console.warn('Admin metrics query fallback:', err);
+      }),
+    ]);
+  } catch {
+    return <div className="space-y-4 max-w-6xl">
+      <h1 className="font-serif text-3xl font-normal text-white">Ringkasan Operasional</h1>
+      <p role="alert" className="rounded-2xl border border-amber-800 bg-amber-950/30 p-5 text-sm text-amber-200">Data operasional sementara tidak tersedia. Muat ulang halaman untuk mencoba kembali.</p>
+    </div>;
   }
 
   return (
@@ -125,7 +124,7 @@ export default async function AdminDashboardPage() {
                       {b.startTime} – {b.endTime} WIB
                     </span>
                     <p className="text-sm font-medium text-white mt-0.5">{b.clientName}</p>
-                    <p className="text-xs text-neutral-400 font-light">{b.package.name}</p>
+                    <p className="text-xs text-neutral-400 font-light">{b.packageNameAtBooking ?? b.package.name}</p>
                   </div>
                   <Badge variant={b.status === 'CONFIRMED' ? 'success' : 'warning'}>
                     {b.status}

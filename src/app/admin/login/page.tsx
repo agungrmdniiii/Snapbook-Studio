@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 pt-5 border-t border-neutral-800 text-center space-y-2">
             <p className="text-[11px] text-neutral-500 font-light">
-              Kredensial bawaan: <span className="font-mono text-neutral-300">admin / adminpassword123</span>
+              Gunakan kredensial admin yang diberikan oleh pemilik studio.
             </p>
             <p className="text-[10px] text-neutral-600 font-mono">
               © {new Date().getFullYear()} Snapbook Studio • System by rmdniiagung

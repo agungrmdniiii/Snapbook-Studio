@@ -38,7 +38,7 @@ Wizard reservasi mandiri interaktif dengan pemilihan tanggal kalender dan pengec
 ---
 
 ### 4. Pelacakan Mandiri & E-Receipt Klien (`/cek-booking`)
-Halaman pelacakan status jadwal (*Pending*, *Terkonfirmasi*, *Selesai*) berbasis kode booking atau nomor WhatsApp, dilengkapi rincian biaya, alamat studio, dan panduan kedatangan.
+Halaman pelacakan status jadwal (*Pending*, *Terkonfirmasi*, *Selesai*) dengan kode booking dan nomor WhatsApp pemesan, dilengkapi rincian biaya, alamat studio, dan panduan kedatangan.
 
 ![Pelacakan Booking Mandiri](docs/images/preview-cek-booking.png)
 
@@ -70,7 +70,7 @@ Aplikasi ini dibangun menggunakan arsitektur modern berbasis performa tinggi, ke
 
 ## 🔒 Mekanisme Pencegahan Tabrakan Jadwal (Race-Condition Safe)
 
-Pada sistem reservasi fotografi, risiko dua pelanggan memesan jam dan tanggal yang sama secara simultan (*double booking*) adalah celah kritis. 
+Pada sistem reservasi fotografi, risiko dua pelanggan memesan jam dan tanggal yang sama secara simultan (*double booking*) adalah celah kritis.
 
 Snapbook Studio menyelesaikan masalah ini di tingkat database melalui **Prisma Interactive Transactions** (`prisma.$transaction`):
 1. **Pengecekan Ketersediaan:** Saat request `POST /api/bookings` diterima, transaksi atomik langsung mengunci baris kueri untuk memeriksa bentrok slot waktu (`tx.booking.findFirst`).
@@ -83,7 +83,7 @@ Snapbook Studio menyelesaikan masalah ini di tingkat database melalui **Prisma I
 
 Sebelum menjalankan project di lingkungan lokal, pastikan perangkat Anda telah memenuhi prasyarat berikut:
 
-* **Node.js:** Versi `>= 18.18.0` (Disarankan Node.js v20 LTS atau v22 LTS)
+* **Node.js:** Versi `24.x` (sesuai runtime produksi Vercel)
 * **Package Manager:** `npm` (versi 9 ke atas)
 * **Database:** PostgreSQL aktif (lokal atau cloud provider seperti [Supabase](https://supabase.com/) / [Neon](https://neon.tech/))
 
@@ -105,6 +105,8 @@ Berikut adalah daftar variabel lingkungan yang diperlukan:
 | `DIRECT_URL` | Connection string PostgreSQL langsung / unpooled (Port 5432) yang wajib digunakan oleh Prisma CLI untuk migrasi skema (`prisma db push`, `prisma migrate`). | `postgresql://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:5432/postgres` |
 | `APP_URL` | URL basis aplikasi untuk pembuatan tautan e-receipt dan pengalihan pesan WhatsApp. | `http://localhost:3000` *(Lokal)* atau `https://snapbook-studio.vercel.app` *(Prod)* |
 | `SESSION_SECRET` | Kunci rahasia minimal 32 karakter untuk mengenkripsi dan menandatangani signature cookie sesi login admin via HMAC-SHA256. | `a8f93c048b29f71c4d92a019842c38d9` |
+| `ADMIN_USERNAME` | *(Opsional)* Username akun administrator default untuk skrip seeder database (`prisma/seed.ts`). Default: `admin`. | `admin` |
+| `ADMIN_PASSWORD` | Wajib saat seed pertama: password unik minimal 12 karakter. Seed tidak mengubah akun yang sudah ada. | Isi secret pribadi |
 
 ---
 
@@ -134,10 +136,14 @@ npm run dev
 
 Buka peramban Anda di: **`http://localhost:3000`**
 
-### 🔑 Kredensial Admin Bawaan (Hasil Seeder)
+### 🔑 Kredensial Admin (Ditetapkan Pemilik)
 * **URL Login:** `http://localhost:3000/admin/login`
-* **Username:** `admin`
-* **Password:** `adminpassword123`
+* **Username:** `admin` *(atau nilai dari `ADMIN_USERNAME` di `.env`)*
+* **Password:** Nilai ADMIN_PASSWORD yang Anda tetapkan saat seed pertama.
+
+> [!WARNING]
+> **Peringatan Keamanan Produksi:**
+> Tetapkan ADMIN_USERNAME dan ADMIN_PASSWORD unik minimal 12 karakter sebelum seed. Seed tidak mereset akun yang sudah ada. Ubah password melalui Pengaturan Studio; perubahan password mencabut sesi lama.
 
 ---
 
@@ -149,7 +155,8 @@ Buka peramban Anda di: **`http://localhost:3000`**
 | `npm run build` | Melakukan kompilasi, optimalisasi aset, dan build produksi aplikasi (`next build`). |
 | `npm run postinstall` | Menghasilkan TypeScript client Prisma secara otomatis setelah dependensi diinstal (`prisma generate`). |
 | `npm run start` | Menjalankan aplikasi dalam mode produksi yang telah di-build (`next start`). |
-| `npm run seed` | Menjalankan skrip seeder database (`prisma/seed.ts`) untuk membuat akun admin default, paket studio, dan koleksi foto awal. |
+| `npm run seed` | Menjalankan skrip seeder database (`prisma/seed.ts`) untuk membuat akun admin dari env, paket studio, dan koleksi foto awal. |
+| `npm run screenshots` | Mengambil tangkapan layar otomatis seluruh modul utama menggunakan Playwright Chromium (1440x900) dan mengompresnya di bawah 500 KB ke `docs/images/`. |
 | `npm run lint` | Menjalankan pengecekan tipe statis TypeScript tanpa mengekstrak berkas output (`tsc --noEmit`). |
 | `npx tsx scripts/test-db-connection.ts` | Menguji konektivitas database PostgreSQL/Supabase secara langsung melalui terminal. |
 | `npx tsx scripts/verify-admin.ts` | Memeriksa dan mereset kredensial akun administrator langsung pada database via CLI. |
@@ -161,12 +168,13 @@ Buka peramban Anda di: **`http://localhost:3000`**
 ```text
 snapbook-studio/
 ├── docs/
-│   └── images/                # Tangkapan layar antarmuka aplikasi untuk dokumentasi
+│   └── images/                # Tangkapan layar antarmuka sistem terkompresi (< 500 KB)
 ├── prisma/
 │   ├── schema.prisma          # Definisi skema basis data PostgreSQL & model relasional
-│   └── seed.ts                # Data awal akun admin, katalog paket foto, & galeri karya
+│   └── seed.ts                # Seeder akun admin (via env), paket foto, dan galeri awal
 ├── public/                    # Aset statis publik (favicon, logo, placeholder gambar)
 ├── scripts/
+│   ├── screenshots.mjs        # Skrip otomatisasi Playwright untuk pembuatan pratinjau sistem
 │   ├── test-db-connection.ts  # Skrip utilitas CLI pengujian konektivitas PostgreSQL
 │   └── verify-admin.ts        # Skrip utilitas verifikasi dan reset password admin
 ├── src/
@@ -215,3 +223,15 @@ Proyek ini dilisensikan di bawah lisensi **MIT License** - lihat berkas [LICENSE
 * **Repository:** [https://github.com/rmdniiagung/snapbook-studio](https://github.com/rmdniiagung/snapbook-studio)
 * **Live Site:** [https://snapbook-studio.vercel.app](https://snapbook-studio.vercel.app)
 * **Copyright:** &copy; 2026 Snapbook Studio by rmdniiagung. All rights reserved.
+
+## Perbaikan keamanan dan performa (19 Oktober 2026)
+
+Runtime Node.js 24.x. Jalankan `npm test`, `npm run lint`, dan `npm run build` untuk verifikasi. Skema hardening untuk database baru ada di `prisma/hardening.sql`; `prisma db push` saja tidak mengatur RLS/grant. Produksi sudah dimigrasikan, jangan mengulang seed di produksi.
+
+Katalog di-cache 60 detik dan diperbarui saat admin menyimpan perubahan. Ketersediaan booking tetap dibaca langsung. API daftar booking kini memakai envelope pagination (25 baris, maksimal 50), dan tracking memerlukan kode serta nomor WhatsApp.
+
+Upload galeri memakai Vercel Blob yang ditautkan ke proyek. Konfigurasi server ditambahkan otomatis saat store dihubungkan; jangan beri awalan NEXT_PUBLIC_. Supabase Storage tersedia sebagai alternatif dengan SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY dan bucket publik studio-gallery. Upload JPEG/PNG/WebP maksimal 4 MiB; URL HTTPS juga tersedia.
+
+Skrip uji lama kini menjalankan regresi mock tanpa mengubah database. Screenshot admin memerlukan SCREENSHOT_ADMIN_USERNAME dan SCREENSHOT_ADMIN_PASSWORD; tanpa itu hanya halaman login yang diambil.
+
+Catatan eksekusi dan keterbatasan: `docs/audits/2026-10-19/IMPLEMENTATION.md`.

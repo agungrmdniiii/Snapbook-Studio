@@ -13,3 +13,8 @@ prisma/dev.db-journal
 .firebase/
 firebase-debug*.log
 *.tsbuildinfo
+.vercel/
+.tmp/
+
+.vercel
+.env*

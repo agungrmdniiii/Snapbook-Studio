@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 136276
+  },
+  {
+    "path": "/book",
+    "status": 200,
+    "bytes": 44558
+  },
+  {
+    "path": "/api/gallery",
+    "status": 200,
+    "bytes": 1692,
+    "photos": 7
+  },
+  {
+    "path": "/api/auth/me",
+    "status": 401,
+    "bytes": 23
+  },
+  {
+    "path": "/api/bookings",
+    "status": 401,
+    "bytes": 37
+  },
+  {
+    "path": "/api/gallery/upload",
+    "unauthenticatedStatus": 401
+  }
+]

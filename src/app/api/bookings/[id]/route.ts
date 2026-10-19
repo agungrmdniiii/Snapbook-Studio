@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { verifySessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
+import { getAdminSession } from '@/lib/admin-session';
+import { withBookedPackage } from '@/lib/booking-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,9 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
@@ -28,11 +26,11 @@ export async function GET(
       },
     });
 
-    if (!booking) {
+    if (!booking || booking.archivedAt) {
       return NextResponse.json({ error: 'Data booking tidak ditemukan' }, { status: 404 });
     }
 
-    return NextResponse.json(booking);
+    return NextResponse.json(withBookedPackage(booking), { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('Error fetching booking detail:', error);
     return NextResponse.json({ error: 'Gagal mengambil data booking' }, { status: 500 });
@@ -44,9 +42,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
@@ -54,18 +50,16 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Delete add-ons relation first (in case foreign key cascade isn't configured in older DBs)
-    await prisma.bookingAddOn.deleteMany({
-      where: { bookingId: id },
-    });
-
-    await prisma.booking.delete({
+    // Keep the reservation and its price history for recovery/accounting.
+    await prisma.booking.update({
       where: { id },
+      data: { archivedAt: new Date(), status: 'CANCELLED' },
     });
 
-    return NextResponse.json({ success: true, message: 'Booking berhasil dihapus' });
+    return NextResponse.json({ success: true, message: 'Booking berhasil diarsipkan' });
   } catch (error: any) {
+    if (error?.code === 'P2025') return NextResponse.json({ error: 'Reservasi tidak ditemukan.' }, { status: 404 });
     console.error('Error deleting booking:', error);
-    return NextResponse.json({ error: error?.message || 'Gagal menghapus booking' }, { status: 500 });
+    return NextResponse.json({ error: 'Gagal mengarsipkan booking' }, { status: 500 });
   }
 }

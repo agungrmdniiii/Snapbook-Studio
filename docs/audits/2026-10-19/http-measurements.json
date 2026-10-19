@@ -1,0 +1,102 @@
+[
+  {
+    "pass": 1,
+    "pathname": "/",
+    "status": 200,
+    "ttfbMs": 2054,
+    "totalMs": 3500,
+    "decodedBytes": 741714,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/book",
+    "status": 200,
+    "ttfbMs": 1247,
+    "totalMs": 1248,
+    "decodedBytes": 44586,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/packages",
+    "status": 200,
+    "ttfbMs": 4060,
+    "totalMs": 4061,
+    "decodedBytes": 3270,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/gallery",
+    "status": 200,
+    "ttfbMs": 1945,
+    "totalMs": 2829,
+    "decodedBytes": 310659,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 1,
+    "pathname": "/api/bookings/available-slots?date=2026-11-21",
+    "status": 200,
+    "ttfbMs": 2367,
+    "totalMs": 2368,
+    "decodedBytes": 586,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/",
+    "status": 200,
+    "ttfbMs": 2170,
+    "totalMs": 3385,
+    "decodedBytes": 741714,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/book",
+    "status": 200,
+    "ttfbMs": 1244,
+    "totalMs": 1247,
+    "decodedBytes": 44586,
+    "cache": "MISS",
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/packages",
+    "status": 200,
+    "ttfbMs": 2175,
+    "totalMs": 2176,
+    "decodedBytes": 3270,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/gallery",
+    "status": 200,
+    "ttfbMs": 1977,
+    "totalMs": 2873,
+    "decodedBytes": 310659,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  {
+    "pass": 2,
+    "pathname": "/api/bookings/available-slots?date=2026-11-21",
+    "status": 200,
+    "ttfbMs": 1200,
+    "totalMs": 1202,
+    "decodedBytes": 586,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  }
+]

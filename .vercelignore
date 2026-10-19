@@ -1,0 +1,17 @@
+videos
+.cache
+.tmp
+.agents
+.codex
+.impeccable
+docs
+tests
+scripts
+*.log
+.env*
+!.env.example
+prisma/*.db
+prisma/*.db-journal
+*.tsbuildinfo
+skills-lock.json
+.vercel

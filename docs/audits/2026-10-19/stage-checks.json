@@ -1,0 +1,65 @@
+{
+  "deployment": "https://snapbook-studio-3yqefqexm-agungrmdniiiis-projects.vercel.app",
+  "results": [
+    {
+      "status": 200,
+      "path": "/",
+      "bytes": 132919
+    },
+    {
+      "status": 200,
+      "path": "/book",
+      "bytes": 44558
+    },
+    {
+      "status": 200,
+      "path": "/cek-booking",
+      "bytes": 7403
+    },
+    {
+      "path": "/api/packages",
+      "status": 200,
+      "bytes": 3270
+    },
+    {
+      "status": 401,
+      "path": "/api/auth/me",
+      "bytes": 23
+    },
+    {
+      "status": 401,
+      "path": "/api/bookings",
+      "bytes": 37
+    },
+    {
+      "status": 401,
+      "path": "/api/bookings/list",
+      "bytes": 37
+    },
+    {
+      "status": 401,
+      "path": "/api/packages?all=true",
+      "bytes": 37
+    },
+    {
+      "status": 400,
+      "path": "/api/bookings/available-slots?date=2026-11-21",
+      "bytes": 57
+    },
+    {
+      "status": 200,
+      "path": "/api/bookings/available-slots?date=2026-11-21&packageId=pkg-self-portrait",
+      "bytes": 600
+    },
+    {
+      "status": 400,
+      "path": "/api/bookings/track?query=SB-INVALID",
+      "bytes": 81
+    },
+    {
+      "status": 200,
+      "path": "/gallery/legacy-70db4af50dfd34a50219.jpg",
+      "bytes": 419413
+    }
+  ]
+}

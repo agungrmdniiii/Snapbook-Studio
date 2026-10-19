@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import Image from 'next/image';
 import { X, ArrowRight, Eye, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -102,11 +103,16 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
               }}
               className="group relative rounded-2xl overflow-hidden bg-[#0f0f12] border border-neutral-800/90 hover:border-neutral-500 aspect-[3/4] transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 hover:-translate-y-1 hover:shadow-2xl"
             >
-              <img
+              <Image
                 src={image.url}
                 alt={image.title || 'Foto Portofolio Snapbook Studio'}
                 className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
                 loading="lazy"
+                decoding="async"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                unoptimized={!image.url.startsWith('/gallery/') && !/^https:\/\/(images\.unsplash\.com\/|[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/gallery\/|whiyncjfocmnatbpknam\.supabase\.co\/storage\/v1\/object\/public\/studio-gallery\/)/.test(image.url)}
+                width={600}
+                height={800}
               />
 
               {/* View Overlay Tag */}
@@ -228,4 +234,3 @@ export const ShowcaseGallery: React.FC<ShowcaseGalleryProps> = ({ images }) => {
     </section>
   );
 };
-

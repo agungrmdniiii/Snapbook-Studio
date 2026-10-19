@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "width": 1440,
+      "home": true,
+      "bookingSteps": true,
+      "trackingRequiresPhone": true,
+      "publishedDefaultPassword": false,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "home": true,
+      "bookingSteps": true,
+      "trackingRequiresPhone": true,
+      "publishedDefaultPassword": false,
+      "horizontalOverflow": false
+    }
+  ],
+  "errors": [],
+  "noBookingSubmitted": true
+}

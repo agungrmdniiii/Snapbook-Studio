@@ -1,0 +1,40 @@
+[
+  {
+    "name": "90-minute booking at 09:00 does not block 10:00",
+    "status": 200,
+    "accepted": true,
+    "resolvedPackage": "audit-pkg",
+    "endTime": "11:30"
+  },
+  {
+    "name": "Past date and arbitrary after-hours start accepted",
+    "status": 200,
+    "accepted": true,
+    "resolvedPackage": "audit-pkg",
+    "endTime": "24:47"
+  },
+  {
+    "name": "Inactive package accepted",
+    "status": 200,
+    "accepted": true,
+    "resolvedPackage": "audit-pkg",
+    "endTime": "11:30"
+  },
+  {
+    "name": "Unknown package silently replaced",
+    "status": 200,
+    "accepted": true,
+    "resolvedPackage": "pkg-self-portrait",
+    "endTime": "10:30"
+  },
+  {
+    "name": "Availability database failure",
+    "status": 200,
+    "advertisedAvailable": 11,
+    "totalSlots": 11
+  },
+  {
+    "name": "Token issued in year 2000 accepted",
+    "accepted": true
+  }
+]

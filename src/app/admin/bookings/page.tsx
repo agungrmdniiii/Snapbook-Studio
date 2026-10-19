@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookingTable } from '@/components/admin/BookingTable';
 import { BookingData, BookingStatus } from '@/types';
@@ -19,6 +19,13 @@ function BookingsContent() {
   const [customDate, setCustomDate] = useState('');
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [submittedSearch, setSubmittedSearch] = useState(initialSearch);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 25;
+  const [stats, setStats] = useState<{ total: number; pending: number; confirmed: number; completed: number; revenue: number } | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const requestId = useRef(0);
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studioName, setStudioName] = useState('Snapbook Studio');
@@ -26,12 +33,10 @@ function BookingsContent() {
 
   // Helper date YYYY-MM-DD
   const getLocalDate = (offsetDays = 0) => {
-    const d = new Date();
-    d.setDate(d.getDate() + offsetDays);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const shifted = new Date(`${date}T00:00:00Z`);
+    shifted.setUTCDate(shifted.getUTCDate() + offsetDays);
+    return shifted.toISOString().slice(0, 10);
   };
 
   const today = getLocalDate(0);
@@ -43,11 +48,17 @@ function BookingsContent() {
   };
 
   const fetchBookings = async () => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const id = ++requestId.current;
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter && statusFilter !== 'ALL') params.append('status', statusFilter);
-      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+      if (submittedSearch.trim()) params.append('search', submittedSearch.trim());
+      params.set('page', String(page));
+      params.set('pageSize', String(pageSize));
 
       let filterDateVal = '';
       if (dateFilter === 'TODAY') filterDateVal = today;
@@ -58,23 +69,34 @@ function BookingsContent() {
         params.append('date', filterDateVal);
       }
 
-      const res = await fetch(`/api/bookings?${params.toString()}`, {
+      const res = await fetch(`/api/bookings/list?${params.toString()}`, {
         cache: 'no-store',
+        signal: controller.signal,
       });
       if (!res.ok) throw new Error('Gagal mengambil data booking');
       const data = await res.json();
-      setBookings(data);
+      if (id !== requestId.current || controller.signal.aborted) return;
+      setBookings(data.bookings);
+      setTotal(data.total);
+      setStats(data.stats);
+      const lastPage = Math.max(1, Math.ceil(data.total / pageSize));
+      if (page > lastPage) setPage(lastPage);
     } catch (e: any) {
-      console.error(e);
+      if (id !== requestId.current || controller.signal.aborted) return;
       showToast(e.message || 'Gagal memuat reservasi');
     } finally {
-      setIsLoading(false);
+      if (id === requestId.current && !controller.signal.aborted) setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [statusFilter, dateFilter, customDate, submittedSearch]);
+
+  useEffect(() => {
     fetchBookings();
-  }, [statusFilter, dateFilter, customDate]);
+    return () => activeRequest.current?.abort();
+  }, [statusFilter, dateFilter, customDate, submittedSearch, page]);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -98,9 +120,7 @@ function BookingsContent() {
         throw new Error(errData.error || 'Gagal mengupdate status');
       }
 
-      setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
-      );
+      await fetchBookings();
       showToast(`Status reservasi berhasil diubah ke: ${newStatus}`);
     } catch (err: any) {
       showToast(err.message || 'Gagal mengubah status');
@@ -118,25 +138,12 @@ function BookingsContent() {
         throw new Error(errData.error || 'Gagal menghapus reservasi');
       }
 
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+      await fetchBookings();
       showToast('Data reservasi berhasil dihapus.');
     } catch (err: any) {
       showToast(err.message || 'Gagal menghapus reservasi');
     }
   };
-
-  // Metrics for counters
-  const stats = useMemo(() => {
-    const total = bookings.length;
-    const pending = bookings.filter((b) => b.status === 'PENDING').length;
-    const confirmed = bookings.filter((b) => b.status === 'CONFIRMED').length;
-    const completed = bookings.filter((b) => b.status === 'COMPLETED').length;
-    const revenue = bookings
-      .filter((b) => b.status === 'CONFIRMED' || b.status === 'COMPLETED')
-      .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-
-    return { total, pending, confirmed, completed, revenue };
-  }, [bookings]);
 
   const statusTabs = [
     { key: 'ALL', label: 'Semua Booking' },
@@ -193,7 +200,7 @@ function BookingsContent() {
             <span className="text-[10px] uppercase tracking-wider font-mono text-neutral-400">Total Bookings</span>
             <span className="text-xs text-neutral-400">📋</span>
           </div>
-          <p className="font-serif text-2xl text-white mt-1">{stats.total}</p>
+          <p className="font-serif text-2xl text-white mt-1">{stats?.total ?? '—'}</p>
         </button>
 
         <button
@@ -209,7 +216,7 @@ function BookingsContent() {
             <span className="text-[10px] uppercase tracking-wider font-mono text-amber-400">Menunggu DP</span>
             <Clock className="w-3.5 h-3.5 text-amber-400" />
           </div>
-          <p className="font-serif text-2xl text-amber-300 mt-1">{stats.pending}</p>
+          <p className="font-serif text-2xl text-amber-300 mt-1">{stats?.pending ?? '—'}</p>
         </button>
 
         <button
@@ -225,7 +232,7 @@ function BookingsContent() {
             <span className="text-[10px] uppercase tracking-wider font-mono text-emerald-400">Terkonfirmasi</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <p className="font-serif text-2xl text-emerald-300 mt-1">{stats.confirmed}</p>
+          <p className="font-serif text-2xl text-emerald-300 mt-1">{stats?.confirmed ?? '—'}</p>
         </button>
 
         <div className="p-4 rounded-2xl border border-neutral-800 bg-[#101013] text-left">
@@ -233,7 +240,7 @@ function BookingsContent() {
             <span className="text-[10px] uppercase tracking-wider font-mono text-neutral-400">Total Nilai Sesi</span>
             <DollarSign className="w-3.5 h-3.5 text-white" />
           </div>
-          <p className="font-serif text-xl sm:text-2xl text-white mt-1 truncate">{formatIDR(stats.revenue)}</p>
+          <p className="font-serif text-xl sm:text-2xl text-white mt-1 truncate">{stats ? formatIDR(stats.revenue) : '—'}</p>
         </div>
       </div>
 
@@ -261,7 +268,8 @@ function BookingsContent() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              fetchBookings();
+              if (submittedSearch === searchTerm.trim()) { setPage(1); if (page === 1) fetchBookings(); }
+              else setSubmittedSearch(searchTerm.trim());
             }}
             className="relative min-w-[280px]"
           >
@@ -388,6 +396,13 @@ function BookingsContent() {
           studioName={studioName}
         />
       )}
+      <div className="flex items-center justify-between gap-4 text-xs text-neutral-400">
+        <span>{total} reservasi · Halaman {page} dari {Math.max(1, Math.ceil(total / pageSize))}</span>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" disabled={isLoading || page <= 1} onClick={() => setPage(p => p - 1)}>Sebelumnya</Button>
+          <Button variant="outline" size="sm" disabled={isLoading || page >= Math.ceil(total / pageSize)} onClick={() => setPage(p => p + 1)}>Berikutnya</Button>
+        </div>
+      </div>
     </div>
   );
 }

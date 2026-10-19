@@ -1,45 +1,38 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, createSessionToken, SESSION_COOKIE_NAME } from '@/lib/auth';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, 'admin-login', 10, 15 * 60);
+  if (limited) return limited;
   try {
     const { username, password } = await request.json();
 
-    if (!username || !password) {
+    if (typeof username !== 'string' || typeof password !== 'string' || !username || !password || username.length > 100 || password.length > 1024) {
       return NextResponse.json({ error: 'Username dan password wajib diisi' }, { status: 400 });
     }
 
-    let admin: any = null;
+    let admin;
     try {
       admin = await prisma.adminUser.findUnique({
         where: { username },
       });
-    } catch (err) {
-      console.warn('DB error during admin lookup:', err);
+    } catch {
+      return NextResponse.json({ error: 'Layanan sementara tidak tersedia' }, { status: 503 });
     }
 
-    let isValid = false;
-    let userId = 'admin-default';
-
-    if (admin) {
-      isValid = await verifyPassword(password, admin.passwordHash);
-      userId = admin.id;
-    } else if (username === 'admin' && password === 'adminpassword123') {
-      isValid = true;
-    }
-
-    if (!isValid) {
+    if (!admin || !(await verifyPassword(password, admin.passwordHash))) {
       return NextResponse.json({ error: 'Kredensial tidak valid' }, { status: 401 });
     }
 
-    const token = createSessionToken({ id: userId, username });
+    const token = createSessionToken({ id: admin.id, username: admin.username, sessionVersion: admin.sessionVersion });
 
     const response = NextResponse.json({
       success: true,
-      user: { id: userId, username },
+      user: { id: admin.id, username: admin.username },
     });
 
     response.cookies.set(SESSION_COOKIE_NAME, token, {
@@ -52,7 +45,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    if (error instanceof SyntaxError) return NextResponse.json({ error: 'Permintaan tidak valid' }, { status: 400 });
     return NextResponse.json({ error: 'Terjadi kesalahan server' }, { status: 500 });
   }
 }

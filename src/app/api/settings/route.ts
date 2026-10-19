@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { verifySessionToken, SESSION_COOKIE_NAME, hashPassword } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth';
+import { getAdminSession } from '@/lib/admin-session';
 
-import { DEFAULT_CONFIG, invalidateStudioConfigCache } from '@/lib/constants';
+import { invalidateStudioConfigCache } from '@/lib/constants';
+import { revalidateTag } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,26 +13,34 @@ export async function GET() {
     const config = await prisma.studioConfig.findUnique({
       where: { id: 'default' },
     });
-    return NextResponse.json(config || DEFAULT_CONFIG);
-  } catch (error) {
-    console.error('Error fetching settings, returning fallback:', error);
-    return NextResponse.json(DEFAULT_CONFIG);
+    if (!config) return NextResponse.json({ error: 'Pengaturan studio belum tersedia' }, { status: 503 });
+    return NextResponse.json(config, { headers: { 'Cache-Control': 'no-store' } });
+  } catch {
+    return NextResponse.json({ error: 'Pengaturan studio sementara tidak tersedia' }, { status: 503 });
   }
 }
 
 export async function PUT(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const session = token ? verifySessionToken(token) : null;
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Tidak memiliki izin akses' }, { status: 401 });
     }
 
     const data = await request.json();
+    const password = typeof data?.newPassword === 'string' ? data.newPassword.trim() : '';
+    if (!data || typeof data !== 'object' || Array.isArray(data) ||
+        !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.openingTime) ||
+        !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.closingTime) || data.openingTime >= data.closingTime ||
+        !Number.isInteger(Number(data.slotDuration)) || Number(data.slotDuration) < 5 || Number(data.slotDuration) > 720 ||
+        (data.newPassword !== undefined && data.newPassword !== '' && (typeof data.newPassword !== 'string' || password.length < 12 || password.length > 128))) {
+      return NextResponse.json({ error: 'Jam operasional/interval tidak valid. Password baru minimal 12 karakter.' }, { status: 400 });
+    }
 
-    const updated = await prisma.studioConfig.upsert({
+    const passwordHash = password ? await hashPassword(password) : null;
+    const updated = await prisma.$transaction(async (tx) => {
+      const config = await tx.studioConfig.upsert({
       where: { id: 'default' },
       update: {
         studioName: data.studioName,
@@ -54,22 +63,21 @@ export async function PUT(request: Request) {
         address: data.address || '',
         aboutText: data.aboutText || '',
       },
+      });
+      if (passwordHash) {
+        await tx.adminUser.update({
+          where: { id: session.id },
+          data: { passwordHash, sessionVersion: { increment: 1 } },
+        });
+      }
+      return config;
     });
 
     invalidateStudioConfigCache();
+    revalidateTag('studio-catalog');
 
-    // Optional admin password update
-    if (data.newPassword && data.newPassword.trim().length >= 6) {
-      const passwordHash = await hashPassword(data.newPassword.trim());
-      await prisma.adminUser.update({
-        where: { id: session.id },
-        data: { passwordHash },
-      });
-    }
-
-    return NextResponse.json({ success: true, config: updated });
-  } catch (error) {
-    console.error('Error updating settings:', error);
+    return NextResponse.json({ success: true, config: updated, requiresLogin: Boolean(passwordHash) });
+  } catch {
     return NextResponse.json({ error: 'Gagal memperbarui pengaturan' }, { status: 500 });
   }
 }
