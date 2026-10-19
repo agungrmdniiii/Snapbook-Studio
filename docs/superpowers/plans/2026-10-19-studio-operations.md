@@ -49,7 +49,7 @@ All new tables private: RLS enabled, anon/authenticated privileges revoked.
 - [x] 4. Calendar/day-week UI, booking details reschedule/payments/history, block controls, buffer settings, visible-tab30s refresh.
 - [x] 5. Whole change review: lock ordering, privacy, legacy conflicts, idempotency/stale updates, disabled forms, mobile overflow and keyboard labels.
 - [x] 6. Full tests/typecheck/Prisma generation/build, isolated DB concurrency proof, mocked browser admin flows and public read-only smoke.
-- [ ] 7. Apply compatible production schema/guard, run advisors and verify; commit/push main without force; wait automatic Vercel deployment and verify domain.
+- [x] 7. Apply compatible production schema/guard, run advisors and verify; commit/push main without force; wait automatic Vercel deployment and verify domain.
 
 ## Review focus
 - Reschedule two admins / direct SQL concurrent writes must not double-book.
@@ -62,3 +62,5 @@ All new tables private: RLS enabled, anon/authenticated privileges revoked.
 - Baseline: GitHub main210439b; 42 tests previously passed. Unrelated videos and preview screenshots remain local.
 
 - Parent integrated after worker usage limits. 54 tests/typecheck/build/DB fixtures/browser desktop-mobile passed. Production additive migration applied. Push/deploy pending. Payment requestKey unique UUID added for idempotency.
+
+- Application6bd8c44 pushed main; Vercel dpl_6hLKUawQ26ekeMmwZ4MgkJPFcoxH Ready and primary domain verified. Public200/private401/calendar login redirect confirmed; see operations-production.json. All seven tasks complete.

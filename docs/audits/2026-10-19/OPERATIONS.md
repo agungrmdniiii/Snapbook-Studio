@@ -20,4 +20,6 @@ Browser fixture at 1440px and 390px: rejected/successful reschedule, payment, bl
 No mutation through owner's production admin login: browser uses dummy responses, backend tested through routes and isolated SQL. No gateway, auto-message or auto-cancellation. Ledger starts at activation. Calendar maximum1000 agendas/31days; asks to narrow excessive ranges. Per-booking payment list is unpaginated; paginate if unusually many transactions accumulate. No high-volume load test or pooler credential change. Retained Vercel Node24/bom1 near Mumbai database.
 
 ## Release
-Pending Git push and automatic deployment verification.
+Application commit 6bd8c44 pushed to GitHub main. Automatic production deployment dpl_6hLKUawQ26ekeMmwZ4MgkJPFcoxH is Ready; domain https://snapbook-studio.vercel.app verified pointing to it, functions bom1. Read-only domain smoke: public pages/catalog/availability200, calendar307 to login, calendar/payment/history/list APIs401 without a session, seven gallery images and buffer0 preserved. Machine-readable evidence: operations-production.json. Documentation-only follow-up records this result; no application changes afterward.
+
+Design-hook triage: retained original Plus Jakarta Sans branding from app/layout.tsx and video brand.md; persisted narrow overused-font value exception locally, no broad ignore. No interface font redesign needed in this operations release.

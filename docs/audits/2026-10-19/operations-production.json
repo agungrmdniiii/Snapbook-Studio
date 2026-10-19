@@ -1,0 +1,73 @@
+{
+  "base": "https://snapbook-studio.vercel.app",
+  "checkedAt": "2026-10-19T04:16:49.197Z",
+  "galleryCount": 7,
+  "bufferMinutes": 0,
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 136276
+    },
+    {
+      "path": "/book",
+      "status": 200,
+      "bytes": 44558
+    },
+    {
+      "path": "/cek-booking",
+      "status": 200,
+      "bytes": 7403
+    },
+    {
+      "path": "/admin/login",
+      "status": 200,
+      "bytes": 10027
+    },
+    {
+      "path": "/admin/calendar",
+      "status": 307,
+      "bytes": 7338
+    },
+    {
+      "path": "/api/admin/calendar?from=2026-10-19&to=2026-10-25",
+      "status": 401,
+      "bytes": 37
+    },
+    {
+      "path": "/api/bookings/dummy/payments",
+      "status": 401,
+      "bytes": 37
+    },
+    {
+      "path": "/api/bookings/dummy/history",
+      "status": 401,
+      "bytes": 37
+    },
+    {
+      "path": "/api/bookings/list",
+      "status": 401,
+      "bytes": 37
+    },
+    {
+      "path": "/api/packages",
+      "status": 200,
+      "bytes": 3270
+    },
+    {
+      "path": "/api/bookings/available-slots?date=2026-11-21&packageId=pkg-self-portrait",
+      "status": 200,
+      "bytes": 600
+    },
+    {
+      "path": "/api/gallery",
+      "status": 200,
+      "bytes": 1692
+    },
+    {
+      "path": "/api/settings",
+      "status": 200,
+      "bytes": 467
+    }
+  ]
+}
