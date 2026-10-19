@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const root = resolve(__dirname, '..');
 const tests = [
   'admin-list', 'booking-view', 'auth', 'booking-integrity', 'catalog',
-  'media', 'settings', 'scheduling', 'status', 'tracking',
+  'media', 'settings', 'scheduling', 'status', 'tracking', 'calendar-dates', 'operations',
 ].map(name => resolve(root, 'tests', `${name}.test.ts`));
 for (const file of tests) {
   if (!existsSync(file)) throw new Error(`Required regression test is missing: ${file}`);

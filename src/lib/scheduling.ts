@@ -1,5 +1,5 @@
 export class BookingValidationError extends Error {}
-type Schedule = { openingTime: string; closingTime: string; slotDuration: number };
+type Schedule = { openingTime: string; closingTime: string; slotDuration: number; bufferMinutes?: number };
 export function wibNow(now = new Date()) {
   const value = new Date(now.getTime() + 7 * 60 * 60 * 1000).toISOString();
   return { date: value.slice(0, 10), time: value.slice(11, 16) };
@@ -17,23 +17,25 @@ export function minuteTime(minutes: number) {
 function validateConfig(config: Schedule, duration: number) {
   const opening = timeMinutes(config.openingTime), closing = timeMinutes(config.closingTime);
   if (closing <= opening || !Number.isInteger(config.slotDuration) || config.slotDuration < 1 || config.slotDuration > 1440 || !Number.isInteger(duration) || duration < 1 || duration > 1440) throw new BookingValidationError('Pengaturan jadwal studio belum valid.');
-  return { opening, closing };
+  const buffer = config.bufferMinutes ?? 0;
+  if (!Number.isInteger(buffer) || buffer < 0 || buffer > 180) throw new BookingValidationError("Buffer studio tidak valid.");
+  return { opening, closing, buffer };
 }
 export function validateSessionTime(config: Schedule, duration: number, date: string, startTime: string, now = new Date()) {
-  const { opening, closing } = validateConfig(config, duration);
+  const { opening, closing, buffer } = validateConfig(config, duration);
   const current = wibNow(now), start = timeMinutes(startTime);
   if (!validDate(date) || date < current.date || (date === current.date && startTime <= current.time)) throw new BookingValidationError('Pilih tanggal dan jam yang belum lewat (WIB).');
-  if (start < opening || (start - opening) % config.slotDuration !== 0 || start + duration > closing) throw new BookingValidationError('Jam sesi tidak sesuai jadwal atau melewati jam tutup studio.');
+  if (start < opening || (start - opening) % config.slotDuration !== 0 || start + duration + buffer > closing) throw new BookingValidationError('Jam sesi tidak sesuai jadwal atau melewati jam tutup studio.');
   return minuteTime(start + duration);
 }
 export function buildSlots(config: Schedule, duration: number, bookings: { startTime: string; endTime: string }[], date: string, now = new Date()) {
-  const { opening, closing } = validateConfig(config, duration), current = wibNow(now);
+  const { opening, closing, buffer } = validateConfig(config, duration), current = wibNow(now);
   if (!validDate(date)) throw new BookingValidationError('Tanggal tidak valid.');
   const slots = [];
-  for (let start = opening; start + duration <= closing; start += config.slotDuration) {
+  for (let start = opening; start + duration + buffer <= closing; start += config.slotDuration) {
     const time = minuteTime(start), endTime = minuteTime(start + duration);
     const isPast = date < current.date || (date === current.date && time <= current.time);
-    slots.push({ time, available: !isPast && !bookings.some(b => b.startTime < endTime && b.endTime > time), isPast });
+    slots.push({ time, available: !isPast && !bookings.some(b => timeMinutes(b.startTime) < start + duration + buffer && timeMinutes(b.endTime) + buffer > start), isPast });
   }
   return slots;
 }

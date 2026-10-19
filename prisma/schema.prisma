@@ -16,6 +16,7 @@ model StudioConfig {
   openingTime     String   @default("09:00")
   closingTime     String   @default("20:00")
   slotDuration    Int      @default(60)
+  bufferMinutes   Int      @default(0)
   address         String   @default("Jl. Studio Foto No. 10, Jakarta")
   aboutText       String   @default("Studio foto profesional untuk mengabadikan momen berharga Anda dengan hasil estetik dan memukau.")
   updatedAt       DateTime @updatedAt
@@ -77,6 +78,7 @@ model Booking {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   addOns      BookingAddOn[]
+  payments    BookingPayment[]
 
   @@index([date, status])
   @@index([status])
@@ -111,4 +113,47 @@ model ShowcaseImage {
   aspectRatio String   @default("portrait")
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+model ScheduleBlock {
+  id String @id @default(cuid())
+  date String
+  startTime String
+  endTime String
+  reason String
+  createdById String
+  createdByUsername String
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+model BookingPayment {
+  id String @id @default(cuid())
+  requestKey String @unique
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  amount Int
+  method String
+  reference String?
+  notes String?
+  recordedById String
+  recordedByUsername String
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+}
+
+model AuditEvent {
+  id String @id @default(cuid())
+  bookingId String?
+  actorId String
+  actorUsername String
+  action String
+  before Json?
+  after Json?
+  createdAt DateTime @default(now())
+
+  @@index([bookingId, createdAt])
+  @@index([createdAt])
 }

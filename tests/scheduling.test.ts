@@ -25,3 +25,11 @@ test('validates types, bounds, phones, email and deduplicates add-ons', () => {
   assert.throws(() => validateBookingInput({ ...input, clientName: {} }));
   assert.throws(() => validateBookingInput({ ...input, notes: 'x'.repeat(2001) }));
 });
+
+test('cleanup buffer prevents adjacent sessions and must finish by closing', () => {
+  const buffered = { ...config, bufferMinutes: 30 };
+  assert.throws(() => validateSessionTime(buffered, 60, '2099-01-02', '19:00'));
+  const slots = buildSlots(buffered, 60, [{ startTime: '09:00', endTime: '10:00' }], '2099-01-02');
+  assert.equal(slots.find(s => s.time === '10:00')?.available, false);
+  assert.equal(slots.find(s => s.time === '11:00')?.available, true);
+});

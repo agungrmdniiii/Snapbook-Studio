@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { MessageSquare, Bell, Eye, Trash2, CheckCircle2, Clock, Check, X, ArrowUpRight } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -435,6 +436,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({
             </div>
 
             {/* WhatsApp Direct Actions */}
+            <Link href={`/admin/calendar?date=${selectedBooking.date}&bookingId=${selectedBooking.id}`} className="block text-sm text-white underline py-2">Kelola jadwal, DP, dan riwayat di kalender</Link>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-neutral-800">
               {onDeleteBooking && (
                 <Button

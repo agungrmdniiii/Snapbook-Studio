@@ -1,0 +1,22 @@
+[
+  {
+    "width": 1440,
+    "rescheduleCollision": true,
+    "rescheduleSuccess": true,
+    "payment": true,
+    "formPreservedOnRefresh": true,
+    "blocks": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "rescheduleCollision": true,
+    "rescheduleSuccess": true,
+    "payment": true,
+    "formPreservedOnRefresh": true,
+    "blocks": true,
+    "noOverflow": true,
+    "errors": []
+  }
+]

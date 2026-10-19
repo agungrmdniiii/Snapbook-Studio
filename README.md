@@ -235,3 +235,16 @@ Upload galeri memakai Vercel Blob yang ditautkan ke proyek. Konfigurasi server d
 Skrip uji lama kini menjalankan regresi mock tanpa mengubah database. Screenshot admin memerlukan SCREENSHOT_ADMIN_USERNAME dan SCREENSHOT_ADMIN_PASSWORD; tanpa itu hanya halaman login yang diambil.
 
 Catatan eksekusi dan keterbatasan: `docs/audits/2026-10-19/IMPLEMENTATION.md`.
+
+
+## Kalender operasional dan DP
+
+Buka `/admin/calendar` setelah login. Pilih harian/mingguan; klik reservasi untuk memindahkan jadwal, mencatat DP/pengembalian, dan membaca riwayat. Perubahan jadwal harus disepakati dengan pelanggan; pesan WhatsApp tidak dikirim otomatis. Kalender/daftar reservasi diperbarui setiap 30 detik saat tab aktif serta ketika kembali ke tab, dengan isian formulir tetap tersimpan.
+
+**Blok waktu / libur** menutup interval atau satu hari; waktu yang memiliki booking aktif tidak bisa ditutup. **Buka kembali** menghapus blok dan mencatat riwayat. Atur **Jeda antarsesi** di Pengaturan (0–180 menit, awalnya 0); sesi dan jeda harus selesai sebelum tutup. Booking lama tidak dipindah/dibatalkan otomatis. Bentrok ditandai agar ditinjau admin.
+
+Pembayaran adalah pencatatan manual, bukan payment gateway. Nominal tidak boleh melebihi tagihan; pengembalian tidak boleh melebihi uang tercatat. Percobaan ulang dengan identitas transaksi sama tidak membuat pembayaran ganda. Koreksi melalui pengembalian, bukan menghapus riwayat. Status dan pembatalan tetap manual. Riwayat dimulai saat fitur aktif; pembayaran lama tidak ditebak.
+
+Database baru: buat skema dasar lalu terapkan `prisma/hardening.sql` dan `prisma/operations.sql` satu kali berurutan. Produksi sudah dimigrasikan; jangan mengulang SQL. `prisma db push` tidak memasang trigger/RLS. Penulisan jadwal/pembayaran wajib memakai isolation READ COMMITTED.
+
+Verifikasi: `npm test`, `npm run lint`, `npm run build`. `node --import tsx scripts/verify-operations-db.mts` membuat/membersihkan skema fixture terpisah, memerlukan izin membuat skema. `node scripts/verify-operations-ui.mjs` menguji komponen admin melalui API dummy setelah build menyediakan CSS/font. Bukti dan batas pemeriksaan: `docs/audits/2026-10-19/OPERATIONS.md`.

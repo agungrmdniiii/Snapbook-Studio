@@ -22,6 +22,7 @@ function database(t: TestContext, failPassword = false) {
   let stored = { studioName: 'Original studio', passwordHash: '', sessionVersion: 0 };
   type State = typeof stored;
   const methods = (state: State) => ({
+    auditEvent:{create:async()=>({})},
     studioConfig: { upsert: async (args: { update: { studioName: string } }) => { state.studioName = args.update.studioName; return { id: 'default', studioName: state.studioName }; } },
     adminUser: { update: async (args: { data: { passwordHash: string; sessionVersion: { increment: number } } }) => {
       if (failPassword) throw new Error('test password write failed');

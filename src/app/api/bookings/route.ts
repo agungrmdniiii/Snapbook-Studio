@@ -5,6 +5,7 @@ import { generateBookingWhatsAppUrl } from '@/lib/whatsapp';
 import { randomBytes } from 'node:crypto';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { BookingValidationError, validateBookingInput, validateSessionTime } from '@/lib/scheduling';
+import { assertAvailable, audit, scheduleSnapshot, OperationError, operationFailure } from '@/lib/studio-operations';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,20 +34,21 @@ export async function POST(request: Request) {
     const newBooking = await prisma.$transaction(async (tx) => {
       // Serialize writes to the same studio day before checking full session intervals.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${date}, 0))`;
-      const collision = await tx.booking.findFirst({ where: {
-        date, archivedAt: null, status: { in: ['PENDING', 'CONFIRMED'] },
-        startTime: { lt: endTime }, endTime: { gt: startTime },
-      } });
-      if (collision) throw new Error('SLOT_COLLISION');
+      const currentConfig=await tx.studioConfig.findUnique({where:{id:'default'}});
+      if(!currentConfig)throw new OperationError('Pengaturan studio belum tersedia.',503);
+      validateSessionTime(currentConfig,pkg.duration,date,startTime);
+      await assertAvailable(tx,date,startTime,endTime,currentConfig.bufferMinutes??0);
       // Time may have advanced while waiting for another transaction's lock.
       validateSessionTime(config, pkg.duration, date, startTime);
-      return tx.booking.create({ data: {
+      const created=await tx.booking.create({ data: {
         bookingCode, packageId: pkg.id, packageNameAtBooking: pkg.name,
         packagePriceAtBooking: pkg.price, packageDurationAtBooking: pkg.duration,
         clientName, clientEmail, clientPhone, date, startTime, endTime,
         status: 'PENDING', totalPrice, notes: notes || null,
         addOns: { create: addOnRecords.map(ad => ({ addOnId: ad.id, priceAtBooking: ad.price })) },
       }, include: { package: true, addOns: { include: { addOn: true } } } });
+      await audit(tx,{id:'customer',username:'Customer'},'BOOKING_CREATED',created.id,undefined,scheduleSnapshot(created));
+      return created;
     });
     const whatsappUrl = generateBookingWhatsAppUrl(config.whatsappNumber, {
       bookingCode: newBooking.bookingCode, clientName: newBooking.clientName,
@@ -57,9 +59,10 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ success: true, booking: newBooking, whatsappUrl }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
+    if(error instanceof OperationError)return operationFailure(error);
     if (error instanceof BookingValidationError) return NextResponse.json({ error: error.message }, { status: 400 });
     const failure = error as { message?: string; code?: string; meta?: unknown };
-    if (failure.message === 'SLOT_COLLISION' || failure.code === 'P2002' || failure.code === 'P2034' || (failure.code === 'P2004' && JSON.stringify(failure.meta).includes('23P01'))) {
+    if (failure.message === 'SLOT_COLLISION' || failure.code === 'P2002' || failure.code === 'P2034' || ((failure.code === 'P2004' || failure.code === 'P2010') && JSON.stringify(failure.meta ?? {}).includes('23P01'))) {
       return NextResponse.json({ error: 'Slot sesi tersebut baru saja terisi. Silakan pilih jam lain.' }, { status: 409 });
     }
     console.error('Booking creation unavailable', { code: failure.code });

@@ -36,6 +36,7 @@ export const AdminSidebar: React.FC<{ username?: string }> = ({ username = 'admi
   const navLinks = [
     { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
     { label: 'Kelola Reservasi', href: '/admin/bookings', icon: CalendarCheck },
+    { label: 'Kalender Studio', href: '/admin/calendar', icon: CalendarCheck },
     { label: 'Paket & Add-on', href: '/admin/packages', icon: Package },
     { label: 'Galeri Foto', href: '/admin/gallery', icon: ImageIcon },
     { label: 'Pengaturan Studio', href: '/admin/settings', icon: Settings },

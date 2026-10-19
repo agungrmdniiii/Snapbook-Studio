@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useVisibleRefresh } from '@/components/admin/useVisibleRefresh';
 import { BookingTable } from '@/components/admin/BookingTable';
 import { BookingData, BookingStatus } from '@/types';
 import { Search, RefreshCw, Calendar, CheckCircle2, Clock, Check, X, DollarSign, CalendarDays } from 'lucide-react';
@@ -47,12 +49,13 @@ function BookingsContent() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (quiet = false) => {
+    if(quiet&&activeRequest.current&&!activeRequest.current.signal.aborted)return;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
     const id = ++requestId.current;
-    setIsLoading(true);
+    if(!quiet)setIsLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter && statusFilter !== 'ALL') params.append('status', statusFilter);
@@ -85,9 +88,10 @@ function BookingsContent() {
       if (id !== requestId.current || controller.signal.aborted) return;
       showToast(e.message || 'Gagal memuat reservasi');
     } finally {
-      if (id === requestId.current && !controller.signal.aborted) setIsLoading(false);
+      if (id === requestId.current && !controller.signal.aborted) { setIsLoading(false);activeRequest.current=null; }
     }
   };
+  useVisibleRefresh(()=>fetchBookings(true));
 
   useEffect(() => {
     setPage(1);
@@ -178,7 +182,8 @@ function BookingsContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchBookings} isLoading={isLoading}>
+          <Link href="/admin/calendar" className="text-sm text-neutral-300 underline px-2">Kalender & DP</Link>
+          <Button variant="outline" size="sm" onClick={()=>fetchBookings()} isLoading={isLoading}>
             <RefreshCw className="w-3.5 h-3.5 mr-1" />
             <span>Muat Ulang</span>
           </Button>

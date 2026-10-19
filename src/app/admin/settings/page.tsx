@@ -12,6 +12,7 @@ export default function AdminSettingsPage() {
   const [openingTime, setOpeningTime] = useState('09:00');
   const [closingTime, setClosingTime] = useState('20:00');
   const [slotDuration, setSlotDuration] = useState('60');
+  const [bufferMinutes,setBufferMinutes]=useState('0');
   const [address, setAddress] = useState('');
   const [aboutText, setAboutText] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -36,6 +37,7 @@ export default function AdminSettingsPage() {
           setOpeningTime(data.openingTime || '09:00');
           setClosingTime(data.closingTime || '20:00');
           setSlotDuration(String(data.slotDuration || '60'));
+          setBufferMinutes(String(data.bufferMinutes??0));
           setAddress(data.address || '');
           setAboutText(data.aboutText || '');
           setSettingsLoaded(true);
@@ -67,6 +69,7 @@ export default function AdminSettingsPage() {
         openingTime,
         closingTime,
         slotDuration: Number(slotDuration) || 60,
+        bufferMinutes:Number(bufferMinutes),
         address,
         aboutText,
       };
@@ -208,6 +211,8 @@ export default function AdminSettingsPage() {
             />
           </div>
         </div>
+
+        <Input label="JEDA ANTARSESI (MENIT)" type="number" min={0} max={180} step={1} required value={bufferMinutes} onChange={e=>setBufferMinutes(e.target.value)} helperText="Jeda untuk persiapan setelah sesi, 0–180 menit. Sesi dan jeda harus selesai sebelum studio tutup." />
 
         {/* Card 3: Security & Password */}
         <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">

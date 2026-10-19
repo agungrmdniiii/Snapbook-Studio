@@ -28,6 +28,7 @@ function setup(t: { after: (fn: () => void) => void }) {
 test('restoring an active status locks the date then checks full overlap and returns409', async t => {
   setup(t); const events: string[] = [];
   prisma.$transaction = (async (run: (tx: unknown) => Promise<unknown>) => run({
+    studioConfig:{findUnique:async()=>({bufferMinutes:0})},auditEvent:{create:async()=>({})},
     $executeRaw: async (_sql: unknown, date: string) => { events.push('lock'); assert.equal(date, '2099-01-02'); },
     booking: {
       findUnique: async () => ({ id: 'booking1', date: '2099-01-02', startTime: '10:00', endTime: '11:30', status: 'CANCELLED', archivedAt: null }),
@@ -40,12 +41,19 @@ test('restoring an active status locks the date then checks full overlap and ret
 });
 test('archive keeps booking and add-ons and marks reservation cancelled', async t => {
   setup(t);
-  prisma.booking.update = (async ({ where, data }: { where: { id: string }; data: { archivedAt: unknown; status: string } }) => { assert.equal(where.id, 'booking1'); assert.ok(data.archivedAt instanceof Date); assert.equal(data.status, 'CANCELLED'); return { id: 'booking1' }; }) as unknown as typeof prisma.booking.update;
+  let audited=false;
+  const current={id:'booking1',date:'2099-01-02',startTime:'10:00',endTime:'11:00',status:'CONFIRMED',archivedAt:null};
+  prisma.$transaction=(async (run:(tx:unknown)=>Promise<unknown>)=>run({
+    $executeRaw:async()=>0,
+    booking:{findUnique:async()=>current,update:async({where,data}:{where:{id:string};data:{archivedAt:Date;status:string}})=>{assert.equal(where.id,'booking1');assert.ok(data.archivedAt instanceof Date);assert.equal(data.status,'CANCELLED');return{...current,...data};}},
+    auditEvent:{create:async()=>{audited=true;}},
+  })) as unknown as typeof prisma.$transaction;
   assert.equal((await request(DELETE, 'DELETE')).status, 200);
+  assert.equal(audited,true);
 });
 test('missing reservation archive returns404', async t => {
   setup(t);
-  prisma.booking.update = (async () => { throw Object.assign(new Error('missing'), { code: 'P2025' }); }) as unknown as typeof prisma.booking.update;
+  prisma.$transaction=(async(run:(tx:unknown)=>Promise<unknown>)=>run({booking:{findUnique:async()=>null}})) as unknown as typeof prisma.$transaction;
   assert.equal((await request(DELETE, 'DELETE')).status, 404);
 });
 test('mutations reject unauthenticated requests and invalid statuses', async t => {

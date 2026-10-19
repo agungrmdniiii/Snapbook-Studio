@@ -18,6 +18,7 @@ function setup(t: { after: (fn: () => void) => void }) {
   replace(prisma.package, 'findUnique', async () => pkg);
   replace(prisma.studioConfig, 'findUnique', async () => config);
   replace(prisma.addOn, 'findMany', async () => []);
+  replace(prisma.scheduleBlock, 'findMany', async () => []);
   // Every transaction is explicitly mocked; no test can write the real database.
   replace(prisma, '$transaction', async () => { throw new Error('UNEXPECTED_TRANSACTION'); });
   return replace;
@@ -27,6 +28,7 @@ const request = (data: unknown) => new Request('http://localhost/api/bookings', 
 test('new booking locks its day before checking full overlaps and returns 409', async t => {
   const replace = setup(t), events: string[] = [];
   replace(prisma, '$transaction', async (run: (tx: unknown) => Promise<unknown>) => run({
+    studioConfig:{findUnique:async()=>config},scheduleBlock:{findFirst:async()=>null},auditEvent:{create:async()=>({})},
     $executeRaw: async (_sql: unknown, day: string) => { events.push('lock'); assert.equal(day, input.date); },
     booking: {
       findFirst: async ({ where }: { where: Record<string, unknown> }) => {
@@ -63,6 +65,7 @@ test('database failure hides internal details and never reports slots available'
 test('booking saves server prices and package snapshots', async t => {
   const replace = setup(t);
   replace(prisma, '$transaction', async (run: (tx: unknown) => Promise<unknown>) => run({
+    studioConfig:{findUnique:async()=>config},scheduleBlock:{findFirst:async()=>null},auditEvent:{create:async()=>({})},
     $executeRaw: async () => {},
     booking: { findFirst: async () => null, create: async ({ data }: { data: Record<string, unknown> }) => {
       assert.equal(data.packageNameAtBooking, pkg.name); assert.equal(data.packagePriceAtBooking, pkg.price);

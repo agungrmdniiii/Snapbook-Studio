@@ -5,6 +5,7 @@ import { getAdminSession } from '@/lib/admin-session';
 
 import { invalidateStudioConfigCache } from '@/lib/constants';
 import { revalidateTag } from 'next/cache';
+import { audit } from '@/lib/studio-operations';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,7 @@ export async function PUT(request: Request) {
         !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.openingTime) ||
         !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.closingTime) || data.openingTime >= data.closingTime ||
         !Number.isInteger(Number(data.slotDuration)) || Number(data.slotDuration) < 5 || Number(data.slotDuration) > 720 ||
+        (data.bufferMinutes!==undefined&&(!Number.isInteger(data.bufferMinutes)||data.bufferMinutes<0||data.bufferMinutes>180)) ||
         (data.newPassword !== undefined && data.newPassword !== '' && (typeof data.newPassword !== 'string' || password.length < 12 || password.length > 128))) {
       return NextResponse.json({ error: 'Jam operasional/interval tidak valid. Password baru minimal 12 karakter.' }, { status: 400 });
     }
@@ -49,6 +51,7 @@ export async function PUT(request: Request) {
         openingTime: data.openingTime,
         closingTime: data.closingTime,
         slotDuration: Number(data.slotDuration) || 60,
+        ...(data.bufferMinutes===undefined?{}:{bufferMinutes:data.bufferMinutes}),
         address: data.address,
         aboutText: data.aboutText,
       },
@@ -60,6 +63,7 @@ export async function PUT(request: Request) {
         openingTime: data.openingTime || '09:00',
         closingTime: data.closingTime || '20:00',
         slotDuration: Number(data.slotDuration) || 60,
+        bufferMinutes:data.bufferMinutes??0,
         address: data.address || '',
         aboutText: data.aboutText || '',
       },
@@ -70,6 +74,7 @@ export async function PUT(request: Request) {
           data: { passwordHash, sessionVersion: { increment: 1 } },
         });
       }
+      await audit(tx,session,'SETTINGS_UPDATED',null,undefined,{openingTime:config.openingTime,closingTime:config.closingTime,slotDuration:config.slotDuration,bufferMinutes:config.bufferMinutes});
       return config;
     });
 

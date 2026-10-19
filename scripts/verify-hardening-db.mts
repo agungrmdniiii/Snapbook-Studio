@@ -9,7 +9,7 @@ try {
     FROM pg_class c JOIN pg_namespace n ON c.relnamespace=n.oid
     WHERE n.nspname='public' AND c.relkind='r'
   `;
-  assert.equal(Number(security[0].protected), 8);
+  assert.equal(Number(security[0].protected), 11);
   assert.equal(Number(security[0].exposed), 0);
   const key = `regression-${randomUUID()}`;
   const rollback = new Error('ROLLBACK_EXPECTED');
@@ -25,5 +25,5 @@ try {
     throw rollback;
   }), rollback);
   assert.equal(await db.requestLimit.count({where:{key}}),0);
-  console.log('PASS: 8 protected tables, no anon grants, atomic limiter increments, advisory lock, rollback leaves no test row.');
+  console.log('PASS: 11 protected tables, no anon grants, atomic limiter increments, advisory lock, rollback leaves no test row.');
 } finally { await db.$disconnect(); }
