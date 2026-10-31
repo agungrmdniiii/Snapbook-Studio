@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PackageItem, AddOnItem, BookingData } from '@/types';
 import { StepPackage } from './StepPackage';
 import { StepDateTime } from './StepDateTime';
@@ -9,6 +9,7 @@ import { StepClientInfo } from './StepClientInfo';
 import { StepConfirmation } from './StepConfirmation';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { formatIDR, formatDateIndonesian } from '@/lib/utils';
 
 interface BookingWizardProps {
   packages: PackageItem[];
@@ -39,6 +40,14 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [completedBooking, setCompletedBooking] = useState<BookingData | null>(null);
   const [whatsappUrl, setWhatsappUrl] = useState<string>('');
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(currentStep);
+  useEffect(() => {
+    if (previousStep.current === currentStep) return;
+    previousStep.current = currentStep;
+    headingRef.current?.focus({ preventScroll: true });
+    headingRef.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }, [currentStep]);
 
   const stepsList = [
     { num: 1, label: 'Paket' },
@@ -132,10 +141,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 sm:py-16">
+    <div className="studio-booking max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-16">
       {/* Wizard Header */}
       <div className="text-center mb-12 space-y-2">
-        <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white">
+        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-28 font-serif text-3xl sm:text-4xl font-normal text-white">
           Reservasi Sesi Foto
         </h1>
         <p className="text-neutral-400 text-xs sm:text-sm font-light">
@@ -145,7 +154,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Progress Steps Header */}
       {currentStep < 5 && (
-        <div className="mb-14">
+        <div className="mb-8 sm:mb-12">
           <div className="flex items-center justify-between max-w-xl mx-auto px-2">
             {stepsList.slice(0, 4).map((s, idx) => {
               const isPast = currentStep > s.num;
@@ -179,7 +188,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
                   {idx < 3 && (
                     <div
-                      className={`w-12 sm:w-20 h-[1px] mx-2 -mt-4 transition-colors ${
+                      className={`w-5 sm:w-20 h-[1px] mx-1 sm:mx-2 -mt-4 transition-colors ${
                         currentStep > idx + 1 ? 'bg-white' : 'bg-neutral-800'
                       }`}
                     />
@@ -193,15 +202,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="mb-8 p-4 rounded-xl bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs sm:text-sm flex items-center justify-between max-w-2xl mx-auto">
+        <div role="alert" className="mb-8 p-4 rounded-xl bg-rose-950/40 border border-rose-900/60 text-rose-300 text-sm flex items-center justify-between max-w-2xl mx-auto">
           <span>{errorMessage}</span>
           <button
+            aria-label="Tutup pesan kesalahan"
             onClick={() => setErrorMessage(null)}
             className="text-rose-400 hover:text-white font-bold ml-4 cursor-pointer"
           >
             ✕
           </button>
         </div>
+      )}
+
+      {selectedPackage && currentStep > 1 && currentStep < 5 && (
+        <aside className="studio-booking-summary" aria-label="Ringkasan reservasi">
+          <details open={currentStep === 4} key={currentStep}>
+          <summary className="studio-summary-disclosure">{selectedPackage.name}<span>Lihat ringkasan</span></summary>
+          <div className="studio-summary-top"><h2>Sesi pilihan Anda</h2><button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(1)}>Ubah paket</button></div>
+          <dl>
+            <div><dt>Paket</dt><dd>{selectedPackage.name} · {selectedPackage.duration} menit</dd></div>
+            {selectedDate && <div><dt>Jadwal <button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(2)}>Ubah</button></dt><dd>{formatDateIndonesian(selectedDate)}{selectedTime ? ` · ${selectedTime} WIB` : ''}</dd></div>}
+            {currentStep >= 3 && <div><dt>Tambahan <button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(3)}>Ubah</button></dt><dd>{addOns.filter(item => selectedAddOnIds.includes(item.id)).map(item => item.name).join(', ') || 'Tanpa tambahan'}</dd></div>}
+            <div><dt>Total pilihan</dt><dd className="studio-summary-price">{formatIDR(selectedPackage.price + addOns.filter(item => selectedAddOnIds.includes(item.id)).reduce((total, item) => total + item.price, 0))}</dd></div>
+          </dl>
+          {currentStep === 4 && <p>Periksa kembali pilihan dan data Anda sebelum konfirmasi. Instruksi pembayaran akan dikonfirmasi oleh admin melalui WhatsApp.</p>}
+          </details>
+        </aside>
       )}
 
       {/* Dynamic Step View */}
@@ -265,7 +291,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Navigation Footer Controls */}
       {currentStep < 5 && (
-        <div className="mt-14 pt-6 border-t border-neutral-800 flex items-center justify-between max-w-2xl mx-auto">
+        <div className="studio-booking-actions mt-10 pt-6 border-t border-neutral-800 flex items-center justify-between gap-3 max-w-2xl mx-auto">
           {currentStep > 1 ? (
             <Button
               type="button"

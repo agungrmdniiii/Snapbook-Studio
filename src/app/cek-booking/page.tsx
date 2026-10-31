@@ -81,7 +81,7 @@ function CekBookingContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#09090b]">
+    <div className="public-site flex flex-col min-h-screen bg-[#09090b]">
       <Navbar />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-12 sm:py-16">

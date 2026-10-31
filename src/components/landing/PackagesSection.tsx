@@ -21,7 +21,7 @@ interface PackagesSectionProps {
 
 export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) => {
   return (
-    <section id="paket" className="py-24 sm:py-32 border-b border-neutral-850 bg-[#0c0c0e]">
+    <section id="paket" className="studio-packages py-20 sm:py-28 border-b border-neutral-800 bg-[#0c0c0e]">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="max-w-2xl mb-16 space-y-4">
           <h2 className="font-serif text-3xl sm:text-5xl font-normal text-neutral-100 tracking-tight">
@@ -33,7 +33,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
         </div>
 
         {/* Packages Grid - Architectural Collections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 items-stretch">
           {packages.map((pkg, idx) => {
             let featuresList: string[] = [];
             try {

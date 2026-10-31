@@ -12,7 +12,7 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
   catch (error) { console.error('Unable to load booking catalog:', error); }
   const config = catalog?.config || DEFAULT_CONFIG;
   return (
-    <div className="flex flex-col min-h-screen bg-[#09090b]">
+    <div className="public-site flex flex-col min-h-screen bg-[#09090b]">
       <Navbar studioName={config.studioName} openingTime={config.openingTime} closingTime={config.closingTime} />
       <main className="flex-1">
         {catalog?.config && catalog.packages.length > 0 ? (

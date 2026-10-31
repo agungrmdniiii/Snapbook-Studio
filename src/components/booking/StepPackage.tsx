@@ -27,7 +27,7 @@ export const StepPackage: React.FC<StepPackageProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {packages.map((pkg) => {
           const isSelected = selectedPackage?.id === pkg.id;
           let features: string[] = [];
@@ -40,16 +40,7 @@ export const StepPackage: React.FC<StepPackageProps> = ({
           return (
             <div
               key={pkg.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onSelect(pkg)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelect(pkg);
-                }
-              }}
-              className={`p-6 sm:p-7 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-300 active:scale-[0.99] motion-reduce:active:scale-100 ${
+              className={`p-6 sm:p-7 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
                 isSelected
                   ? 'bg-[#15151a] border-white shadow-xl'
                   : 'bg-[#101013] border-neutral-800 hover:border-neutral-700'
@@ -91,7 +82,9 @@ export const StepPackage: React.FC<StepPackageProps> = ({
               </div>
 
               <div className="mt-8 pt-4 border-t border-neutral-800">
-                <div
+                <button
+                  type="button"
+                  aria-label={`Pilih ${pkg.name} dan lanjut ke jadwal`}
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onSelectAndNext) {
@@ -106,8 +99,8 @@ export const StepPackage: React.FC<StepPackageProps> = ({
                       : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800 hover:text-white border border-neutral-800'
                   }`}
                 >
-                  {isSelected ? '✓ Lanjut Pilih Jam' : 'Pilih Paket Ini'}
-                </div>
+                  {isSelected ? 'Lanjut Pilih Jam' : 'Pilih Paket Ini'}
+                </button>
               </div>
             </div>
           );

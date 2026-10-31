@@ -191,8 +191,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
           <div className="flex items-center p-1 bg-neutral-900 border border-neutral-800 rounded-full">
             <button
               type="button"
-              onClick={() => setViewMode('STRIP')}
-              className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer ${
+              aria-pressed={viewMode === 'STRIP'} onClick={() => setViewMode('STRIP')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
                 viewMode === 'STRIP'
                   ? 'bg-white text-black font-semibold shadow-sm'
                   : 'text-neutral-400 hover:text-white'
@@ -202,8 +202,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setViewMode('CALENDAR')}
-              className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
+              aria-pressed={viewMode === 'CALENDAR'} onClick={() => setViewMode('CALENDAR')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
                 viewMode === 'CALENDAR'
                   ? 'bg-white text-black font-semibold shadow-sm'
                   : 'text-neutral-400 hover:text-white'
@@ -230,6 +230,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                 return (
                   <button
                     key={d.date}
+                    aria-pressed={isSelected}
                     type="button"
                     onClick={() => {
                       onSelectDate(d.date);
@@ -314,11 +315,11 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
           </label>
 
           {/* Time of Day Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => setTimeFilter('ALL')}
-              className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
+              aria-pressed={timeFilter === 'ALL'} onClick={() => setTimeFilter('ALL')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
                 timeFilter === 'ALL'
                   ? 'bg-neutral-200 text-black font-semibold'
                   : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
@@ -328,8 +329,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setTimeFilter('PAGI')}
-              className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
+              aria-pressed={timeFilter === 'PAGI'} onClick={() => setTimeFilter('PAGI')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
                 timeFilter === 'PAGI'
                   ? 'bg-neutral-200 text-black font-semibold'
                   : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
@@ -339,8 +340,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setTimeFilter('SIANG')}
-              className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
+              aria-pressed={timeFilter === 'SIANG'} onClick={() => setTimeFilter('SIANG')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
                 timeFilter === 'SIANG'
                   ? 'bg-neutral-200 text-black font-semibold'
                   : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
@@ -350,8 +351,8 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setTimeFilter('SORE')}
-              className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
+              aria-pressed={timeFilter === 'SORE'} onClick={() => setTimeFilter('SORE')}
+              className={`min-h-11 px-3 py-2 rounded-full whitespace-nowrap text-xs tracking-wider uppercase font-medium transition-all cursor-pointer shrink-0 ${
                 timeFilter === 'SORE'
                   ? 'bg-neutral-200 text-black font-semibold'
                   : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
@@ -397,6 +398,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
                   key={slot.time}
                   type="button"
                   disabled={!isAvailable}
+                  aria-pressed={selectedTime === slot.time}
                   onClick={() => onSelectTime(slot.time)}
                   className={`p-3.5 rounded-2xl border font-mono transition-all duration-150 flex flex-col items-center justify-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white active:scale-95 ${
                     !isAvailable

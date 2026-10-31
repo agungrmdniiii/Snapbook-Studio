@@ -35,6 +35,7 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
       <div className="bg-[#101013] border border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <Input
           label="NAMA LENGKAP *"
+          autoComplete="name"
           placeholder="Contoh: Rian Anggara"
           value={clientName}
           onChange={(e) => onChange({ clientName: e.target.value })}
@@ -43,6 +44,9 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
 
         <Input
           label="NOMOR WHATSAPP AKTIF *"
+          type="tel"
+          autoComplete="tel"
+          inputMode="tel"
           placeholder="Contoh: 081234567890"
           value={clientPhone}
           onChange={(e) => onChange({ clientPhone: e.target.value })}
@@ -53,6 +57,7 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
         <Input
           label="ALAMAT EMAIL (OPSIONAL)"
           type="email"
+          autoComplete="email"
           placeholder="Contoh: rian@email.com"
           value={clientEmail}
           onChange={(e) => onChange({ clientEmail: e.target.value })}
@@ -60,10 +65,11 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
         />
 
         <div className="space-y-2">
-          <label className="block text-[11px] font-medium tracking-[0.16em] uppercase text-neutral-400">
+          <label htmlFor="booking-notes" className="block text-xs font-medium tracking-[0.12em] uppercase text-neutral-400">
             Catatan Tambahan (Opsional)
           </label>
           <textarea
+            id="booking-notes"
             rows={3}
             value={notes}
             onChange={(e) => onChange({ notes: e.target.value })}
