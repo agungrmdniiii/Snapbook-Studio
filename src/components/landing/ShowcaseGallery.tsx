@@ -12,8 +12,8 @@ export function ShowcaseGallery({ images }: { images: ShowcaseImageItem[] }) {
   return (
     <section id="galeri" className="studio-gallery">
       <div className="studio-section-heading">
-        <h2>Galeri karya.<br /><em>Ruang untuk berekspresi.</em></h2>
-        <p>Koleksi potret pilihan yang mendokumentasikan ekspresi natural, kehangatan momen, dan karakter otentik setiap klien.</p>
+        <h2>Galeri foto.</h2>
+        <p>Lihat contoh foto berdasarkan kategori.</p>
       </div>
       <div className="studio-gallery-filters" role="group" aria-label="Kategori galeri">
         {categories.map(item => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>)}

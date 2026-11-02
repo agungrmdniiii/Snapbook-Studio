@@ -10,7 +10,7 @@ export const HeroSection = () => {
   return (
     <section className="studio-hero">
       <div className="studio-hero-heading">
-        <h1>Karakter. Ekspresi.<br /><em>Momen berharga.</em></h1>
+        <h1>Foto sendiri,<br /><em>atau bersama.</em></h1>
         <a href="#galeri" className="studio-explore" aria-label="Jelajahi galeri karya"><ArrowDown size={20} /></a>
       </div>
       <button className="studio-hero-photo" onClick={() => setPreview(true)} aria-label="Lihat foto portrait lebih besar">
@@ -18,10 +18,10 @@ export const HeroSection = () => {
         <span className="studio-photo-caption">Portrait / Editorial <ArrowUpRight size={18} /></span>
       </button>
       <div className="studio-hero-story">
-        <p>Studio foto profesional dengan tata cahaya sinematik dan privasi penuh. Abadikan momen wisuda, potret diri, kehangatan keluarga, dan pasangan dengan sentuhan estetika abadi.</p>
-        <Link href="/book" className="studio-book-link">Pesan jadwal sesi <ArrowUpRight size={20} /></Link>
+        <p>Foto wisuda, keluarga, pasangan, atau diri sendiri. Pilih paket dan jadwal yang cocok.</p>
+        <Link href="/book" className="studio-book-link">Pesan sesi foto <ArrowUpRight size={20} /></Link>
         <a href="#paket" className="studio-text-link">Lihat pilihan paket <ArrowUpRight size={16} /></a>
-        <div className="studio-hero-benefits"><span>Privasi penuh</span><span>Pencahayaan pro</span><span>Drive hari sama</span></div>
+        <div className="studio-hero-benefits"><span>Ruang privat</span><span>Pencahayaan studio</span><span>File dikirim hari yang sama</span></div>
       </div>
       <PhotoPreview open={preview} onClose={() => setPreview(false)} url={portrait} title="Portrait / Editorial" category="Ilustrasi fotografi studio" />
     </section>

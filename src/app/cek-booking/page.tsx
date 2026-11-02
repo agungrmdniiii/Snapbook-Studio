@@ -97,7 +97,7 @@ function CekBookingContent() {
             Cek Status Booking
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-light">
-            Pantau status verifikasi jadwal, lokasi studio, dan detail reservasi foto Anda.
+            Masukkan kode booking dan nomor WhatsApp untuk melihat status reservasi.
           </p>
 
           {/* Quick Nav Shortcuts */}

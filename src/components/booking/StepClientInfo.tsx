@@ -28,7 +28,7 @@ export const StepClientInfo: React.FC<StepClientInfoProps> = ({
           Informasi Pemesan
         </h2>
         <p className="text-xs sm:text-sm text-neutral-400 font-light">
-          Data ini digunakan untuk konfirmasi jadwal dan pengiriman file foto Anda.
+          Isi kontak untuk konfirmasi jadwal dan pengiriman file foto.
         </p>
       </div>
 

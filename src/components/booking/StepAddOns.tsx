@@ -27,7 +27,7 @@ export const StepAddOns: React.FC<StepAddOnsProps> = ({
           Layanan Tambahan (Add-ons)
         </h2>
         <p className="text-xs sm:text-sm text-neutral-400 font-light">
-          Opsional: Personalisasikan sesi Anda dengan cetak foto tambahan atau layanan ekstra lainnya.
+          Tidak wajib. Tambahkan cetak foto atau layanan lain jika diperlukan.
         </p>
       </div>
 

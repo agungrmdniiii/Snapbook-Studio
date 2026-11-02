@@ -175,7 +175,7 @@ export const StepDateTime: React.FC<StepDateTimeProps> = ({
           Pilih Tanggal & Jam Sesi
         </h2>
         <p className="text-xs sm:text-sm text-neutral-400 font-light">
-          Pilih tanggal yang nyaman, sistem otomatis memverifikasi slot yang tersedia.
+          Pilih tanggal dan jam yang tersedia.
         </p>
       </div>
 

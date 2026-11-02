@@ -51,7 +51,7 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
           Reservasi Berhasil Dibuat
         </h2>
         <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto font-light leading-relaxed">
-          Slot waktu sesi foto Anda telah dicatat di sistem studio. Silakan klik tombol di bawah untuk verifikasi ke WhatsApp resmi studio kami.
+          Jadwal Anda sudah tercatat. Lanjutkan ke WhatsApp untuk konfirmasi dengan admin.
         </p>
       </div>
 
@@ -128,14 +128,14 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
             className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 shadow-lg transition-all duration-150 cursor-pointer active:scale-[0.98] motion-reduce:active:scale-100 select-none"
           >
             <MessageCircle className="w-4 h-4 fill-white" />
-            <span>Konfirmasi via WhatsApp Studio</span>
+            <span>Konfirmasi lewat WhatsApp</span>
           </a>
 
           <Link
             href={`/cek-booking?query=${booking.bookingCode}`}
             className="w-full py-3 rounded-full border border-neutral-700 hover:border-neutral-400 text-neutral-300 hover:text-white font-medium text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer select-none"
           >
-            <span>Cek Status Booking Mandiri</span>
+            <span>Cek status booking</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

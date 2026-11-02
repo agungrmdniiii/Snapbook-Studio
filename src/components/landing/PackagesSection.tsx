@@ -28,7 +28,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
             Paket Foto & Tarif
           </h2>
           <p className="text-neutral-400 text-sm sm:text-base font-light">
-            Tarif transparan tanpa biaya tersembunyi. Dapatkan seluruh file softcopy original resolusi penuh serta cetakan foto berkualitas tinggi.
+            Bandingkan harga, durasi, dan fasilitas setiap paket.
           </p>
         </div>
 

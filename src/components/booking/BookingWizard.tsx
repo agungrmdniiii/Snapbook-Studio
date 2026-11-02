@@ -148,7 +148,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
           Reservasi Sesi Foto
         </h1>
         <p className="text-neutral-400 text-xs sm:text-sm font-light">
-          Pilih paket dan tentukan jadwal sesi foto Anda secara mandiri dan praktis.
+          Pilih paket, jadwal, lalu isi data pemesan.
         </p>
       </div>
 

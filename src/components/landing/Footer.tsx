@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
               {studioName}
             </span>
             <p className="text-neutral-400 max-w-sm leading-relaxed font-light text-xs sm:text-sm">
-              Studio fotografi profesional untuk mengabadikan momen berharga, potret wisuda, kehangatan keluarga, dan ekspresi diri dengan estetika abadi.
+              Sesi foto untuk diri sendiri, wisuda, pasangan, dan keluarga.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400 font-light">
           <p>
-            © {new Date().getFullYear()} {studioName}. Crafted with precision by{' '}
+            © {new Date().getFullYear()} {studioName}. Dibuat oleh{' '}
             <span className="font-mono text-neutral-200 font-medium">rmdniiagung</span>. Seluruh Hak Cipta Dilindungi.
           </p>
           <div className="flex items-center gap-6">
@@ -117,7 +117,7 @@ export const Footer: React.FC<FooterProps> = ({
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow" />
           <span className="text-[11px] uppercase tracking-[0.18em] font-medium">
-            Konsultasi Studio
+            Hubungi studio
           </span>
         </a>
       </div>

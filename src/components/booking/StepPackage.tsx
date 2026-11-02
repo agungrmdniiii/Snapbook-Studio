@@ -23,7 +23,7 @@ export const StepPackage: React.FC<StepPackageProps> = ({
           Pilih Paket Foto
         </h2>
         <p className="text-xs sm:text-sm text-neutral-400 font-light">
-          Tentukan paket sesi foto yang paling sesuai dengan kebutuhan Anda.
+          Pilih berdasarkan jumlah orang, durasi, dan fasilitas.
         </p>
       </div>
 

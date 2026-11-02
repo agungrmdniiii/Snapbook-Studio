@@ -9,23 +9,23 @@ export const FaqSection: React.FC = () => {
   const faqs = [
     {
       q: 'Kapan sebaiknya saya dan rombongan tiba di studio?',
-      a: 'Kami menyarankan Anda tiba 10–15 menit sebelum jam sesi dimulai. Waktu ini dapat Anda gunakan untuk touch-up riasan, berganti pakaian, serta briefing singkat bersama tim kami agar durasi foto Anda optimal.',
+      a: 'Sebaiknya datang 10–15 menit sebelum sesi untuk berganti pakaian, merapikan riasan, dan persiapan foto.',
     },
     {
       q: 'Bagaimana jika saya datang terlambat dari jam yang dipesan?',
-      a: 'Durasi sesi foto tetap berjalan sesuai jam reservasi yang telah disepakati demi menjaga kenyamanan klien pada slot berikutnya. Mohon infokan tim kami via WhatsApp jika terjadi kendala dalam perjalanan.',
+      a: 'Sesi tetap berakhir sesuai jadwal. Jika terlambat, kabari admin lewat WhatsApp.',
     },
     {
       q: 'Kapan dan bagaimana saya menerima file softcopy foto?',
-      a: 'Seluruh file softcopy original resolusi penuh akan dikirimkan melalui tautan Google Drive resmi pada hari yang sama (maksimal malam hari setelah sesi foto Anda selesai).',
+      a: 'Semua file foto asli beresolusi penuh dikirim lewat Google Drive pada hari yang sama, paling lambat malam setelah sesi.',
     },
     {
       q: 'Apakah jadwal sesi foto bisa diganti (reschedule)?',
-      a: 'Perubahan jadwal dapat dilakukan maksimal H-1 sebelum sesi berlangsung dengan menghubungi admin via WhatsApp, dengan catatan slot pengganti di tanggal baru masih tersedia.',
+      a: 'Bisa, paling lambat H-1. Hubungi admin lewat WhatsApp untuk memilih jadwal pengganti yang masih tersedia.',
     },
     {
       q: 'Bagaimana mekanisme pembayaran & uang muka (DP)?',
-      a: 'Setelah Anda mengisi formulir pemesanan, sistem akan langsung menghubungkan Anda ke WhatsApp resmi studio untuk konfirmasi ketersediaan dan detail instruksi pembayaran sesuai kebijakan studio.',
+      a: 'Setelah reservasi dibuat, hubungi admin lewat tombol WhatsApp untuk konfirmasi jadwal dan instruksi pembayaran.',
     },
   ];
 
@@ -37,7 +37,7 @@ export const FaqSection: React.FC = () => {
             Panduan & Pertanyaan Umum
           </h2>
           <p className="text-neutral-400 text-sm sm:text-base font-light">
-            Informasi penting yang perlu Anda ketahui sebelum memasuki ruang studio foto.
+            Info kedatangan, file foto, dan perubahan jadwal.
           </p>
         </div>
 
