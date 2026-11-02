@@ -20,7 +20,7 @@ export default async function HomePage() {
       <Navbar studioName={config.studioName} openingTime={config.openingTime} closingTime={config.closingTime} />
       <main className="flex-1">
         <HeroSection />
-        {catalog ? <><ShowcaseGallery images={catalog.gallery} /><PackagesSection packages={catalog.packages} /></> : (
+        {catalog ? <><ShowcaseGallery images={catalog.gallery} packages={catalog.packages} /><PackagesSection packages={catalog.packages} /></> : (
           <p role="status" className="p-12 text-center text-neutral-300">Katalog studio sementara tidak dapat dimuat. Silakan coba kembali beberapa saat lagi.</p>
         )}
         <FaqSection />

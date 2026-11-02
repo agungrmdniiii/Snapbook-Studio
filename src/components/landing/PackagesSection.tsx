@@ -1,8 +1,11 @@
 import React from 'react';
+import Image from 'next/image';
 import { MotionLink as Link } from './PublicMotion';
 import { Check, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatIDR } from '@/lib/utils';
+import { DEFAULT_PACKAGES } from '@/lib/constants';
+import { INSPIRATION_PHOTOS } from '@/lib/gallery-presentation';
 
 interface PackageItem {
   id: string;
@@ -43,6 +46,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
             }
 
             const isHighlight = idx === 1;
+            const seed = DEFAULT_PACKAGES.find(item => item.id === pkg.id);
+            const customImage = pkg.imageUrl && pkg.imageUrl !== seed?.imageUrl;
+            const category = pkg.category === 'Self Portrait' || pkg.category === 'Editorial' ? 'Portrait' : pkg.category;
+            const inspiration = INSPIRATION_PHOTOS.find(photo => photo.category === category);
+            const imageUrl = customImage ? pkg.imageUrl : inspiration?.url;
 
             return (
               <div
@@ -60,6 +68,10 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
                 )}
 
                 <div>
+                  {imageUrl && <figure className="studio-package-photo">
+                    <Image src={imageUrl} alt={customImage ? pkg.name : `Inspirasi ${pkg.name}`} fill sizes="(max-width: 767px) 90vw, 45vw" unoptimized={!!customImage} />
+                    {!customImage && <figcaption>Inspirasi sesi · Foto stok</figcaption>}
+                  </figure>}
                   {/* Category & Duration */}
                   <div className="flex items-center justify-between gap-2 mb-6">
                     <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">

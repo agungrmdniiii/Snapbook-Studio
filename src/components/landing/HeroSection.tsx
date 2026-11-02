@@ -4,7 +4,8 @@ import Image from 'next/image';
 import { MotionLink as Link } from './PublicMotion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { PhotoPreview } from './PhotoPreview';
-const portrait = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=90';
+import { INSPIRATION_PHOTOS } from '@/lib/gallery-presentation';
+const portrait = INSPIRATION_PHOTOS[0];
 export const HeroSection = () => {
   const [preview, setPreview] = useState(false);
   return (
@@ -14,8 +15,8 @@ export const HeroSection = () => {
         <a href="#galeri" className="studio-explore" aria-label="Jelajahi galeri karya"><ArrowDown size={20} /></a>
       </div>
       <button className="studio-hero-photo" onClick={() => setPreview(true)} aria-label="Lihat foto portrait lebih besar">
-        <Image src={portrait} alt="Ilustrasi portrait dengan pencahayaan studio" fill priority sizes="(max-width: 767px) 100vw, 58vw" />
-        <span className="studio-photo-caption">Portrait / Editorial <ArrowUpRight size={18} /></span>
+        <Image src={portrait.url} alt="Portrait perempuan Indonesia dengan pencahayaan studio" fill priority sizes="(max-width: 767px) 100vw, 58vw" />
+        <span className="studio-photo-caption">Portrait · Foto stok <ArrowUpRight size={18} /></span>
       </button>
       <div className="studio-hero-story">
         <p>Foto wisuda, keluarga, pasangan, atau diri sendiri. Pilih paket dan jadwal yang cocok.</p>
@@ -23,7 +24,7 @@ export const HeroSection = () => {
         <a href="#paket" className="studio-text-link">Lihat pilihan paket <ArrowUpRight size={16} /></a>
         <div className="studio-hero-benefits"><span>Ruang privat</span><span>Pencahayaan studio</span><span>File dikirim hari yang sama</span></div>
       </div>
-      <PhotoPreview open={preview} onClose={() => setPreview(false)} url={portrait} title="Portrait / Editorial" category="Ilustrasi fotografi studio" />
+      <PhotoPreview open={preview} onClose={() => setPreview(false)} photos={[portrait]} index={0} onIndexChange={() => {}} />
     </section>
   );
 };
