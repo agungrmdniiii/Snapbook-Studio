@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import { MotionLink as Link } from './PublicMotion';
 import { MapPin, Phone, Instagram, Lock } from 'lucide-react';
 
 interface FooterProps {

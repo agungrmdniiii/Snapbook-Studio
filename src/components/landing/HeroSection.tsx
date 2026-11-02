@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { MotionLink as Link } from './PublicMotion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { PhotoPreview } from './PhotoPreview';
 const portrait = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=90';

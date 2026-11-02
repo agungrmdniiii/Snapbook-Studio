@@ -40,3 +40,10 @@ This document is grounded in inspection of `PRODUCT.md`, the listed components, 
 The real database is unavailable in the local review environment. Safe preview fixtures can support visual and interaction checks without creating real customer reservations; they must remain isolated from production behavior. A fixture-backed confirmation cannot establish live slot availability, database concurrency protection, payment state, or WhatsApp delivery. Those require a connected environment and separate verification. Historical verification claims in `PRODUCT.md` are product context, not fresh evidence for this refinement.
 
 Use the implementation review's actual command results and browser observations when reporting completion. Mobile checks should include the early hero photograph, gallery captions and filters, preview opening/dismissal, package selection, date controls, contact fields, and recap expansion before confirmation. QA captures should record the tested viewport and whether data was live, unavailable, or fixture-backed.
+# Animasi navigasi dan scroll
+
+Penyempurnaan berikutnya mempertahankan layout dan aset di atas. `PublicMotion.tsx` memakai IntersectionObserver dan Web Animations API: foto galeri dibuka dengan mask pendek sekali saat masuk layar, sementara judul tujuan mendapat transisi ringan. Konten terlihat secara default, observer dibersihkan saat halaman berganti, dan animasi dibatalkan saat preferensi reduced motion diaktifkan.
+
+Tautan halaman publik mempertahankan perilaku modifier/new-tab, memakai keluar 120 ms dan masuk 280 ms. Menu bagian menggunakan scroll native dengan offset header 80 px, indikator aktif, dan fokus heading tujuan. Menu ponsel memiliki state expanded/inert serta transisi buka/tutup. Tidak ada dependensi animasi tambahan.
+
+Pemeriksaan browser lokal memakai komponen asli dengan katalog fixture: Galeri → Paket, Back, beranda → Booking → Panduan, serta buka/tutup menu 390×844 berhasil; tujuan berada sekitar 80 px dari atas viewport dan tidak ada overflow. Preferensi reduced motion ditangani dalam kode; pengaturan OS pengguna tidak diubah untuk pengujian. Pemeriksaan ini bukan pengujian submit reservasi.

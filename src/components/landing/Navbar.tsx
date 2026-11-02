@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { MotionLink as Link, PublicMotion } from './PublicMotion';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -19,41 +19,52 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const [activeSection, setActiveSection] = useState('');
 
   // Handle smooth scroll when landing with hash on home page
   useEffect(() => {
-    if (pathname === '/' && typeof window !== 'undefined' && window.location.hash) {
-      const id = window.location.hash.replace('#', '');
-      const el = document.getElementById(id);
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }, 150);
-      }
-    }
+    if (pathname !== '/') { setActiveSection(''); return; }
+    const frame = requestAnimationFrame(() => {
+      const element = document.getElementById(window.location.hash.slice(1));
+      element?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    });
+    if (!('IntersectionObserver' in window)) return () => cancelAnimationFrame(frame);
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.find(entry => entry.isIntersecting);
+      if (visible) setActiveSection(visible.target.id);
+      else setActiveSection(current => entries.some(entry => entry.target.id === current) ? '' : current);
+    }, { rootMargin: '-81px 0px -65% 0px' });
+    ['galeri', 'paket', 'faq'].forEach(id => { const element = document.getElementById(id); if (element) observer.observe(element); });
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
   }, [pathname]);
 
   const handleSectionClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     sectionId: string
   ) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     setMobileMenuOpen(false);
 
     if (pathname === '/') {
       const el = document.getElementById(sectionId);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-        window.history.pushState(null, '', `/#${sectionId}`);
+        setActiveSection(sectionId);
+        el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+        if (window.location.hash !== `#${sectionId}`) window.history.pushState(null, '', `/#${sectionId}`);
+        const heading = el.querySelector('h2');
+        if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
       }
     } else {
       // From any other route (/cek-booking, /book, etc.), navigate reliably to the homepage section
-      window.location.href = `/#${sectionId}`;
+      router.push(`/#${sectionId}`);
     }
   };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#09090b]/95 backdrop-blur-md border-b border-neutral-800/80 transition-all">
+      <PublicMotion />
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo - Fashion Atelier Style */}
@@ -70,22 +81,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-medium tracking-[0.2em] uppercase text-neutral-400">
             <a
               href="/#galeri"
+              aria-current={activeSection === 'galeri' ? 'location' : undefined}
               onClick={(e) => handleSectionClick(e, 'galeri')}
-              className="hover:text-white transition-colors cursor-pointer"
+              className="studio-nav-link hover:text-white transition-colors cursor-pointer"
             >
               Galeri Karya
             </a>
             <a
               href="/#paket"
+              aria-current={activeSection === 'paket' ? 'location' : undefined}
               onClick={(e) => handleSectionClick(e, 'paket')}
-              className="hover:text-white transition-colors cursor-pointer"
+              className="studio-nav-link hover:text-white transition-colors cursor-pointer"
             >
               Paket Foto
             </a>
             <a
               href="/#faq"
+              aria-current={activeSection === 'faq' ? 'location' : undefined}
               onClick={(e) => handleSectionClick(e, 'faq')}
-              className="hover:text-white transition-colors cursor-pointer"
+              className="studio-nav-link hover:text-white transition-colors cursor-pointer"
             >
               Panduan
             </a>
@@ -114,7 +128,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="studio-mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -123,8 +139,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-neutral-800 bg-[#09090b] px-6 py-6 space-y-4 animate-studio-fade">
+      <div id="studio-mobile-menu" className={`studio-mobile-menu md:hidden ${mobileMenuOpen ? 'is-open' : ''}`} inert={!mobileMenuOpen} aria-hidden={!mobileMenuOpen}>
+        <div className="min-h-0 overflow-hidden"><div className="border-b border-neutral-800 bg-[#09090b] px-6 py-6 space-y-4">
           <a
             href="/#galeri"
             onClick={(e) => handleSectionClick(e, 'galeri')}
@@ -161,8 +177,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               </Button>
             </Link>
           </div>
-        </div>
-      )}
+        </div></div>
+      </div>
     </header>
   );
 };

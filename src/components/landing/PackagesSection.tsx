@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import { MotionLink as Link } from './PublicMotion';
 import { Check, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatIDR } from '@/lib/utils';

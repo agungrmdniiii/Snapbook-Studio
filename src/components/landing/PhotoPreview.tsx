@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useId } from 'react';
-import Link from 'next/link';
+import { MotionLink as Link } from './PublicMotion';
 import { ArrowUpRight, X } from 'lucide-react';
 interface PhotoPreviewProps { open: boolean; onClose: () => void; url: string; title: string; category: string; }
 export function PhotoPreview({ open, onClose, url, title, category }: PhotoPreviewProps) {
