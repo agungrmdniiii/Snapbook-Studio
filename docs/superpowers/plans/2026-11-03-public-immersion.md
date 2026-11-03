@@ -18,3 +18,7 @@ Validasi: pemeriksaan tipe, tes yang relevan, build, browser desktop dan 390 px;
 - Ringkasan booking tampil sebagai sidebar sticky di desktop dan disclosure bawah layar di ponsel. Total diuji melalui pemilihan tambahan cetak; Ubah paket menutup panel dan kembali ke pemilihan paket.
 - Informasi booking, kedatangan dan file foto ditambahkan. Foto interior, backdrop dan contoh cetak studio belum tersedia, sehingga bagian tersebut masih memerlukan aset asli.
 - Pemeriksaan tampilan lokal memakai komponen aplikasi dengan katalog dummy karena koneksi database lokal tidak tersedia. Tes aplikasi dan build berhasil. Pemeriksaan produksi dilakukan setelah deployment.
+
+## Lanjutan materi suasana studio
+
+Pengguna meminta melanjutkan dengan materi gratis dari internet. Tambahkan pemutar video ilustrasi pada StudioExperience dengan dua pilihan: detail kamera (Mixkit) dan ruang/pencahayaan (Pexels). Beri label stok, sumber, poster fallback, putar/jeda dan fullscreen. Jangan mengubah booking, galeri unggahan atau database. Verifikasi playback manual, pergantian video, jeda di luar layar, desktop dan ponsel sebelum menerbitkan.
