@@ -16,6 +16,12 @@ export const INSPIRATION_PHOTOS: GalleryPhoto[] = [
   { id: 'inspiration-graduation', url: '/inspiration/graduation.webp', title: 'Inspirasi wisuda', category: 'Graduation', aspectRatio: 'portrait', credit: { author: 'abdilah fariq', sourceUrl: 'https://www.pexels.com/photo/indonesian-graduation-ceremony-portrait-34436718/', location: 'Indonesia' } },
 ];
 
+export const FAMILY_STORY: GalleryPhoto[] = [
+  INSPIRATION_PHOTOS[2],
+  { id: 'family-together', url: '/inspiration/family-together.webp', title: 'Foto keluarga bersama', category: 'Family', aspectRatio: 'portrait', credit: { author: 'Philip Elma', sourceUrl: 'https://www.pexels.com/photo/family-portrait-in-red-attire-in-studio-setting-30388320/', location: 'Malang, Indonesia' } },
+  { id: 'family-seated', url: '/inspiration/family-seated.webp', title: 'Portrait keluarga', category: 'Family', aspectRatio: 'portrait', credit: { author: 'Philip Elma', sourceUrl: 'https://www.pexels.com/photo/modern-family-portrait-in-studio-setting-30388323/', location: 'Malang, Indonesia' } },
+];
+
 function imageIdentity(url: string) {
   try { const parsed = new URL(url); return parsed.origin + parsed.pathname; }
   catch { return url; }

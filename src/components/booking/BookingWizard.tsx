@@ -9,7 +9,7 @@ import { StepClientInfo } from './StepClientInfo';
 import { StepConfirmation } from './StepConfirmation';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { formatIDR, formatDateIndonesian } from '@/lib/utils';
+import { BookingSummary } from './BookingSummary';
 
 interface BookingWizardProps {
   packages: PackageItem[];
@@ -141,7 +141,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   };
 
   return (
-    <div className="studio-booking max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-16">
+    <div className={`studio-booking max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-16 ${selectedPackage && currentStep < 5 ? 'has-summary' : ''}`}>
       {/* Wizard Header */}
       <div className="text-center mb-12 space-y-2">
         <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-28 font-serif text-3xl sm:text-4xl font-normal text-white">
@@ -214,22 +214,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
         </div>
       )}
 
-      {selectedPackage && currentStep > 1 && currentStep < 5 && (
-        <aside className="studio-booking-summary" aria-label="Ringkasan reservasi">
-          <details open={currentStep === 4} key={currentStep}>
-          <summary className="studio-summary-disclosure">{selectedPackage.name}<span>Lihat ringkasan</span></summary>
-          <div className="studio-summary-top"><h2>Sesi pilihan Anda</h2><button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(1)}>Ubah paket</button></div>
-          <dl>
-            <div><dt>Paket</dt><dd>{selectedPackage.name} · {selectedPackage.duration} menit</dd></div>
-            {selectedDate && <div><dt>Jadwal <button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(2)}>Ubah</button></dt><dd>{formatDateIndonesian(selectedDate)}{selectedTime ? ` · ${selectedTime} WIB` : ''}</dd></div>}
-            {currentStep >= 3 && <div><dt>Tambahan <button type="button" disabled={isSubmitting} onClick={() => setCurrentStep(3)}>Ubah</button></dt><dd>{addOns.filter(item => selectedAddOnIds.includes(item.id)).map(item => item.name).join(', ') || 'Tanpa tambahan'}</dd></div>}
-            <div><dt>Total pilihan</dt><dd className="studio-summary-price">{formatIDR(selectedPackage.price + addOns.filter(item => selectedAddOnIds.includes(item.id)).reduce((total, item) => total + item.price, 0))}</dd></div>
-          </dl>
-          {currentStep === 4 && <p>Periksa kembali pilihan dan data Anda sebelum konfirmasi. Instruksi pembayaran akan dikonfirmasi oleh admin melalui WhatsApp.</p>}
-          </details>
-        </aside>
-      )}
-
+      <div className="studio-booking-layout">
+      <div className="studio-booking-content">
       {/* Dynamic Step View */}
       <div key={currentStep} className="py-2 animate-studio-fade">
         {currentStep === 1 && (
@@ -319,6 +305,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
           </Button>
         </div>
       )}
+      </div>
+      {selectedPackage && currentStep < 5 && <BookingSummary selectedPackage={selectedPackage} addOns={addOns.filter(item => selectedAddOnIds.includes(item.id))} date={selectedDate} time={selectedTime} slotAvailable={slotAvailable} step={currentStep} busy={isSubmitting} onEdit={step => { setErrorMessage(null); setCurrentStep(step); }} />}
+      </div>
     </div>
   );
 };

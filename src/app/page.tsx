@@ -4,6 +4,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { ShowcaseGallery } from '@/components/landing/ShowcaseGallery';
 import { PackagesSection } from '@/components/landing/PackagesSection';
 import { FaqSection } from '@/components/landing/FaqSection';
+import { StudioExperience } from '@/components/landing/StudioExperience';
 import { Footer } from '@/components/landing/Footer';
 import { DEFAULT_CONFIG } from '@/lib/constants';
 import { getStudioCatalog } from '@/lib/catalog';
@@ -23,6 +24,7 @@ export default async function HomePage() {
         {catalog ? <><ShowcaseGallery images={catalog.gallery} packages={catalog.packages} /><PackagesSection packages={catalog.packages} /></> : (
           <p role="status" className="p-12 text-center text-neutral-300">Katalog studio sementara tidak dapat dimuat. Silakan coba kembali beberapa saat lagi.</p>
         )}
+        <StudioExperience />
         <FaqSection />
       </main>
       <Footer studioName={config.studioName} address={config.address} whatsappNumber={config.whatsappNumber} instagramHandle={config.instagramHandle} />
