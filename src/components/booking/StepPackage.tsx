@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, Check } from 'lucide-react';
+import { PackageFeatures } from './PackageFeatures';
 import { PackageItem } from '@/types';
 import { formatIDR } from '@/lib/utils';
 
@@ -30,23 +31,18 @@ export const StepPackage: React.FC<StepPackageProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {packages.map((pkg) => {
           const isSelected = selectedPackage?.id === pkg.id;
-          let features: string[] = [];
-          try {
-            features = JSON.parse(pkg.features);
-          } catch {
-            features = [];
-          }
 
           return (
             <div
               key={pkg.id}
               className={`p-6 sm:p-7 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
                 isSelected
-                  ? 'bg-[#15151a] border-white shadow-xl'
+                  ? 'bg-[#15151a] border-white'
                   : 'bg-[#101013] border-neutral-800 hover:border-neutral-700'
               }`}
             >
               <div>
+                {isSelected && <p className="studio-package-selected"><Check size={14} aria-hidden="true" /> Pilihan Anda</p>}
                 {/* Meta */}
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">
@@ -62,7 +58,7 @@ export const StepPackage: React.FC<StepPackageProps> = ({
                   {pkg.name}
                 </h3>
 
-                <p className="text-xs text-neutral-400 mb-6 line-clamp-2 font-light leading-relaxed">
+                <p className="text-xs text-neutral-400 mb-6 font-light leading-relaxed">
                   {pkg.description}
                 </p>
 
@@ -71,20 +67,14 @@ export const StepPackage: React.FC<StepPackageProps> = ({
                 </p>
 
                 {/* Features */}
-                <div className="space-y-2.5">
-                  {features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-neutral-300">
-                      <Check className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
-                      <span className="font-light leading-snug">{feat}</span>
-                    </div>
-                  ))}
-                </div>
+                <PackageFeatures value={pkg.features} />
               </div>
 
               <div className="mt-8 pt-4 border-t border-neutral-800">
                 <button
                   type="button"
                   aria-label={`Pilih ${pkg.name} dan lanjut ke jadwal`}
+                  aria-current={isSelected ? 'true' : undefined}
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onSelectAndNext) {

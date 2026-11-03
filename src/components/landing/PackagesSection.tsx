@@ -1,8 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { MotionLink as Link } from './PublicMotion';
-import { Check, Clock, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Clock, ArrowRight, ArrowDown } from 'lucide-react';
+import { PackageFeatures } from '@/components/booking/PackageFeatures';
 import { formatIDR } from '@/lib/utils';
 import { DEFAULT_PACKAGES } from '@/lib/constants';
 import { INSPIRATION_PHOTOS } from '@/lib/gallery-presentation';
@@ -35,17 +35,14 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
           </p>
         </div>
 
-        {/* Packages Grid - Architectural Collections */}
+        {packages.length > 1 && <nav className="studio-package-overview" aria-label="Bandingkan harga dan durasi paket">
+          {packages.map(pkg => <a key={pkg.id} href={`#${encodeURIComponent(`paket-${pkg.id}`)}`}>
+            <span className="studio-overview-name">{pkg.name}</span><strong>{formatIDR(pkg.price)}</strong><span>{pkg.duration} menit <ArrowDown size={16} aria-hidden="true" /></span>
+          </a>)}
+        </nav>}
+        {!packages.length && <p role="status" className="text-neutral-300 py-8">Belum ada paket yang tersedia.</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 items-stretch">
-          {packages.map((pkg, idx) => {
-            let featuresList: string[] = [];
-            try {
-              featuresList = JSON.parse(pkg.features);
-            } catch {
-              featuresList = [];
-            }
-
-            const isHighlight = idx === 1;
+          {packages.map((pkg) => {
             const seed = DEFAULT_PACKAGES.find(item => item.id === pkg.id);
             const customImage = pkg.imageUrl && pkg.imageUrl !== seed?.imageUrl;
             const category = pkg.category === 'Self Portrait' || pkg.category === 'Editorial' ? 'Portrait' : pkg.category;
@@ -53,20 +50,12 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
             const imageUrl = customImage ? pkg.imageUrl : inspiration?.url;
 
             return (
-              <div
+              <article
                 key={pkg.id}
-                className={`relative rounded-2xl p-8 sm:p-9 flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-2xl ${
-                  isHighlight
-                    ? 'bg-[#141418] border-2 border-neutral-500 shadow-xl hover:border-white'
-                    : 'bg-[#101013] border border-neutral-800/90 hover:border-neutral-600'
-                }`}
+                id={`paket-${pkg.id}`}
+                tabIndex={-1}
+                className="studio-package-card relative rounded-2xl p-8 sm:p-9 flex flex-col justify-between bg-[#101013] border border-neutral-800/90 hover:border-neutral-600 transition-colors duration-200"
               >
-                {isHighlight && (
-                  <div className="absolute -top-3 left-8 px-3 py-0.5 rounded-full bg-white text-black text-[10px] font-medium tracking-[0.2em] uppercase">
-                    Pilihan Populer
-                  </div>
-                )}
-
                 <div>
                   {imageUrl && <figure className="studio-package-photo">
                     <Image src={imageUrl} alt={customImage ? pkg.name : `Inspirasi ${pkg.name}`} fill sizes="(max-width: 767px) 90vw, 45vw" unoptimized={!!customImage} />
@@ -100,33 +89,21 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({ packages }) =>
                   </div>
 
                   {/* Inclusions */}
-                  <div className="space-y-3.5 mb-8">
+                  <div className="mb-8">
                     <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-300">
                       Fasilitas Termasuk:
                     </p>
-                    {featuresList.map((feat, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm text-neutral-300">
-                        <Check className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                        <span className="font-light leading-snug">{feat}</span>
-                      </div>
-                    ))}
+                    <PackageFeatures value={pkg.features} />
                   </div>
                 </div>
 
                 {/* CTA Action */}
                 <div className="pt-6 border-t border-neutral-800/80">
-                  <Link href={`/book?packageId=${pkg.id}`} className="block w-full">
-                    <Button
-                      variant={isHighlight ? 'primary' : 'outline'}
-                      size="md"
-                      className="w-full"
-                    >
-                      <span>Pesan Jadwal Ini</span>
-                      <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-                    </Button>
+                  <Link href={`/book?packageId=${encodeURIComponent(pkg.id)}`} className="studio-book-link studio-package-cta" aria-label={`Pilih ${pkg.name} dan lanjut ke jadwal`}>
+                    <span>Pilih paket</span><ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>

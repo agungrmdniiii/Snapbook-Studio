@@ -379,3 +379,27 @@ input[type="date"] {
   .studio-film-overlay button { padding: 0 11px; }
   .studio-film figcaption { flex-direction: column; gap: 6px; }
 }
+
+.studio-package-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; margin: -16px 0 48px; padding: 26px 0; border-top: 1px solid #3f3f46; border-bottom: 1px solid #3f3f46; }
+.studio-package-overview a { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 8px 0; min-width: 0; color: #e4e4e7; }
+.studio-overview-name { font-size: 13px; line-height: 1.6; min-height: 42px; }
+.studio-package-overview strong { font-family: var(--font-serif); font-size: 28px; line-height: 1.2; font-weight: 400; color: #f4f4f5; font-variant-numeric: tabular-nums; }
+.studio-package-overview a > span:last-child { display: flex; align-items: center; gap: 16px; color: #a1a1aa; font-size: 12px; }
+.studio-package-overview a:hover strong, .studio-package-overview a:focus-visible strong { color: #c5a880; }
+.studio-package-card { scroll-margin-top: 104px; }
+.studio-package-cta { width: 100%; }
+.studio-package-features { margin-top: 16px; }
+.studio-package-features ul { display: grid; gap: 12px; }
+.studio-package-features li { display: flex; align-items: start; gap: 10px; font-size: 13px; line-height: 1.7; color: #d4d4d8; }
+.studio-package-features li > svg { flex-shrink: 0; margin-top: 4px; color: #a1a1aa; }
+.studio-package-features summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; list-style: none; min-height: 44px; margin-top: 10px; color: #c5a880; font-size: 12px; cursor: pointer; }
+.studio-package-features summary::-webkit-details-marker { display: none; }
+.studio-package-features details[open] summary { margin-bottom: 10px; }
+.studio-package-features details[open] summary svg { transform: rotate(180deg); }
+.studio-package-empty { margin-top: 16px; color: #a1a1aa; font-size: 13px; }
+.studio-package-selected { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; color: #c5a880; font-size: 12px; }
+@media (max-width: 767px) {
+  .studio-package-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 20px; margin-bottom: 32px; }
+  .studio-package-overview strong { font-size: 25px; }
+  .studio-overview-name { font-size: 12px; }
+}
